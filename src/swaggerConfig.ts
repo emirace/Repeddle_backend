@@ -17,7 +17,7 @@ const swaggerOptions = {
         description: 'Development Server',
       },
       {
-        url: 'https://example.com', // Production server base URL
+        url: 'https://repeddle-backend.onrender.com', // Production server base URL
         description: 'Production Server',
       },
     ],
