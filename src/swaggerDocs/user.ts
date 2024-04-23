@@ -798,6 +798,8 @@
  *     summary: Follow a user
  *     description: Allows a user to follow another user.
  *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -845,6 +847,8 @@
  *     summary: Unfollow a user
  *     description: Allows a user to unfollow another user.
  *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId

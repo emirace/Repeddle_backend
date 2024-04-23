@@ -77,6 +77,8 @@
  *   post:
  *     summary: Create a new article.
  *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -189,6 +191,8 @@
  *   put:
  *     summary: Update an article by ID.
  *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -241,6 +245,8 @@
  *   delete:
  *     summary: Delete an article by ID.
  *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
