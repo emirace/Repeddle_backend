@@ -133,7 +133,9 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/CategoryList'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Category'
  *       '500':
  *         description: Error fetching categories.
  *         content:
