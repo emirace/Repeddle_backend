@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Product, { IProduct, ISize } from '../model/product';
 import { CustomRequest } from '../middleware/user';
 import { generateUniqueSlug } from '../utils/product';

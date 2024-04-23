@@ -12,6 +12,10 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { CustomRequest } from '../middleware/user';
 
+const generateRandomNumber = () => {
+  return Math.floor(Math.random() * 100);
+};
+
 interface UpdateFields {
   usernameLastUpdated: Date;
   username?: string;
@@ -461,6 +465,133 @@ const UserController = {
         message: 'Error deleting user account',
         error,
       });
+    }
+  },
+
+  // top sellers
+  async getTopSellers(req: Request, res: Response) {
+    try {
+      // Query the User model to find top sellers based on certain criteria
+      const topSellers: IUser[] = await User.find({ role: 'Seller' })
+        .select('username image badge') // Select only necessary fields
+        .sort({ sold: -1 }) // Sort by the number of products sold in descending order
+        .limit(10); // Limit the result to the top 10 sellers
+
+      // Respond with the list of top sellers
+      res.status(200).json({ success: true, topSellers });
+    } catch (error) {
+      // Handle errors
+      console.error('Error fetching top sellers:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error fetching top sellers', error });
+    }
+  },
+
+  //username suggestions
+  async getSuggestedUsername(req: Request, res: Response) {
+    try {
+      const { firstName, lastName, otherText } = req.body;
+
+      // Generate suggested usernames based on firstName, lastName, or otherText
+      let suggestedUsernames: string[] = [];
+      if (otherText && otherText.length > 3) {
+        // Generate usernames based on otherText
+        suggestedUsernames.push(
+          `${otherText}`,
+          `${otherText}${generateRandomNumber()}`
+        );
+      } else {
+        // Generate usernames based on firstName and lastName
+        if (firstName) {
+          suggestedUsernames.push(
+            firstName,
+            `${firstName}${generateRandomNumber()}`
+          );
+        }
+        if (lastName) {
+          suggestedUsernames.push(
+            lastName,
+            `${lastName}${generateRandomNumber()}`
+          );
+        }
+        if (firstName && lastName) {
+          suggestedUsernames.push(
+            `${firstName}_${lastName}`,
+            `${firstName}${lastName}`,
+            `${firstName}${lastName}${generateRandomNumber()}`
+          );
+        }
+      }
+
+      // Check uniqueness of suggested usernames
+      const existingUsernames = await User.find({
+        username: { $in: suggestedUsernames },
+      }).distinct('username');
+      const uniqueUsernames = suggestedUsernames.filter(
+        (username) => !existingUsernames.includes(username)
+      );
+
+      // If there are less than 3 unique usernames, generate additional ones with random numbers
+      let additionalUsernames: string[] = [];
+      while (uniqueUsernames.length + additionalUsernames.length < 3) {
+        suggestedUsernames.forEach((username) => {
+          const newUsername = `${username}${generateRandomNumber()}`;
+          if (!existingUsernames.includes(newUsername)) {
+            additionalUsernames.push(newUsername);
+          }
+        });
+      }
+
+      // Combine unique and additional usernames to ensure at least 3 suggestions
+      const finalUsernames = uniqueUsernames
+        .concat(additionalUsernames)
+        .slice(0, 3);
+
+      // Respond with suggested unique usernames
+      res
+        .status(200)
+        .json({ success: true, suggestedUsernames: finalUsernames });
+    } catch (error) {
+      console.error('Error generating suggested usernames:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error generating suggested usernames',
+        error,
+      });
+    }
+  },
+
+  async getUserByUsername(req: Request, res: Response) {
+    try {
+      const { username } = req.params;
+
+      if (!username) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Username is required' });
+      }
+
+      // Query the User model to find the user by username
+      const user = await User.findOne({ username }).select(
+        'username image about followers following numReviews _id rebundle sold createdAt region '
+      );
+
+      // If user not found, return 404
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+
+      // Respond with the user data
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      // Handle errors
+      console.error('Error fetching user by username:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error fetching user', error });
     }
   },
 };

@@ -492,6 +492,206 @@
 
 /**
  * @swagger
+ * /users/top-sellers:
+ *   get:
+ *     summary: Get top sellers.
+ *     description: Retrieve the top sellers based on the number of products sold.
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: A list of top sellers.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful.
+ *                 topSellers:
+ *                   type: array
+ *                   description: List of top sellers.
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       username:
+ *                         type: string
+ *                         description: The username of the seller.
+ *                       firstName:
+ *                         type: string
+ *                         description: The first name of the seller.
+ *                       lastName:
+ *                         type: string
+ *                         description: The last name of the seller.
+ *                       image:
+ *                         type: string
+ *                         description: The image URL of the seller.
+ *                       sold:
+ *                         type: number
+ *                         description: The number of products sold by the seller.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Details about the error.
+ */
+
+/**
+ * @swagger
+ * /users/{username}:
+ *   get:
+ *     summary: Get user by username
+ *     description: Retrieve user details based on the provided username
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         description: The username of the user to retrieve
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful
+ *                 user:
+ *                   type: object
+ *                   description: User details
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       description: The unique identifier of the user
+ *                     username:
+ *                       type: string
+ *                       description: The username of the user
+ *                     image:
+ *                       type: string
+ *                       description: The URL of the user's profile image
+ *                     about:
+ *                       type: string
+ *                       description: A brief description about the user
+ *                     followers:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: An array of user IDs who follow this user
+ *                     following:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: An array of user IDs whom this user follows
+ *                     numReviews:
+ *                       type: number
+ *                       description: The number of reviews the user has received
+ *                     rebundle:
+ *                       type: object
+ *                       properties:
+ *                         status:
+ *                           type: boolean
+ *                           description: Indicates if the user's rebundle status is active
+ *                         count:
+ *                           type: number
+ *                           description: The count of rebundles
+ *                     sold:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: An array of product IDs sold by the user
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The date and time when the user account was created
+ *                     region:
+ *                       type: string
+ *                       enum: [NGN, ZAR]
+ *                       description: The user's region
+ *       400:
+ *         description: Bad request. Username parameter is missing.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error. Failed to retrieve user details.
+ */
+
+/**
+ * @swagger
+ * /users/suggested-username:
+ *   post:
+ *     summary: Get suggested unique usernames based on first name, last name, or other text.
+ *     tags: [User]
+ *     description: |
+ *       This endpoint generates suggested unique usernames based on the provided first name, last name,
+ *       or other text. If other text is provided and it's longer than 3 characters, suggestions will be
+ *       generated from it. If both first name and last name are provided, combinations of them will be used.
+ *       Random numbers are added to ensure uniqueness.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 description: The first name of the user.
+ *               lastName:
+ *                 type: string
+ *                 description: The last name of the user.
+ *               otherText:
+ *                 type: string
+ *                 description: Other text from which to generate suggestions.
+ *     responses:
+ *       '200':
+ *         description: A list of suggested unique usernames.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 suggestedUsernames:
+ *                   type: array
+ *                   description: An array of suggested unique usernames.
+ *                   items:
+ *                     type: string
+ *       '500':
+ *         description: Internal server error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ *                 error:
+ *                   type: object
+ *                   description: Error details.
+ */
+
+/**
+ * @swagger
  * /users/profile:
  *   put:
  *     summary: Update user profile

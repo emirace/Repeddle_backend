@@ -22,7 +22,13 @@ router.get('/profile', authorize(), UserController.getProfile);
 // Update user profile
 router.put('/profile', authorize(), UserController.updateProfile);
 
+router.post('/suggested-username', UserController.getSuggestedUsername);
+
+router.get('/top-sellers', UserController.getTopSellers);
+
 router.post('/follow/:userId', authorize(), UserController.followUser);
+
+router.get('/:username', UserController.getUserByUsername);
 
 router.delete('/unfollow/:userId', authorize(), UserController.unfollowUser);
 
