@@ -57,7 +57,7 @@ export const authorize = (requiredRoles?: ('Admin' | 'User' | 'Seller')[]) => {
       // Continue to the next middleware or route handler
       next();
     } catch (error) {
-      console.log(error);
+      console.log('error', error);
       if (error instanceof TokenExpiredError) {
         return res.status(403).json({ message: 'Token expired' });
       } else {
