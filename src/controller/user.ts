@@ -1,0 +1,468 @@
+// userController.ts
+import { Request, Response } from 'express';
+import User, { IAddress, IRebundle, IUser } from '../model/user';
+import {
+  generateAccessToken,
+  generateEmailVerificationToken,
+  verifyEmailVerificationToken,
+} from '../utils/user';
+import { sendResetPasswordEmail, sendVerificationEmail } from '../utils/email';
+import { body, validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { CustomRequest } from '../middleware/user';
+
+interface UpdateFields {
+  usernameLastUpdated: Date;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  image?: string;
+  about?: string;
+  dob?: Date;
+  accountNumber?: number;
+  phone?: string;
+  accountName?: string;
+  allowNewsletter: boolean;
+  bankName?: string;
+  address?: IAddress;
+  rebundle?: IRebundle;
+}
+
+const UserController = {
+  // Send verification email
+  async sendVerificationEmail(req: Request, res: Response) {
+    try {
+      await Promise.all([
+        body('email').isEmail().escape().withMessage('Invalid email format'),
+      ]);
+
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+      const email = req.body.email;
+      if (!email) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Email address is required' });
+      }
+      const token = await generateEmailVerificationToken(email);
+      console.log(token);
+      // await sendVerificationEmail(email, token);
+      res.status(200).json({
+        success: true,
+        message: 'Verification email sent successfully',
+      });
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error sending verification email' });
+    }
+  },
+
+  // Verify email with token
+  async verifyEmail(req: Request, res: Response) {
+    try {
+      const token = req.params.token;
+      const email = verifyEmailVerificationToken(token);
+      if (!email) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid or expired token' });
+      }
+      // Implement user account creation or update here
+      res
+        .status(200)
+        .json({ success: true, message: 'Email verified successfully', email });
+    } catch (error) {
+      console.error('Error verifying email:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error verifying email' });
+    }
+  },
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      // Check if the user exists
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+
+      // Generate reset password token
+      const resetToken = generateEmailVerificationToken(user.email);
+
+      // Send reset password email
+      await sendResetPasswordEmail(user.email, resetToken);
+
+      // Send success response
+      return res.status(200).json({
+        success: true,
+        message: 'Reset password email sent successfully',
+      });
+    } catch (error) {
+      console.error('Error sending reset password email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error sending reset password email',
+      });
+    }
+  },
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { password } = req.body;
+      const token = req.params.token;
+
+      // Verify reset token
+      const email = verifyEmailVerificationToken(token);
+      if (!email) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+      }
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid token or user not found' });
+      }
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update user's password
+      user.password = hashedPassword;
+      await user.save();
+
+      res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      res.status(500).json({ message: 'Error resetting password' });
+    }
+  },
+
+  async register(req: Request, res: Response) {
+    try {
+      await Promise.all([
+        body('token').notEmpty().withMessage('Token is required'),
+        body('username').notEmpty().withMessage('Username is required'),
+        body('password')
+          .isLength({ min: 8 })
+          .withMessage('Password must be at least 8 characters long'),
+        body('firstName').notEmpty().withMessage('First name is required'),
+        body('lastName').notEmpty().withMessage('Last name is required'),
+        body('phone').isMobilePhone('any').withMessage('Invalid phone number'),
+      ]);
+
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+
+      const {
+        username,
+        password,
+        firstName,
+        lastName,
+        phone,
+        token: verificationToken,
+      } = req.body;
+
+      const email = verifyEmailVerificationToken(verificationToken);
+      if (!email) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid or expired token' });
+      }
+
+      const existEmail = await User.findOne({ email });
+      if (existEmail) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Email already exist' });
+      }
+
+      const existUsername = await User.findOne({ username });
+      if (existUsername) {
+        return res
+          .status(400)
+          .json({ success: false, errors: 'Username already exist' });
+      }
+
+      // Hash the password before storing it in the database
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create the new user
+      const newUser: IUser = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        phone,
+        // Other fields...
+      });
+
+      //TODO
+
+      // create wallet
+      // add to newsletter
+      //send welcome email
+
+      // Generate JWT token
+      const token = await generateAccessToken(newUser._id);
+
+      res.status(201).json({ success: true, token });
+    } catch (error) {
+      console.error('Error registering user:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error registering user', error });
+    }
+  },
+
+  // Login user
+  async login(req: Request, res: Response) {
+    try {
+      await Promise.all([
+        body('email').isEmail().withMessage('Invalid email address'),
+      ]);
+
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+
+      // Find user by email
+      const user: IUser | null = await User.findOne({ email, delected: false });
+
+      // If user not found or password does not match, return unauthorized
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'Invalid email or password' });
+      }
+
+      // Generate JWT token
+      const token = await generateAccessToken(user._id);
+
+      // Return token
+      res.status(200).json({ success: true, token });
+    } catch (error) {
+      console.error('Error logging in:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Error logging in', error });
+    }
+  },
+
+  // Get user profile
+  async getProfile(req: CustomRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      const user = await User.findById(userId).select(
+        '-password -tokenVersion -delected'
+      );
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching user profile',
+        error,
+      });
+    }
+  },
+
+  // Update user profile
+  async updateProfile(req: CustomRequest, res: Response) {
+    try {
+      const userId = req.userId;
+
+      // Extract the fields to be updated from the request body
+      const updateFields: UpdateFields = req.body;
+
+      // Fields that can only be updated once
+      const onceUpdateFields: (keyof UpdateFields)[] = [
+        'accountName',
+        'bankName',
+        'accountNumber',
+      ];
+
+      // Check if any of the fields is not allowed
+      const allowedFields: (keyof UpdateFields)[] = [
+        'firstName',
+        'lastName',
+        'image',
+        'about',
+        'dob',
+        'phone',
+        'address',
+        'rebundle',
+      ];
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+
+      // Check if username is being updated and enforce the 30-day limit
+      if ('username' in updateFields) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        if (
+          user.usernameLastUpdated &&
+          user.usernameLastUpdated > thirtyDaysAgo
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: 'Username can only be updated once every 30 days',
+          });
+        }
+        updateFields.usernameLastUpdated = new Date();
+      }
+
+      // Check if once-update fields are being added or edited for the first time
+      for (const field of onceUpdateFields) {
+        if (user[field] && field in updateFields) {
+          return res.status(400).json({
+            success: false,
+            message: `${field} has already been added and cannot be edited`,
+          });
+        }
+      }
+
+      // Validate allowed fields
+      for (const field in updateFields) {
+        if (!allowedFields.includes(field as keyof UpdateFields)) {
+          return res.status(400).json({
+            success: false,
+            message: `Field '${field}' is not allowed for update`,
+          });
+        }
+      }
+
+      // Update user profile
+      const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
+        new: true,
+      }).select('-password -tokenVersion -delected');
+
+      if (!updatedUser) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+
+      res.status(200).json({ success: true, user: updatedUser });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Error updating user profile',
+        error,
+      });
+    }
+  },
+
+  async followUser(req: CustomRequest, res: Response) {
+    try {
+      const { userId } = req.params;
+      const followerId = req.userId;
+      if (!followerId) {
+        return res.status(403).json({ message: 'Access forbidden' });
+      }
+      const userToUpdate = await User.findById(userId);
+      if (!userToUpdate) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if the user is already being followed
+      if (userToUpdate.followers.includes(followerId)) {
+        return res
+          .status(400)
+          .json({ message: 'User is already being followed' });
+      }
+
+      // Add the follower to the user's followers list
+      userToUpdate.followers.push(followerId);
+      await userToUpdate.save();
+
+      res.status(200).json({ message: 'User followed successfully' });
+    } catch (error) {
+      console.error('Error following user:', error);
+      res.status(500).json({ message: 'Error following user' });
+    }
+  },
+
+  async unfollowUser(req: CustomRequest, res: Response) {
+    try {
+      const { userId } = req.params;
+      const followerId = req.userId; // Assuming userId is stored in req.userId after authentication
+
+      if (!followerId) {
+        return res.status(403).json({ message: 'Access forbidden' });
+      }
+      const userToUpdate = await User.findById(userId);
+      if (!userToUpdate) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if the user is being followed
+      if (!userToUpdate.followers.includes(followerId)) {
+        return res.status(400).json({ message: 'User is not being followed' });
+      }
+
+      // Remove the follower from the user's followers list
+      userToUpdate.followers = userToUpdate.followers.filter(
+        (id) => id !== followerId
+      );
+      await userToUpdate.save();
+
+      res.status(200).json({ message: 'User unfollowed successfully' });
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+      res.status(500).json({ message: 'Error unfollowing user' });
+    }
+  },
+
+  // Delete user account
+  async deleteAccount(req: CustomRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      const deletedUser = await User.findByIdAndDelete(userId);
+      if (!deletedUser) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+      res
+        .status(200)
+        .json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Error deleting user account',
+        error,
+      });
+    }
+  },
+};
+
+export default UserController;
