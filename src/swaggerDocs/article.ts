@@ -282,7 +282,7 @@
 
 /**
  * @swagger
- * /categories/category:
+ * /articles/categories:
  *   get:
  *     summary: Get all distinct categories from articles.
  *     tags: [Articles]
@@ -310,7 +310,7 @@
 
 /**
  * @swagger
- * /categories/{category}:
+ * /articles/{category}:
  *   get:
  *     summary: Get all articles with the same category.
  *     tags: [Articles]
