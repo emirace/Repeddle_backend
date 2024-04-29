@@ -14,7 +14,7 @@ export const createArticle = async (req: Request, res: Response) => {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({ status: false, errors: errors.array() });
     }
 
     // Extract data from the request body
@@ -39,14 +39,14 @@ export const createArticle = async (req: Request, res: Response) => {
     // Save the article to the database
     const savedArticle = await article.save();
 
-    // Respond with success message
-    res.status(201).json({ success: true, article: savedArticle });
+    // Respond with status message
+    res.status(201).json({ status: true, article: savedArticle });
   } catch (error) {
     // Handle errors
     console.error('Error creating article:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error creating article', error });
+      .json({ status: false, message: 'Error creating article', error });
   }
 };
 
@@ -71,13 +71,13 @@ export const getAllArticles = async (req: Request, res: Response) => {
     const articles = await Article.find(filter);
 
     // Respond with the filtered articles
-    res.status(200).json({ success: true, articles });
+    res.status(200).json({ status: true, articles });
   } catch (error) {
     // Handle errors
     console.error('Error fetching articles:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error fetching articles', error });
+      .json({ status: false, message: 'Error fetching articles', error });
   }
 };
 
@@ -87,13 +87,13 @@ export const getArticleById = async (req: Request, res: Response) => {
     if (!article) {
       return res
         .status(404)
-        .json({ success: false, message: 'Article not found' });
+        .json({ status: false, message: 'Article not found' });
     }
-    res.status(200).json({ success: true, article });
+    res.status(200).json({ status: true, article });
   } catch (error) {
     res
       .status(500)
-      .json({ success: false, message: 'Error fetching article by id', error });
+      .json({ status: false, message: 'Error fetching article by id', error });
   }
 };
 
@@ -108,7 +108,7 @@ export const updateArticle = async (req: Request, res: Response) => {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({ status: false, errors: errors.array() });
     }
 
     // Extract article ID from the request parameters
@@ -121,7 +121,7 @@ export const updateArticle = async (req: Request, res: Response) => {
     if (!article) {
       return res
         .status(404)
-        .json({ success: false, message: 'Article not found' });
+        .json({ status: false, message: 'Article not found' });
     }
 
     // Extract data from the request body
@@ -144,14 +144,14 @@ export const updateArticle = async (req: Request, res: Response) => {
     // Save the updated article to the database
     const updatedArticle = await article.save();
 
-    // Respond with success message
-    res.status(200).json({ success: true, article: updatedArticle });
+    // Respond with status message
+    res.status(200).json({ status: true, article: updatedArticle });
   } catch (error) {
     // Handle errors
     console.error('Error updating article:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error updating article', error });
+      .json({ status: false, message: 'Error updating article', error });
   }
 };
 
@@ -161,15 +161,15 @@ export const deleteArticle = async (req: Request, res: Response) => {
     if (!article) {
       return res
         .status(404)
-        .json({ success: false, message: 'Article not found' });
+        .json({ status: false, message: 'Article not found' });
     }
     res
       .status(200)
-      .json({ success: true, message: 'Article deleted successfully' });
+      .json({ status: true, message: 'Article deleted successfully' });
   } catch (error) {
     res
       .status(500)
-      .json({ success: false, message: 'Error deleting article', error });
+      .json({ status: false, message: 'Error deleting article', error });
   }
 };
 
@@ -182,13 +182,13 @@ export const getAllDistinctCategories = async (
     const distinctCategories = await Article.distinct('category');
 
     // Respond with the distinct categories
-    res.status(200).json({ success: true, categories: distinctCategories });
+    res.status(200).json({ status: true, categories: distinctCategories });
   } catch (error) {
     // Handle errors
     console.error('Error fetching distinct categories:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error fetching categories', error });
+      .json({ status: false, message: 'Error fetching categories', error });
   }
 };
 
@@ -200,12 +200,12 @@ export const getArticlesByCategory = async (req: Request, res: Response) => {
     const articles = await Article.find({ category });
 
     // Respond with the articles
-    res.status(200).json({ success: true, articles });
+    res.status(200).json({ status: true, articles });
   } catch (error) {
     // Handle errors
     console.error('Error fetching articles by category:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error fetching articles', error });
+      .json({ status: false, message: 'Error fetching articles', error });
   }
 };

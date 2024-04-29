@@ -81,7 +81,7 @@
  *     ErrorResponse:
  *       type: object
  *       properties:
- *         success:
+ *         status:
  *           type: boolean
  *           description: Indicates whether the operation was successful.
  *         message:

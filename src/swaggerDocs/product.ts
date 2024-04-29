@@ -141,7 +141,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 totalCount:
@@ -164,7 +164,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -196,7 +196,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 product:
@@ -208,7 +208,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -221,7 +221,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -234,7 +234,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -267,7 +267,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 product:
@@ -279,7 +279,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -320,7 +320,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 product:
@@ -332,7 +332,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
  *                 message:
@@ -367,7 +367,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful
  *                 message:

@@ -92,7 +92,7 @@ const ProductController = {
         .limit(limit);
 
       res.status(200).json({
-        success: true,
+        status: true,
         totalCount,
         currentPage: page,
         totalPages: Math.ceil(totalCount / limit),
@@ -102,7 +102,7 @@ const ProductController = {
       console.error('Error fetching products:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error fetching products', error });
+        .json({ status: false, message: 'Error fetching products', error });
     }
   },
 
@@ -114,24 +114,24 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ success: false, message: 'Product not found' });
+          .json({ status: false, message: 'Product not found' });
       }
 
       // Check if the product is available in the user's region
       const userRegion = req.userRegion;
       if (product.region !== userRegion) {
         return res.status(403).json({
-          success: false,
+          status: false,
           message: 'Product not available in your region',
         });
       }
 
-      res.status(200).json({ success: true, product });
+      res.status(200).json({ status: true, product });
     } catch (error) {
       console.error('Error fetching product by slug:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error fetching product', error });
+        .json({ status: false, message: 'Error fetching product', error });
     }
   },
 
@@ -161,12 +161,12 @@ const ProductController = {
       });
 
       const newProduct = await Product.create(newProductData as IProduct);
-      res.status(201).json({ success: true, product: newProduct });
+      res.status(201).json({ status: true, product: newProduct });
     } catch (error) {
       console.error('Error creating product:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error creating product', error });
+        .json({ status: false, message: 'Error creating product', error });
     }
   },
 
@@ -179,7 +179,7 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ success: false, message: 'Product not found' });
+          .json({ status: false, message: 'Product not found' });
       }
 
       // Check if the user is an admin
@@ -189,7 +189,7 @@ const ProductController = {
         if (product.seller.toString() !== userId) {
           return res
             .status(403)
-            .json({ success: false, message: 'Unauthorized' });
+            .json({ status: false, message: 'Unauthorized' });
         }
       }
 
@@ -242,14 +242,14 @@ const ProductController = {
       if (!updatedProduct) {
         return res
           .status(404)
-          .json({ success: false, message: 'Product not found' });
+          .json({ status: false, message: 'Product not found' });
       }
-      res.status(200).json({ success: true, product: updatedProduct });
+      res.status(200).json({ status: true, product: updatedProduct });
     } catch (error) {
       console.error('Error updating product:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error updating product', error });
+        .json({ status: false, message: 'Error updating product', error });
     }
   },
 
@@ -265,14 +265,12 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ success: false, message: 'Product not found' });
+          .json({ status: false, message: 'Product not found' });
       }
 
       // Check if the user is the seller of the product or an admin
       if (product.seller.toString() !== userId && !req.isAdmin) {
-        return res
-          .status(403)
-          .json({ success: false, message: 'Unauthorized' });
+        return res.status(403).json({ status: false, message: 'Unauthorized' });
       }
 
       // Delete the product
@@ -280,12 +278,12 @@ const ProductController = {
 
       return res
         .status(200)
-        .json({ success: true, message: 'Product deleted successfully' });
+        .json({ status: true, message: 'Product deleted successfully' });
     } catch (error) {
       console.error('Error deleting product:', error);
       return res
         .status(500)
-        .json({ success: false, message: 'Error deleting product', error });
+        .json({ status: false, message: 'Error deleting product', error });
     }
   },
 };

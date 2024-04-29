@@ -35,7 +35,7 @@
  *     ErrorResponse:
  *       type: object
  *       properties:
- *         success:
+ *         status:
  *           type: boolean
  *         message:
  *           type: string
@@ -59,7 +59,7 @@
  *      ErrorResponse2:
  *       type: object
  *       properties:
- *         success:
+ *         status:
  *           type: boolean
  *           description: Indicates whether the operation was successful.
  *         message:
@@ -126,7 +126,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 articles:
  *                   type: array
@@ -162,7 +162,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 article:
  *                   $ref: '#/components/schemas/Article'
@@ -173,7 +173,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 error:
  *                   type: string
@@ -221,7 +221,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 article:
  *                   $ref: '#/components/schemas/Article'
@@ -262,7 +262,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 message:
  *                   type: string
@@ -294,7 +294,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 categories:
  *                   type: array
@@ -329,7 +329,7 @@
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                 articles:
  *                   type: array

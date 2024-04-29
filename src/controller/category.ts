@@ -5,22 +5,22 @@ export const createCategory = async (req: Request, res: Response) => {
   try {
     const category: ICategory = new Category(req.body);
     const savedCategory = await category.save();
-    res.status(201).json({ success: true, category: savedCategory });
+    res.status(201).json({ status: true, category: savedCategory });
   } catch (error) {
     res
       .status(400)
-      .json({ success: false, message: 'Error creating category', error });
+      .json({ status: false, message: 'Error creating category', error });
   }
 };
 
 export const getAllCategories = async (_req: Request, res: Response) => {
   try {
     const categories = await Category.find();
-    res.status(200).json({ success: true, categories });
+    res.status(200).json({ status: true, categories });
   } catch (error) {
     res
       .status(500)
-      .json({ success: false, message: 'Error fetching categories', error });
+      .json({ status: false, message: 'Error fetching categories', error });
   }
 };
 
@@ -30,17 +30,15 @@ export const getCategoryById = async (req: Request, res: Response) => {
     if (!category) {
       return res
         .status(404)
-        .json({ success: false, message: 'Category not found' });
+        .json({ status: false, message: 'Category not found' });
     }
-    res.status(200).json({ success: true, category });
+    res.status(200).json({ status: true, category });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Error fetching category by id',
-        error,
-      });
+    res.status(500).json({
+      status: false,
+      message: 'Error fetching category by id',
+      error,
+    });
   }
 };
 
@@ -52,13 +50,13 @@ export const updateCategory = async (req: Request, res: Response) => {
     if (!category) {
       return res
         .status(404)
-        .json({ success: false, message: 'Category not found' });
+        .json({ status: false, message: 'Category not found' });
     }
-    res.status(200).json({ success: true, category });
+    res.status(200).json({ status: true, category });
   } catch (error) {
     res
       .status(500)
-      .json({ success: false, message: 'Error editing category ', error });
+      .json({ status: false, message: 'Error editing category ', error });
   }
 };
 
@@ -68,14 +66,14 @@ export const deleteCategory = async (req: Request, res: Response) => {
     if (!category) {
       return res
         .status(404)
-        .json({ success: false, message: 'Category not found' });
+        .json({ status: false, message: 'Category not found' });
     }
     res
       .status(200)
-      .json({ success: true, message: 'Category deleted successfully' });
+      .json({ status: true, message: 'Category deleted successfully' });
   } catch (error) {
     res
       .status(500)
-      .json({ success: false, message: 'Error deleting product', error });
+      .json({ status: false, message: 'Error deleting product', error });
   }
 };

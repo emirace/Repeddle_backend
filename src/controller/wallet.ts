@@ -22,19 +22,19 @@ export async function fundWallet(req: Request, res: Response) {
     if (!wallet) {
       return res
         .status(404)
-        .json({ success: false, message: 'Wallet not found' });
+        .json({ status: false, message: 'Wallet not found' });
     }
     // Create transaction record
     await Transaction.create({ walletId: wallet._id, amount, type: 'credit' });
 
     res
       .status(200)
-      .json({ success: true, message: 'Wallet funded successfully', wallet });
+      .json({ status: true, message: 'Wallet funded successfully', wallet });
   } catch (error) {
     console.error('Error funding wallet:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error funding wallet', error });
+      .json({ status: false, message: 'Error funding wallet', error });
   }
 }
 
@@ -47,11 +47,11 @@ export async function getUserBalance(req: CustomRequest, res: Response) {
     if (!wallet) {
       return res
         .status(404)
-        .json({ success: false, message: 'Wallet not found' });
+        .json({ status: false, message: 'Wallet not found' });
     }
 
     res.status(200).json({
-      success: true,
+      status: true,
       balance: wallet.balance,
       currency: wallet.currency,
     });
@@ -59,7 +59,7 @@ export async function getUserBalance(req: CustomRequest, res: Response) {
     console.error('Error getting user balance:', error);
     res
       .status(500)
-      .json({ success: false, message: 'Error getting user balance', error });
+      .json({ status: false, message: 'Error getting user balance', error });
   }
 }
 
@@ -78,7 +78,7 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
     if (!wallet || wallet.balance < amount) {
       return res
         .status(400)
-        .json({ success: false, message: 'Insufficient balance' });
+        .json({ status: false, message: 'Insufficient balance' });
     }
 
     // Deduct amount from wallet balance
@@ -89,13 +89,13 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
     await Transaction.create({ walletId: wallet._id, amount, type: 'debit' });
 
     res.status(200).json({
-      success: true,
+      status: true,
       message: 'Withdrawal request processed successfully',
     });
   } catch (error) {
     console.error('Error processing withdrawal request:', error);
     res.status(500).json({
-      success: false,
+      status: false,
       message: 'Error processing withdrawal request',
       error,
     });

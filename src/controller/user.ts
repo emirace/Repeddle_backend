@@ -44,26 +44,26 @@ const UserController = {
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, errors: errors.array() });
+        return res.status(400).json({ status: false, errors: errors.array() });
       }
       const email = req.body.email;
       if (!email) {
         return res
           .status(400)
-          .json({ success: false, message: 'Email address is required' });
+          .json({ status: false, message: 'Email address is required' });
       }
       const token = await generateEmailVerificationToken(email);
       console.log(token);
       // await sendVerificationEmail(email, token);
       res.status(200).json({
-        success: true,
+        status: true,
         message: 'Verification email sent successfully',
       });
     } catch (error) {
       console.error('Error sending verification email:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error sending verification email' });
+        .json({ status: false, message: 'Error sending verification email' });
     }
   },
 
@@ -75,17 +75,15 @@ const UserController = {
       if (!email) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid or expired token' });
+          .json({ status: false, message: 'Invalid or expired token' });
       }
       // Implement user account creation or update here
       res
         .status(200)
-        .json({ success: true, message: 'Email verified successfully', email });
+        .json({ status: true, message: 'Email verified successfully', email });
     } catch (error) {
       console.error('Error verifying email:', error);
-      res
-        .status(500)
-        .json({ success: false, message: 'Error verifying email' });
+      res.status(500).json({ status: false, message: 'Error verifying email' });
     }
   },
 
@@ -98,7 +96,7 @@ const UserController = {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
 
       // Generate reset password token
@@ -107,15 +105,15 @@ const UserController = {
       // Send reset password email
       await sendResetPasswordEmail(user.email, resetToken);
 
-      // Send success response
+      // Send status response
       return res.status(200).json({
-        success: true,
+        status: true,
         message: 'Reset password email sent successfully',
       });
     } catch (error) {
       console.error('Error sending reset password email:', error);
       return res.status(500).json({
-        success: false,
+        status: false,
         message: 'Error sending reset password email',
       });
     }
@@ -169,7 +167,7 @@ const UserController = {
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, errors: errors.array() });
+        return res.status(400).json({ status: false, errors: errors.array() });
       }
 
       const {
@@ -185,21 +183,21 @@ const UserController = {
       if (!email) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid or expired token' });
+          .json({ status: false, message: 'Invalid or expired token' });
       }
 
       const existEmail = await User.findOne({ email });
       if (existEmail) {
         return res
           .status(400)
-          .json({ success: false, message: 'Email already exist' });
+          .json({ status: false, message: 'Email already exist' });
       }
 
       const existUsername = await User.findOne({ username });
       if (existUsername) {
         return res
           .status(400)
-          .json({ success: false, errors: 'Username already exist' });
+          .json({ status: false, errors: 'Username already exist' });
       }
 
       // Hash the password before storing it in the database
@@ -225,12 +223,12 @@ const UserController = {
       // Generate JWT token
       const token = await generateAccessToken(newUser._id);
 
-      res.status(201).json({ success: true, token });
+      res.status(201).json({ status: true, token });
     } catch (error) {
       console.error('Error registering user:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error registering user', error });
+        .json({ status: false, message: 'Error registering user', error });
     }
   },
 
@@ -244,7 +242,7 @@ const UserController = {
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, errors: errors.array() });
+        return res.status(400).json({ status: false, errors: errors.array() });
       }
 
       const { email, password } = req.body;
@@ -256,19 +254,19 @@ const UserController = {
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res
           .status(401)
-          .json({ success: false, message: 'Invalid email or password' });
+          .json({ status: false, message: 'Invalid email or password' });
       }
 
       // Generate JWT token
       const token = await generateAccessToken(user._id);
 
       // Return token
-      res.status(200).json({ success: true, token });
+      res.status(200).json({ status: true, token });
     } catch (error) {
       console.error('Error logging in:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error logging in', error });
+        .json({ status: false, message: 'Error logging in', error });
     }
   },
 
@@ -282,12 +280,12 @@ const UserController = {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
-      res.status(200).json({ success: true, user });
+      res.status(200).json({ status: true, user });
     } catch (error) {
       res.status(500).json({
-        success: false,
+        status: false,
         message: 'Error fetching user profile',
         error,
       });
@@ -325,7 +323,7 @@ const UserController = {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
 
       // Check if username is being updated and enforce the 30-day limit
@@ -337,7 +335,7 @@ const UserController = {
           user.usernameLastUpdated > thirtyDaysAgo
         ) {
           return res.status(400).json({
-            success: false,
+            status: false,
             message: 'Username can only be updated once every 30 days',
           });
         }
@@ -348,7 +346,7 @@ const UserController = {
       for (const field of onceUpdateFields) {
         if (user[field] && field in updateFields) {
           return res.status(400).json({
-            success: false,
+            status: false,
             message: `${field} has already been added and cannot be edited`,
           });
         }
@@ -358,7 +356,7 @@ const UserController = {
       for (const field in updateFields) {
         if (!allowedFields.includes(field as keyof UpdateFields)) {
           return res.status(400).json({
-            success: false,
+            status: false,
             message: `Field '${field}' is not allowed for update`,
           });
         }
@@ -372,13 +370,13 @@ const UserController = {
       if (!updatedUser) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
 
-      res.status(200).json({ success: true, user: updatedUser });
+      res.status(200).json({ status: true, user: updatedUser });
     } catch (error) {
       res.status(500).json({
-        success: false,
+        status: false,
         message: 'Error updating user profile',
         error,
       });
@@ -454,14 +452,14 @@ const UserController = {
       if (!deletedUser) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
       res
         .status(200)
-        .json({ success: true, message: 'User deleted successfully' });
+        .json({ status: true, message: 'User deleted successfully' });
     } catch (error) {
       res.status(500).json({
-        success: false,
+        status: false,
         message: 'Error deleting user account',
         error,
       });
@@ -478,13 +476,13 @@ const UserController = {
         .limit(10); // Limit the result to the top 10 sellers
 
       // Respond with the list of top sellers
-      res.status(200).json({ success: true, topSellers });
+      res.status(200).json({ status: true, topSellers });
     } catch (error) {
       // Handle errors
       console.error('Error fetching top sellers:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error fetching top sellers', error });
+        .json({ status: false, message: 'Error fetching top sellers', error });
     }
   },
 
@@ -551,11 +549,11 @@ const UserController = {
       // Respond with suggested unique usernames
       res
         .status(200)
-        .json({ success: true, suggestedUsernames: finalUsernames });
+        .json({ status: true, suggestedUsernames: finalUsernames });
     } catch (error) {
       console.error('Error generating suggested usernames:', error);
       res.status(500).json({
-        success: false,
+        status: false,
         message: 'Error generating suggested usernames',
         error,
       });
@@ -569,7 +567,7 @@ const UserController = {
       if (!username) {
         return res
           .status(400)
-          .json({ success: false, message: 'Username is required' });
+          .json({ status: false, message: 'Username is required' });
       }
 
       // Query the User model to find the user by username
@@ -581,17 +579,17 @@ const UserController = {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: 'User not found' });
+          .json({ status: false, message: 'User not found' });
       }
 
       // Respond with the user data
-      res.status(200).json({ success: true, user });
+      res.status(200).json({ status: true, user });
     } catch (error) {
       // Handle errors
       console.error('Error fetching user by username:', error);
       res
         .status(500)
-        .json({ success: false, message: 'Error fetching user', error });
+        .json({ status: false, message: 'Error fetching user', error });
     }
   },
 };
