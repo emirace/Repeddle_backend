@@ -144,19 +144,23 @@
  *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
- *                 totalCount:
- *                   type: integer
- *                   description: Total number of products matching the query.
- *                 currentPage:
- *                   type: integer
- *                   description: Current page number.
- *                 totalPages:
- *                   type: integer
- *                   description: Total number of pages based on the page limit.
- *                 products:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Product'
+ *                 data:
+ *                   type: object
+ *                   description: Product data.
+ *                   properties:
+ *                     totalCount:
+ *                       type: integer
+ *                       description: Total number of products matching the query.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages based on the page limit.
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
  *       '500':
  *         description: Error response if there was a server error while fetching products.
  *         content:

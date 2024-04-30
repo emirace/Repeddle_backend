@@ -93,10 +93,12 @@ const ProductController = {
 
       res.status(200).json({
         status: true,
-        totalCount,
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        products,
+        data: {
+          totalCount,
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          products,
+        },
       });
     } catch (error) {
       console.error('Error fetching products:', error);

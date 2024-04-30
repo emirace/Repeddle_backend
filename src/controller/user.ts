@@ -53,8 +53,7 @@ const UserController = {
           .json({ status: false, message: 'Email address is required' });
       }
       const token = await generateEmailVerificationToken(email);
-      console.log(token);
-      // await sendVerificationEmail(email, token);
+      await sendVerificationEmail(email, token);
       res.status(200).json({
         status: true,
         message: 'Verification email sent successfully',

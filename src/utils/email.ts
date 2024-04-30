@@ -2,12 +2,11 @@
 import nodemailer from 'nodemailer';
 
 const SMTP_CONFIG = {
-  host: 'smtp.example.com',
-  port: 587,
-  secure: false,
+  host: 'mail.privateemail.com',
+  port: 465,
   auth: {
-    user: 'your-smtp-username',
-    pass: 'your-smtp-password',
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 };
 
@@ -18,7 +17,7 @@ export async function sendVerificationEmail(
   try {
     const transporter = nodemailer.createTransport(SMTP_CONFIG);
     await transporter.sendMail({
-      from: 'your-email@example.com',
+      from: { name: 'Repeddle', address: 'support@repeddle.com' },
       to: email,
       subject: 'Email Verification',
       text: `Click the following link to verify your email: http://example.com/verify-email/${token}`,
