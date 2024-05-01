@@ -30,7 +30,7 @@ router.post("/follow/:userId", authorize(), UserController.followUser);
 
 router.get("/:username", UserController.getUserByUsername);
 
-router.get("verify-email/:token", UserController.verifyEmail);
+router.get("/verify-email/:token", UserController.verifyEmail);
 
 router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
 
