@@ -1,30 +1,30 @@
 // auth/emailService.ts
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const SMTP_CONFIG = {
-  host: 'mail.privateemail.com',
+  host: "mail.privateemail.com",
   port: 465,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
 };
+const transporter = nodemailer.createTransport(SMTP_CONFIG);
 
 export async function sendVerificationEmail(
   email: string,
   token: string
 ): Promise<void> {
   try {
-    const transporter = nodemailer.createTransport(SMTP_CONFIG);
     await transporter.sendMail({
-      from: { name: 'Repeddle', address: 'support@repeddle.com' },
+      from: { name: "Repeddle", address: "support@repeddle.com" },
       to: email,
-      subject: 'Email Verification',
+      subject: "Email Verification",
       text: `Click the following link to verify your email: http://example.com/verify-email/${token}`,
     });
-    console.log('Verification email sent successfully');
+    console.log("Verification email sent successfully");
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error("Error sending verification email:", error);
     throw error;
   }
 }
@@ -34,27 +34,18 @@ export const sendResetPasswordEmail = async (
   resetToken: string
 ) => {
   try {
-    // Create a nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      service: 'your_email_service_provider',
-      auth: {
-        user: 'your_email_address',
-        pass: 'your_email_password',
-      },
-    });
-
     // Define email options
     const mailOptions = {
-      from: 'your_email_address',
+      from: { name: "Repeddle", address: "support@repeddle.com" },
       to: email,
-      subject: 'Reset Your Password',
-      html: `<p>Please click the following link to reset your password:</p><p><a href="http://yourwebsite.com/reset-password/${resetToken}">Reset Password</a></p>`,
+      subject: "Reset Your Password",
+      html: `<p>Please click the following link to reset your password:</p><p>http://example.com/reset-password/${resetToken}</p>`,
     };
 
     // Send the email
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error sending reset password email:', error);
-    throw new Error('Error sending reset password email');
+    console.error("Error sending reset password email:", error);
+    throw new Error("Error sending reset password email");
   }
 };
