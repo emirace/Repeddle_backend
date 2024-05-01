@@ -28,6 +28,12 @@ router.get("/top-sellers", UserController.getTopSellers);
 
 router.post("/follow/:userId", authorize(), UserController.followUser);
 
+router.post(
+  "/reset-password/:token",
+  authorize(),
+  UserController.resetPassword
+);
+
 router.get("/:username", UserController.getUserByUsername);
 
 router.get("/verify-email/:token", UserController.verifyEmail);
