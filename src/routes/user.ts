@@ -28,11 +28,7 @@ router.get("/top-sellers", UserController.getTopSellers);
 
 router.post("/follow/:userId", authorize(), UserController.followUser);
 
-router.post(
-  "/reset-password/:token",
-  authorize(),
-  UserController.resetPassword
-);
+router.post("/reset-password/:token", UserController.resetPassword);
 
 router.get("/:username", UserController.getUserByUsername);
 

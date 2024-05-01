@@ -1,16 +1,16 @@
 // userController.ts
-import { Request, Response } from 'express';
-import User, { IAddress, IRebundle, IUser } from '../model/user';
+import { Request, Response } from "express";
+import User, { IAddress, IRebundle, IUser } from "../model/user";
 import {
   generateAccessToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
-} from '../utils/user';
-import { sendResetPasswordEmail, sendVerificationEmail } from '../utils/email';
-import { body, validationResult } from 'express-validator';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { CustomRequest } from '../middleware/user';
+} from "../utils/user";
+import { sendResetPasswordEmail, sendVerificationEmail } from "../utils/email";
+import { body, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { CustomRequest } from "../middleware/user";
 
 const generateRandomNumber = () => {
   return Math.floor(Math.random() * 100);
@@ -38,7 +38,7 @@ const UserController = {
   async sendVerificationEmail(req: Request, res: Response) {
     try {
       await Promise.all([
-        body('email').isEmail().escape().withMessage('Invalid email format'),
+        body("email").isEmail().escape().withMessage("Invalid email format"),
       ]);
 
       // Check for validation errors
@@ -50,19 +50,19 @@ const UserController = {
       if (!email) {
         return res
           .status(400)
-          .json({ status: false, message: 'Email address is required' });
+          .json({ status: false, message: "Email address is required" });
       }
       const token = await generateEmailVerificationToken(email);
       await sendVerificationEmail(email, token);
       res.status(200).json({
         status: true,
-        message: 'Verification email sent successfully',
+        message: "Verification email sent successfully",
       });
     } catch (error) {
-      console.error('Error sending verification email:', error);
+      console.error("Error sending verification email:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error sending verification email' });
+        .json({ status: false, message: "Error sending verification email" });
     }
   },
 
@@ -74,15 +74,15 @@ const UserController = {
       if (!email) {
         return res
           .status(400)
-          .json({ status: false, message: 'Invalid or expired token' });
+          .json({ status: false, message: "Invalid or expired token" });
       }
       // Implement user account creation or update here
       res
         .status(200)
-        .json({ status: true, message: 'Email verified successfully', email });
+        .json({ status: true, message: "Email verified successfully", email });
     } catch (error) {
-      console.error('Error verifying email:', error);
-      res.status(500).json({ status: false, message: 'Error verifying email' });
+      console.error("Error verifying email:", error);
+      res.status(500).json({ status: false, message: "Error verifying email" });
     }
   },
 
@@ -95,7 +95,7 @@ const UserController = {
       if (!user) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
 
       // Generate reset password token
@@ -107,13 +107,13 @@ const UserController = {
       // Send status response
       return res.status(200).json({
         status: true,
-        message: 'Reset password email sent successfully',
+        message: "Reset password email sent successfully",
       });
     } catch (error) {
-      console.error('Error sending reset password email:', error);
+      console.error("Error sending reset password email:", error);
       return res.status(500).json({
         status: false,
-        message: 'Error sending reset password email',
+        message: "Error sending reset password email",
       });
     }
   },
@@ -122,18 +122,19 @@ const UserController = {
     try {
       const { password } = req.body;
       const token = req.params.token;
-
+      console.log(token);
       // Verify reset token
       const email = verifyEmailVerificationToken(token);
+      console.log(email, token);
       if (!email) {
-        return res.status(400).json({ message: 'Invalid or expired token' });
+        return res.status(400).json({ message: "Invalid or expired token" });
       }
       const user = await User.findOne({ email });
 
       if (!user) {
         return res
           .status(400)
-          .json({ message: 'Invalid token or user not found' });
+          .json({ message: "Invalid token or user not found" });
       }
 
       // Hash the new password
@@ -143,24 +144,24 @@ const UserController = {
       user.password = hashedPassword;
       await user.save();
 
-      res.status(200).json({ message: 'Password reset successfully' });
+      res.status(200).json({ message: "Password reset successfully" });
     } catch (error) {
-      console.error('Error resetting password:', error);
-      res.status(500).json({ message: 'Error resetting password' });
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Error resetting password" });
     }
   },
 
   async register(req: Request, res: Response) {
     try {
       await Promise.all([
-        body('token').notEmpty().withMessage('Token is required'),
-        body('username').notEmpty().withMessage('Username is required'),
-        body('password')
+        body("token").notEmpty().withMessage("Token is required"),
+        body("username").notEmpty().withMessage("Username is required"),
+        body("password")
           .isLength({ min: 8 })
-          .withMessage('Password must be at least 8 characters long'),
-        body('firstName').notEmpty().withMessage('First name is required'),
-        body('lastName').notEmpty().withMessage('Last name is required'),
-        body('phone').isMobilePhone('any').withMessage('Invalid phone number'),
+          .withMessage("Password must be at least 8 characters long"),
+        body("firstName").notEmpty().withMessage("First name is required"),
+        body("lastName").notEmpty().withMessage("Last name is required"),
+        body("phone").isMobilePhone("any").withMessage("Invalid phone number"),
       ]);
 
       // Check for validation errors
@@ -182,21 +183,21 @@ const UserController = {
       if (!email) {
         return res
           .status(400)
-          .json({ status: false, message: 'Invalid or expired token' });
+          .json({ status: false, message: "Invalid or expired token" });
       }
 
       const existEmail = await User.findOne({ email });
       if (existEmail) {
         return res
           .status(400)
-          .json({ status: false, message: 'Email already exist' });
+          .json({ status: false, message: "Email already exist" });
       }
 
       const existUsername = await User.findOne({ username });
       if (existUsername) {
         return res
           .status(400)
-          .json({ status: false, errors: 'Username already exist' });
+          .json({ status: false, errors: "Username already exist" });
       }
 
       // Hash the password before storing it in the database
@@ -224,10 +225,10 @@ const UserController = {
 
       res.status(201).json({ status: true, token });
     } catch (error) {
-      console.error('Error registering user:', error);
+      console.error("Error registering user:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error registering user', error });
+        .json({ status: false, message: "Error registering user", error });
     }
   },
 
@@ -235,7 +236,7 @@ const UserController = {
   async login(req: Request, res: Response) {
     try {
       await Promise.all([
-        body('email').isEmail().withMessage('Invalid email address'),
+        body("email").isEmail().withMessage("Invalid email address"),
       ]);
 
       // Check for validation errors
@@ -253,7 +254,7 @@ const UserController = {
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res
           .status(401)
-          .json({ status: false, message: 'Invalid email or password' });
+          .json({ status: false, message: "Invalid email or password" });
       }
 
       // Generate JWT token
@@ -262,10 +263,10 @@ const UserController = {
       // Return token
       res.status(200).json({ status: true, token });
     } catch (error) {
-      console.error('Error logging in:', error);
+      console.error("Error logging in:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error logging in', error });
+        .json({ status: false, message: "Error logging in", error });
     }
   },
 
@@ -274,18 +275,18 @@ const UserController = {
     try {
       const userId = req.userId;
       const user = await User.findById(userId).select(
-        '-password -tokenVersion -delected'
+        "-password -tokenVersion -delected"
       );
       if (!user) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
       res.status(200).json({ status: true, user });
     } catch (error) {
       res.status(500).json({
         status: false,
-        message: 'Error fetching user profile',
+        message: "Error fetching user profile",
         error,
       });
     }
@@ -301,32 +302,32 @@ const UserController = {
 
       // Fields that can only be updated once
       const onceUpdateFields: (keyof UpdateFields)[] = [
-        'accountName',
-        'bankName',
-        'accountNumber',
+        "accountName",
+        "bankName",
+        "accountNumber",
       ];
 
       // Check if any of the fields is not allowed
       const allowedFields: (keyof UpdateFields)[] = [
-        'firstName',
-        'lastName',
-        'image',
-        'about',
-        'dob',
-        'phone',
-        'address',
-        'rebundle',
+        "firstName",
+        "lastName",
+        "image",
+        "about",
+        "dob",
+        "phone",
+        "address",
+        "rebundle",
       ];
 
       const user = await User.findById(userId);
       if (!user) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
 
       // Check if username is being updated and enforce the 30-day limit
-      if ('username' in updateFields) {
+      if ("username" in updateFields) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         if (
@@ -335,7 +336,7 @@ const UserController = {
         ) {
           return res.status(400).json({
             status: false,
-            message: 'Username can only be updated once every 30 days',
+            message: "Username can only be updated once every 30 days",
           });
         }
         updateFields.usernameLastUpdated = new Date();
@@ -364,19 +365,19 @@ const UserController = {
       // Update user profile
       const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
         new: true,
-      }).select('-password -tokenVersion -delected');
+      }).select("-password -tokenVersion -delected");
 
       if (!updatedUser) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
 
       res.status(200).json({ status: true, user: updatedUser });
     } catch (error) {
       res.status(500).json({
         status: false,
-        message: 'Error updating user profile',
+        message: "Error updating user profile",
         error,
       });
     }
@@ -387,28 +388,28 @@ const UserController = {
       const { userId } = req.params;
       const followerId = req.userId;
       if (!followerId) {
-        return res.status(403).json({ message: 'Access forbidden' });
+        return res.status(403).json({ message: "Access forbidden" });
       }
       const userToUpdate = await User.findById(userId);
       if (!userToUpdate) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Check if the user is already being followed
       if (userToUpdate.followers.includes(followerId)) {
         return res
           .status(400)
-          .json({ message: 'User is already being followed' });
+          .json({ message: "User is already being followed" });
       }
 
       // Add the follower to the user's followers list
       userToUpdate.followers.push(followerId);
       await userToUpdate.save();
 
-      res.status(200).json({ message: 'User followed successfully' });
+      res.status(200).json({ message: "User followed successfully" });
     } catch (error) {
-      console.error('Error following user:', error);
-      res.status(500).json({ message: 'Error following user' });
+      console.error("Error following user:", error);
+      res.status(500).json({ message: "Error following user" });
     }
   },
 
@@ -418,16 +419,16 @@ const UserController = {
       const followerId = req.userId; // Assuming userId is stored in req.userId after authentication
 
       if (!followerId) {
-        return res.status(403).json({ message: 'Access forbidden' });
+        return res.status(403).json({ message: "Access forbidden" });
       }
       const userToUpdate = await User.findById(userId);
       if (!userToUpdate) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Check if the user is being followed
       if (!userToUpdate.followers.includes(followerId)) {
-        return res.status(400).json({ message: 'User is not being followed' });
+        return res.status(400).json({ message: "User is not being followed" });
       }
 
       // Remove the follower from the user's followers list
@@ -436,10 +437,10 @@ const UserController = {
       );
       await userToUpdate.save();
 
-      res.status(200).json({ message: 'User unfollowed successfully' });
+      res.status(200).json({ message: "User unfollowed successfully" });
     } catch (error) {
-      console.error('Error unfollowing user:', error);
-      res.status(500).json({ message: 'Error unfollowing user' });
+      console.error("Error unfollowing user:", error);
+      res.status(500).json({ message: "Error unfollowing user" });
     }
   },
 
@@ -451,15 +452,15 @@ const UserController = {
       if (!deletedUser) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
       res
         .status(200)
-        .json({ status: true, message: 'User deleted successfully' });
+        .json({ status: true, message: "User deleted successfully" });
     } catch (error) {
       res.status(500).json({
         status: false,
-        message: 'Error deleting user account',
+        message: "Error deleting user account",
         error,
       });
     }
@@ -469,8 +470,8 @@ const UserController = {
   async getTopSellers(req: Request, res: Response) {
     try {
       // Query the User model to find top sellers based on certain criteria
-      const topSellers: IUser[] = await User.find({ role: 'Seller' })
-        .select('username image badge') // Select only necessary fields
+      const topSellers: IUser[] = await User.find({ role: "Seller" })
+        .select("username image badge") // Select only necessary fields
         .sort({ sold: -1 }) // Sort by the number of products sold in descending order
         .limit(10); // Limit the result to the top 10 sellers
 
@@ -478,10 +479,10 @@ const UserController = {
       res.status(200).json({ status: true, topSellers });
     } catch (error) {
       // Handle errors
-      console.error('Error fetching top sellers:', error);
+      console.error("Error fetching top sellers:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error fetching top sellers', error });
+        .json({ status: false, message: "Error fetching top sellers", error });
     }
   },
 
@@ -524,7 +525,7 @@ const UserController = {
       // Check uniqueness of suggested usernames
       const existingUsernames = await User.find({
         username: { $in: suggestedUsernames },
-      }).distinct('username');
+      }).distinct("username");
       const uniqueUsernames = suggestedUsernames.filter(
         (username) => !existingUsernames.includes(username)
       );
@@ -550,10 +551,10 @@ const UserController = {
         .status(200)
         .json({ status: true, suggestedUsernames: finalUsernames });
     } catch (error) {
-      console.error('Error generating suggested usernames:', error);
+      console.error("Error generating suggested usernames:", error);
       res.status(500).json({
         status: false,
-        message: 'Error generating suggested usernames',
+        message: "Error generating suggested usernames",
         error,
       });
     }
@@ -566,29 +567,29 @@ const UserController = {
       if (!username) {
         return res
           .status(400)
-          .json({ status: false, message: 'Username is required' });
+          .json({ status: false, message: "Username is required" });
       }
 
       // Query the User model to find the user by username
       const user = await User.findOne({ username }).select(
-        'username image about followers following numReviews _id rebundle sold createdAt region '
+        "username image about followers following numReviews _id rebundle sold createdAt region "
       );
 
       // If user not found, return 404
       if (!user) {
         return res
           .status(404)
-          .json({ status: false, message: 'User not found' });
+          .json({ status: false, message: "User not found" });
       }
 
       // Respond with the user data
       res.status(200).json({ status: true, user });
     } catch (error) {
       // Handle errors
-      console.error('Error fetching user by username:', error);
+      console.error("Error fetching user by username:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error fetching user', error });
+        .json({ status: false, message: "Error fetching user", error });
     }
   },
 };
