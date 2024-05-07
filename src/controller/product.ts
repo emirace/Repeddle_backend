@@ -1,32 +1,33 @@
-import { Response } from 'express';
-import Product, { IProduct, ISize } from '../model/product';
-import { CustomRequest } from '../middleware/user';
-import { generateUniqueSlug } from '../utils/product';
-import { ObjectId } from 'mongoose';
+import { Response } from "express";
+import Product, { IProduct, ISize } from "../model/product";
+import { CustomRequest } from "../middleware/user";
+import { generateUniqueSlug } from "../utils/product";
+import { ObjectId } from "mongoose";
 
 const allowedFields: (keyof IProduct)[] = [
-  'name',
-  'images',
-  'tags',
-  'video',
-  'brand',
-  'color',
-  'mainCategory',
-  'category',
-  'subCategory',
-  'material',
-  'description',
-  'sizes',
-  'condition',
-  'keyFeatures',
-  'specification',
-  'overview',
-  'sellingPrice',
-  'costPrice',
-  'meta',
-  'vintage',
-  'luxury',
-  'luxuryImage',
+  "name",
+  "images",
+  "tags",
+  "video",
+  "brand",
+  "color",
+  "mainCategory",
+  "category",
+  "subCategory",
+  "material",
+  "description",
+  "countInStock",
+  "sizes",
+  "condition",
+  "keyFeatures",
+  "specification",
+  "overview",
+  "sellingPrice",
+  "costPrice",
+  "meta",
+  "vintage",
+  "luxury",
+  "luxuryImage",
 ];
 
 const ProductController = {
@@ -50,7 +51,7 @@ const ProductController = {
 
       // Apply search filter to all relevant fields
       if (search) {
-        const searchRegex = new RegExp(search as string, 'i');
+        const searchRegex = new RegExp(search as string, "i");
         query.$or = [
           { name: searchRegex },
           { tags: searchRegex },
@@ -64,9 +65,9 @@ const ProductController = {
       // Apply additional filters
       if (filter) {
         // Example: filter=mainCategory:Electronics,category:Smartphones
-        const filters = (filter as string).split(',');
+        const filters = (filter as string).split(",");
         filters.forEach((f: string) => {
-          const [key, value] = f.split(':');
+          const [key, value] = f.split(":");
           query[key] = value;
         });
       }
@@ -75,8 +76,8 @@ const ProductController = {
       let sortOption: any = {};
       if (sort) {
         // Example: sort=name:asc
-        const [field, order] = (sort as string).split(':');
-        sortOption[field] = order === 'desc' ? -1 : 1;
+        const [field, order] = (sort as string).split(":");
+        sortOption[field] = order === "desc" ? -1 : 1;
       } else {
         // Default sorting
         sortOption.createdAt = -1;
@@ -101,10 +102,10 @@ const ProductController = {
         },
       });
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error fetching products', error });
+        .json({ status: false, message: "Error fetching products", error });
     }
   },
 
@@ -116,7 +117,7 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ status: false, message: 'Product not found' });
+          .json({ status: false, message: "Product not found" });
       }
 
       // Check if the product is available in the user's region
@@ -124,16 +125,16 @@ const ProductController = {
       if (product.region !== userRegion) {
         return res.status(403).json({
           status: false,
-          message: 'Product not available in your region',
+          message: "Product not available in your region",
         });
       }
 
       res.status(200).json({ status: true, product });
     } catch (error) {
-      console.error('Error fetching product by slug:', error);
+      console.error("Error fetching product by slug:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error fetching product', error });
+        .json({ status: false, message: "Error fetching product", error });
     }
   },
 
@@ -148,12 +149,21 @@ const ProductController = {
       // Automatically generate slug from product name
       newProductData.slug = await generateUniqueSlug(req.body.name);
 
-      // Calculate countInStock from total size quantity
-      const countInStock = req.body.sizes.reduce(
-        (total: number, size: ISize) => total + size.quantity,
-        0
-      );
-      newProductData.countInStock = countInStock;
+      if (req.body.sizes?.length > 0) {
+        // Calculate countInStock from total size quantity
+        const countInStock = req.body.sizes.reduce(
+          (total: number, size: ISize) => total + size.quantity,
+          0
+        );
+        newProductData.countInStock = countInStock;
+      } else if (req.body.countInStock) {
+        newProductData.countInStock = req.body.countInStock;
+      } else {
+        res.status(400).json({
+          status: false,
+          message: "Either sizes or countInstock is required",
+        });
+      }
 
       // Populate newProductData with allowed fields from the request body
       allowedFields.forEach((field) => {
@@ -165,10 +175,10 @@ const ProductController = {
       const newProduct = await Product.create(newProductData as IProduct);
       res.status(201).json({ status: true, product: newProduct });
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error creating product', error });
+        .json({ status: false, message: "Error creating product", error });
     }
   },
 
@@ -181,7 +191,7 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ status: false, message: 'Product not found' });
+          .json({ status: false, message: "Product not found" });
       }
 
       // Check if the user is an admin
@@ -191,7 +201,7 @@ const ProductController = {
         if (product.seller.toString() !== userId) {
           return res
             .status(403)
-            .json({ status: false, message: 'Unauthorized' });
+            .json({ status: false, message: "Unauthorized" });
         }
       }
 
@@ -244,14 +254,14 @@ const ProductController = {
       if (!updatedProduct) {
         return res
           .status(404)
-          .json({ status: false, message: 'Product not found' });
+          .json({ status: false, message: "Product not found" });
       }
       res.status(200).json({ status: true, product: updatedProduct });
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error("Error updating product:", error);
       res
         .status(500)
-        .json({ status: false, message: 'Error updating product', error });
+        .json({ status: false, message: "Error updating product", error });
     }
   },
 
@@ -267,12 +277,12 @@ const ProductController = {
       if (!product) {
         return res
           .status(404)
-          .json({ status: false, message: 'Product not found' });
+          .json({ status: false, message: "Product not found" });
       }
 
       // Check if the user is the seller of the product or an admin
       if (product.seller.toString() !== userId && !req.isAdmin) {
-        return res.status(403).json({ status: false, message: 'Unauthorized' });
+        return res.status(403).json({ status: false, message: "Unauthorized" });
       }
 
       // Delete the product
@@ -280,12 +290,12 @@ const ProductController = {
 
       return res
         .status(200)
-        .json({ status: true, message: 'Product deleted successfully' });
+        .json({ status: true, message: "Product deleted successfully" });
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error("Error deleting product:", error);
       return res
         .status(500)
-        .json({ status: false, message: 'Error deleting product', error });
+        .json({ status: false, message: "Error deleting product", error });
     }
   },
 };

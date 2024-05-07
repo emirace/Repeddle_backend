@@ -151,7 +151,7 @@ const UserController = {
     }
   },
 
-  async register(req: Request, res: Response) {
+  async register(req: CustomRequest, res: Response) {
     try {
       await Promise.all([
         body("token").notEmpty().withMessage("Token is required"),
@@ -178,7 +178,7 @@ const UserController = {
         phone,
         token: verificationToken,
       } = req.body;
-
+      const region = req.userRegion;
       const email = verifyEmailVerificationToken(verificationToken);
       if (!email) {
         return res
@@ -211,6 +211,7 @@ const UserController = {
         firstName,
         lastName,
         phone,
+        region,
         // Other fields...
       });
 

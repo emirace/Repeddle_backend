@@ -1,8 +1,9 @@
-import m2s from 'mongoose-to-swagger';
-import User from '../model/user';
-import Product from '../model/product';
-import Category from '../model/category';
-import Article from '../model/article';
+import m2s from "mongoose-to-swagger";
+import User from "../model/user";
+import Product from "../model/product";
+import Category from "../model/category";
+import Article from "../model/article";
+import Order from "../model/order";
 
 const options = {};
 
@@ -11,6 +12,7 @@ const swaggerSchema = {
   Product: m2s(Product, options),
   Category: m2s(Category, options),
   Article: m2s(Article, options),
+  Order: m2s(Order, options),
 };
 
 export default swaggerSchema;

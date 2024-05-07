@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IAddress {
   apartment?: string;
@@ -18,7 +18,7 @@ export interface IUser extends Document {
   lastName: string;
   image?: string;
   email: string;
-  role: 'Admin' | 'User' | 'Seller';
+  role: "Admin" | "User" | "Seller";
   password: string;
   followers: string[];
   following: string[];
@@ -42,7 +42,7 @@ export interface IUser extends Document {
   active: boolean;
   influencer: boolean;
   isVerifiedEmail: boolean;
-  region: 'NGN' | 'ZAR';
+  region: "NGN" | "ZAR";
   rebundle: IRebundle;
   tokenVersion: string;
   delected: boolean;
@@ -78,16 +78,16 @@ const UserSchema = new Schema<IUser>(
     image: String,
     password: String,
     email: { type: String, required: true, unique: true },
-    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    wishlist: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    sold: [{ type: Schema.Types.ObjectId, ref: 'Product' }], // Assuming 'Product' model exists
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    wishlist: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    sold: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     about: String,
     dob: Date,
     activeLastUpdated: { type: Date, default: Date.now },
     usernameLastUpdated: { type: Date, default: Date.now },
-    buyers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    buyers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     rating: { type: Number, default: 0 },
     accountNumber: Number,
     phone: String,
@@ -102,7 +102,7 @@ const UserSchema = new Schema<IUser>(
     delected: { type: Boolean, default: false },
     influencer: Boolean,
     isVerifiedEmail: { type: Boolean, default: false },
-    region: { type: String, enum: ['NGN', 'ZAR'], default: 'NGN' },
+    region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },
     socketId: { type: String, default: null },
     rebundle: RebundleSchema,
   },
@@ -110,5 +110,5 @@ const UserSchema = new Schema<IUser>(
 );
 
 // Create and export the user model
-const User = mongoose.model<IUser & Document>('User', UserSchema);
+const User = mongoose.model<IUser & Document>("User", UserSchema);
 export default User;

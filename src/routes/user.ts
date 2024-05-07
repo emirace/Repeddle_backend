@@ -1,7 +1,7 @@
 // userRoutes.ts
 import express from "express";
 import UserController from "../controller/user";
-import { authorize } from "../middleware/user";
+import { authorize, extractUserRegion } from "../middleware/user";
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.post("/send-verification-email", UserController.sendVerificationEmail);
 
 router.post("/forgot-password", UserController.forgotPassword);
 
-router.post("/register", UserController.register);
+router.post("/register", extractUserRegion, UserController.register);
 
 // Login user
 router.post("/login", UserController.login);

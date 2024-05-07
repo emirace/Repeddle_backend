@@ -1,40 +1,95 @@
 // Import necessary modules and models
-import { Request, Response } from 'express';
-import Wallet from '../model/wallet';
-import Transaction from '../model/transaction';
-import { CustomRequest } from '../middleware/user';
+import { Request, Response } from "express";
+import Wallet from "../model/wallet";
+import Transaction from "../model/transaction";
+import { CustomRequest } from "../middleware/user";
+import mongoose from "mongoose";
+import Order from "../model/order";
+import { verifyPayment } from "../services/payment";
+import { performDeposit } from "../utils/wallet";
 
 // Controller to fund wallet with Flutterwave
-export async function fundWallet(req: Request, res: Response) {
+export async function fundWallet(req: CustomRequest, res: Response) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    // Implement the logic to process funding with Flutterwave
-    // This may involve interacting with Flutterwave APIs to initiate a payment
-    // Once the payment is successful, update the user's wallet balance and create a transaction record
-    // Example:
-    const { userId, amount } = req.body;
+    const userId = req.userId!;
+    const currency = req.userRegion!;
 
-    // Update wallet balance
-    const wallet = await Wallet.findOneAndUpdate(
-      { userId },
-      { $inc: { balance: amount } },
-      { new: true }
-    );
-    if (!wallet) {
+    const { amount, transactionId, paymentProvider } = req.body;
+
+    const existOrder = await Order.find({ transactionId }).session(session);
+
+    const existTransaction = await Transaction.findOne({
+      paymentTransactionId: transactionId,
+    });
+    if (existOrder.length > 0 || existTransaction) {
+      await session.abortTransaction();
+      session.endSession();
       return res
-        .status(404)
-        .json({ status: false, message: 'Wallet not found' });
+        .status(400)
+        .json({ status: false, message: "Possible dublicate transaction" });
     }
-    // Create transaction record
-    await Transaction.create({ walletId: wallet._id, amount, type: 'credit' });
+
+    const paymentVerification = await verifyPayment(
+      paymentProvider,
+      transactionId.toString()
+    );
+
+    if (
+      !paymentVerification.status ||
+      !paymentVerification.amount ||
+      !paymentVerification.currency
+    ) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ status: false, message: "Payment verification failed" });
+    }
+
+    if (
+      amount !== paymentVerification.amount ||
+      currency !== paymentVerification.currency
+    ) {
+      await session.abortTransaction();
+      session.endSession();
+
+      const errorMessage =
+        amount !== paymentVerification.amount
+          ? "Invalid transactionId amount"
+          : "Invalid transactionId currency";
+
+      return res.status(400).json({ status: false, message: errorMessage });
+    }
+
+    const deposit = await performDeposit({
+      userId,
+      currency,
+      amount,
+      paymentTransactionId: transactionId,
+      session,
+    });
+    if (!deposit.status) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        status: false,
+        message: deposit.message,
+      });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
 
     res
       .status(200)
-      .json({ status: true, message: 'Wallet funded successfully', wallet });
+      .json({ status: true, message: "Wallet funded successfully" });
   } catch (error) {
-    console.error('Error funding wallet:', error);
+    console.error("Error funding wallet:", error);
     res
       .status(500)
-      .json({ status: false, message: 'Error funding wallet', error });
+      .json({ status: false, message: "Error funding wallet", error });
   }
 }
 
@@ -42,12 +97,12 @@ export async function fundWallet(req: Request, res: Response) {
 export async function getUserBalance(req: CustomRequest, res: Response) {
   try {
     const { userId } = req;
-    const wallet = await Wallet.findOne({ userId });
+    const currency = req.userRegion;
+    var wallet;
+    wallet = await Wallet.findOne({ userId });
 
     if (!wallet) {
-      return res
-        .status(404)
-        .json({ status: false, message: 'Wallet not found' });
+      wallet = await Wallet.create({ userId, currency });
     }
 
     res.status(200).json({
@@ -56,10 +111,10 @@ export async function getUserBalance(req: CustomRequest, res: Response) {
       currency: wallet.currency,
     });
   } catch (error) {
-    console.error('Error getting user balance:', error);
+    console.error("Error getting user balance:", error);
     res
       .status(500)
-      .json({ status: false, message: 'Error getting user balance', error });
+      .json({ status: false, message: "Error getting user balance", error });
   }
 }
 
@@ -78,7 +133,7 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
     if (!wallet || wallet.balance < amount) {
       return res
         .status(400)
-        .json({ status: false, message: 'Insufficient balance' });
+        .json({ status: false, message: "Insufficient balance" });
     }
 
     // Deduct amount from wallet balance
@@ -86,17 +141,17 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
     await wallet.save();
 
     // Create transaction record for withdrawal
-    await Transaction.create({ walletId: wallet._id, amount, type: 'debit' });
+    await Transaction.create({ walletId: wallet._id, amount, type: "debit" });
 
     res.status(200).json({
       status: true,
-      message: 'Withdrawal request processed successfully',
+      message: "Withdrawal request processed successfully",
     });
   } catch (error) {
-    console.error('Error processing withdrawal request:', error);
+    console.error("Error processing withdrawal request:", error);
     res.status(500).json({
       status: false,
-      message: 'Error processing withdrawal request',
+      message: "Error processing withdrawal request",
       error,
     });
   }
