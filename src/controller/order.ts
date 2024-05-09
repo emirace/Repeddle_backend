@@ -1,13 +1,14 @@
 import { Response } from "express";
 import Product, { IProduct } from "../model/product";
-import Order, { IOrder } from "../model/order";
+import Order, { IDeliveryTrackingHistory, IOrder } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import { verifyPayment } from "../services/payment";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { performWithdrawal } from "../utils/wallet";
 import User from "../model/user";
 import { body, validationResult } from "express-validator";
 import Transaction from "../model/transaction";
+import { isUserSeller } from "../utils/order";
 
 export const createOrder = async (req: CustomRequest, res: Response) => {
   const session = await mongoose.startSession();
@@ -68,6 +69,13 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           return res.status(400).json({
             status: false,
             message: `Product not found for ID: ${item._d}`,
+          });
+        }
+
+        if (product.seller.toString() === userId) {
+          return res.status(400).json({
+            status: false,
+            message: `You can not purchase your item`,
           });
         }
 
@@ -233,8 +241,36 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
     // Extract user ID from request
     const userId = req.userId!;
 
-    // Fetch orders for the user
-    const orders = await Order.find({ buyer: userId });
+    // Extract orderId query parameter if exists
+    const orderId = req.query.orderId;
+
+    // Define the aggregation pipeline stages
+    const pipeline: any[] = [
+      {
+        $match: {
+          buyer: userId,
+        },
+      },
+    ];
+
+    // If orderId query parameter exists, add $match stage to filter by orderId
+    if (orderId) {
+      pipeline.push(
+        {
+          $addFields: {
+            tempOrderId: { $toString: "$_id" }, // Convert _id to string
+          },
+        },
+        {
+          $match: {
+            tempOrderId: { $regex: orderId, $options: "i" }, // Case-insensitive regex match
+          },
+        }
+      );
+    }
+
+    // Execute the aggregation pipeline
+    const orders = await Order.aggregate(pipeline);
 
     // Return the orders
     return res.status(200).json({ status: true, orders });
@@ -246,7 +282,6 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
   }
 };
 
-// Controller to get seller's sold orders
 export const getSellerSoldOrders = async (
   req: CustomRequest,
   res: Response
@@ -255,15 +290,43 @@ export const getSellerSoldOrders = async (
     // Extract seller ID from request
     const sellerId = req.userId!;
 
-    // Fetch sold orders for the seller where any item in the order belongs to the seller
-    const soldOrders = await Order.find({ "items.seller": sellerId });
+    // Extract orderId query parameter if exists
+    const orderId = req.query.orderId;
+
+    // Define the aggregation pipeline stages
+    const pipeline: any[] = [
+      {
+        $match: {
+          "items.seller": sellerId,
+        },
+      },
+    ];
+
+    // If orderId query parameter exists, add $match stage to filter by orderId
+    if (orderId) {
+      pipeline.push(
+        {
+          $addFields: {
+            tempOrderId: { $toString: "$_id" }, // Convert _id to string
+          },
+        },
+        {
+          $match: {
+            tempOrderId: { $regex: orderId, $options: "i" }, // Case-insensitive regex match
+          },
+        }
+      );
+    }
+
+    // Execute the aggregation pipeline
+    const soldOrders: IOrder[] = await Order.aggregate(pipeline);
 
     // Filter and return only the products belonging to the seller from each order
     const sellerSoldOrders = soldOrders.map((order) => {
       const sellerItems = order.items.filter(
         (item) => String(item.seller) === String(sellerId)
       );
-      return { ...order.toObject(), items: sellerItems };
+      return { ...order, items: sellerItems };
     });
 
     // Return the sold orders with filtered products belonging to the seller
@@ -273,5 +336,125 @@ export const getSellerSoldOrders = async (
     return res
       .status(500)
       .json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const getOrderById = async (req: CustomRequest, res: Response) => {
+  try {
+    // Extract order ID from request parameters
+    const orderId = req.params.orderId;
+
+    // Fetch the order by ID
+    const order: IOrder | null = await Order.findById(orderId);
+
+    // Check if the order exists
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if the user is authorized to access the order
+    const { isAdmin } = req;
+    const userId = req.userId!;
+    if (
+      !isAdmin &&
+      order.buyer.toString() !== userId &&
+      !isUserSeller(order, userId)
+    ) {
+      return res.status(401).json({
+        status: false,
+        message: "Not authorized to access this order",
+      });
+    }
+
+    // If the user is a seller, filter the items to include only those where the user is the seller
+    if (isUserSeller(order, userId)) {
+      order.items = order.items.filter(
+        (item) => item.seller.toString() === userId
+      );
+    }
+
+    // Return the order
+    return res.status(200).json({ status: true, order });
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
+  }
+};
+
+// Controller to update delivery tracking of an item in an order
+export const updateDeliveryTracking = async (
+  req: CustomRequest,
+  res: Response
+) => {
+  try {
+    // Extract order ID, item ID, and user ID from request parameters
+    const orderId = req.params.orderId;
+    const itemId = req.params.itemId;
+    const userId = req.userId; // Assuming userId is included in the request
+
+    // Extract new delivery tracking details from request body
+    const { status } = req.body;
+
+    // Fetch the order by ID
+    const order: IOrder | null = await Order.findById(orderId);
+
+    // Check if the order exists
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Find the item in the order by ID
+    const itemIndex = order.items.findIndex(
+      (item) => item.product.toString() === itemId
+    );
+
+    // Check if the item exists in the order
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in order" });
+    }
+
+    // Fetch the product associated with the item
+    const product = await Product.findById(order.items[itemIndex].product);
+
+    // Check if the product exists
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if the user is the seller of the product
+    if (product.seller.toString() !== userId) {
+      return res.status(403).json({
+        message: "Unauthorized: Only the seller can update delivery tracking",
+      });
+    }
+
+    // Get the current delivery tracking status of the item
+    const currentStatus: IDeliveryTrackingHistory = {
+      status: order.items[itemIndex].deliveryTracking.currentStatus.status,
+      timestamp:
+        order.items[itemIndex].deliveryTracking.currentStatus.timestamp,
+    };
+
+    // Add the current status to the delivery tracking history
+    order.items[itemIndex].deliveryTracking.history.push(currentStatus);
+
+    // Update the delivery tracking of the item
+    order.items[itemIndex].deliveryTracking.currentStatus = {
+      status: status,
+      timestamp: new Date(),
+    };
+
+    // Save the updated order
+    await order.save();
+
+    // Return success response
+    return res
+      .status(200)
+      .json({ message: "Delivery tracking updated successfully", order });
+  } catch (error) {
+    console.error("Error updating delivery tracking:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

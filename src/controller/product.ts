@@ -44,7 +44,7 @@ const ProductController = {
       } = req.query;
 
       const page = parseInt(initialPage as string) || 1;
-      const limit = parseInt(initialLimit as string) || 10;
+      const limit = parseInt(initialLimit as string) || 20;
 
       // Filter by region
       const query: any = { region: userRegion };
@@ -89,6 +89,53 @@ const ProductController = {
       // Paginate the products
       const products = await Product.find(query)
         .sort(sortOption)
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+      res.status(200).json({
+        status: true,
+        data: {
+          totalCount,
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          products,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res
+        .status(500)
+        .json({ status: false, message: "Error fetching products", error });
+    }
+  },
+
+  async getAllUserProducts(req: CustomRequest, res: Response) {
+    try {
+      const userRegion = req.userRegion;
+      const userId = req.userId;
+      let { page: initialPage, limit: initialLimit, search } = req.query;
+
+      const page = parseInt(initialPage as string) || 1;
+      const limit = parseInt(initialLimit as string) || 20;
+
+      // Filter by region
+      const query: any = { seller: userId, region: userRegion };
+
+      // Apply search filter to all relevant fields
+      if (search) {
+        const searchRegex = new RegExp(search as string, "i");
+        query.$or = [
+          { name: searchRegex },
+          { tags: searchRegex },
+          // Add more fields here as needed
+        ];
+      }
+
+      // Count total documents matching the query
+      const totalCount = await Product.countDocuments(query);
+
+      // Paginate the products
+      const products = await Product.find(query)
         .skip((page - 1) * limit)
         .limit(limit);
 

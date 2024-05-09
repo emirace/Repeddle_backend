@@ -130,6 +130,12 @@
  *       - Order
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: orderId
+ *         schema:
+ *           type: string
+ *         description: Optional. ID of the order to retrieve.
  *     responses:
  *       '200':
  *         description: Successful operation
@@ -172,6 +178,12 @@
  *     tags: [Order]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: orderId
+ *         schema:
+ *           type: string
+ *         description: Optional. ID of the order to retrieve.
  *     responses:
  *       200:
  *         description: A list of sold orders belonging to the seller.
@@ -191,4 +203,161 @@
  *         $ref: '#/components/schemas/UnauthorizedError'
  *       500:
  *         description: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /orders/{orderId}:
+ *   get:
+ *     summary: Get an order by ID
+ *     description: Retrieve detailed information about a specific order by its ID.
+ *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the order to retrieve
+ *     responses:
+ *       200:
+ *         description: Successful response with the retrieved order
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 order:
+ *                   $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: Unauthorized error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the user is not authorized to access the order
+ *       404:
+ *         description: Order not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the order with the provided ID was not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating an internal server error occurred
+ */
+
+/**
+ * @swagger
+ * /orders/{orderId}/items/{itemId}/delivery-tracking:
+ *   put:
+ *     summary: Update delivery tracking of an item in an order
+ *     description: Allows the seller to update the delivery tracking information of an item in an order.
+ *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         description: ID of the order
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         description: ID of the item in the order
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: New delivery tracking status
+ *     responses:
+ *       '200':
+ *         description: Delivery tracking updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                 order:
+ *                   $ref: '#/components/schemas/Order'
+ *       '400':
+ *         description: Bad request, order or item not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ *       '403':
+ *         description: Unauthorized, only the seller can update delivery tracking
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ *       '404':
+ *         description: Not found, order, item, or product not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
  */

@@ -181,6 +181,73 @@
 
 /**
  * @swagger
+ * /products/user:
+ *   get:
+ *     summary: Get all products of the logged-in user
+ *     description: Retrieve all products listed by the logged-in user, filtered by region and optional search query.
+ *     tags: [Product]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: The page number for pagination (default is 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: The number of products per page (default is 10)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword to filter products by name or tags (optional)
+ *     responses:
+ *       '200':
+ *         description: Success, returns a list of products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalCount:
+ *                       type: integer
+ *                       description: Total count of products matching the query
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ */
+
+/**
+ * @swagger
  * /products/{slug}:
  *   get:
  *     summary: Get a product by its slug.
