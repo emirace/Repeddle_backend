@@ -8,6 +8,7 @@ export interface ITransaction extends Document {
   description?: string;
   status: string;
   paymentTransactionId?: string;
+  meta: object;
 }
 
 const TransactionSchema = new Schema<ITransaction>(
@@ -19,6 +20,7 @@ const TransactionSchema = new Schema<ITransaction>(
     description: { type: String },
     status: { type: String },
     paymentTransactionId: { type: String },
+    meta: Object,
   },
   { timestamps: true }
 );

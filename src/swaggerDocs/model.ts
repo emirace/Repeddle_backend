@@ -4,6 +4,10 @@ import Product from "../model/product";
 import Category from "../model/category";
 import Article from "../model/article";
 import Order from "../model/order";
+import Brand from "../model/brand";
+import ContactUs from "../model/contactUs";
+import Newsletter from "../model/newsletter";
+import Transaction from "../model/transaction";
 
 const options = {};
 
@@ -13,6 +17,10 @@ const swaggerSchema = {
   Category: m2s(Category, options),
   Article: m2s(Article, options),
   Order: m2s(Order, options),
+  Brand: m2s(Brand, options),
+  ContactUs: m2s(ContactUs, options),
+  Newsletter: m2s(Newsletter, options),
+  Transaction: m2s(Transaction, options),
 };
 
 export default swaggerSchema;

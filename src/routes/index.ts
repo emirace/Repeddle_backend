@@ -5,7 +5,11 @@ import category from "./category";
 import message from "./message";
 import wallet from "./wallet";
 import article from "./article";
+import brand from "./brand";
 import order from "./order";
+import contactUs from "./contactUs";
+import newsletter from "./newsletter";
+import transaction from "./transaction";
 
 const router = express.Router();
 
@@ -22,5 +26,13 @@ router.use("/messages", message);
 router.use("/wallets", wallet);
 
 router.use("/orders", order);
+
+router.use("/brands", brand);
+
+router.use("/contactus", contactUs);
+
+router.use("/newsletters", newsletter);
+
+router.use("/transactions", transaction);
 
 export default router;

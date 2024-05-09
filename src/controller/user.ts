@@ -249,7 +249,10 @@ const UserController = {
       const { email, password } = req.body;
 
       // Find user by email
-      const user: IUser | null = await User.findOne({ email, delected: false });
+      const user: IUser | null = await User.findOne({
+        email: email.trim(),
+        delected: false,
+      });
 
       // If user not found or password does not match, return unauthorized
       if (!user || !(await bcrypt.compare(password, user.password))) {
