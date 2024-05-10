@@ -326,7 +326,14 @@ export const getSellerSoldOrders = async (
       const sellerItems = order.items.filter(
         (item) => String(item.seller) === String(sellerId)
       );
-      return { ...order, items: sellerItems };
+
+      const totalAmount = sellerItems.reduce((acc, item) => {
+        return (
+          acc + item.price + (item.deliveryOption ? item.deliveryOption.fee : 0)
+        );
+      }, 0);
+
+      return { ...order, items: sellerItems, totalAmount };
     });
 
     // Return the sold orders with filtered products belonging to the seller
@@ -456,5 +463,121 @@ export const updateDeliveryTracking = async (
   } catch (error) {
     console.error("Error updating delivery tracking:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getUserDailyOrdersSummary = async (
+  req: CustomRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId; // Assuming userId is extracted from the request
+    const { startDate, endDate } = req.query; // Assuming startDate and endDate are provided in the query parameters
+
+    // Parse start and end date strings to Date objects
+    const parsedStartDate = new Date(startDate as string);
+    const parsedEndDate = new Date(endDate as string);
+
+    const purchaseOrders = await Order.aggregate([
+      {
+        $match: {
+          buyer: userId,
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          numOrders: { $sum: 1 },
+          numSales: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+    const soldOrders = await Order.aggregate([
+      {
+        $match: {
+          "items.seller": userId,
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          numOrders: { $sum: 1 },
+          numSales: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+
+    // Aggregate purchased orders based on the day of creation within the specified time frame
+    const dailyPurchasedOrders: any[] = await Order.aggregate([
+      {
+        $match: {
+          buyer: userId,
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          orders: { $sum: 1 },
+          sales: { $sum: "$totalAmount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          orders: 1,
+          sales: 1,
+          type: "purchased",
+        },
+      },
+      {
+        $sort: { date: 1 },
+      },
+    ]);
+
+    // Aggregate sold orders based on the day of creation within the specified time frame
+    const dailySoldOrders: any[] = await Order.aggregate([
+      {
+        $match: {
+          "items.seller": userId,
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          orders: { $sum: 1 },
+          sales: { $sum: "$totalAmount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          orders: 1,
+          sales: 1,
+          type: "sold",
+        },
+      },
+      {
+        $sort: { date: 1 },
+      },
+    ]);
+
+    res.status(200).json({
+      status: true,
+      data: {
+        purchaseOrders,
+        soldOrders,
+        dailyPurchasedOrders,
+        dailySoldOrders,
+      },
+    });
+  } catch (error) {
+    console.log("Error fetching user daily orders summary", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
