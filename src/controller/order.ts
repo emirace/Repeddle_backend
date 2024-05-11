@@ -472,45 +472,25 @@ export const getUserDailyOrdersSummary = async (
 ) => {
   try {
     const userId = req.userId; // Assuming userId is extracted from the request
-    const { startDate, endDate } = req.query; // Assuming startDate and endDate are provided in the query parameters
+    let { startDate, endDate } = req.query; // Assuming startDate and endDate are provided in the query parameters
+
+    // Set default values for startDate and endDate if not provided
+    if (!startDate || !endDate) {
+      const today = new Date();
+      startDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ).toISOString();
+      endDate = today.toISOString();
+    }
 
     // Parse start and end date strings to Date objects
     const parsedStartDate = new Date(startDate as string);
     const parsedEndDate = new Date(endDate as string);
 
-    const purchaseOrders = await Order.aggregate([
-      {
-        $match: {
-          buyer: userId,
-          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          numOrders: { $sum: 1 },
-          numSales: { $sum: "$totalPrice" },
-        },
-      },
-    ]);
-    const soldOrders = await Order.aggregate([
-      {
-        $match: {
-          "items.seller": userId,
-          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          numOrders: { $sum: 1 },
-          numSales: { $sum: "$totalPrice" },
-        },
-      },
-    ]);
-
     // Aggregate purchased orders based on the day of creation within the specified time frame
-    const dailyPurchasedOrders: any[] = await Order.aggregate([
+    const dailyPurchasedOrders = await Order.aggregate([
       {
         $match: {
           buyer: userId,
@@ -522,24 +502,16 @@ export const getUserDailyOrdersSummary = async (
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           orders: { $sum: 1 },
           sales: { $sum: "$totalAmount" },
+          type: { $first: "purchased" },
         },
       },
       {
-        $project: {
-          _id: 0,
-          date: "$_id",
-          orders: 1,
-          sales: 1,
-          type: "purchased",
-        },
-      },
-      {
-        $sort: { date: 1 },
+        $sort: { _id: 1 },
       },
     ]);
 
     // Aggregate sold orders based on the day of creation within the specified time frame
-    const dailySoldOrders: any[] = await Order.aggregate([
+    const dailySoldOrders = await Order.aggregate([
       {
         $match: {
           "items.seller": userId,
@@ -551,21 +523,31 @@ export const getUserDailyOrdersSummary = async (
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           orders: { $sum: 1 },
           sales: { $sum: "$totalAmount" },
+          type: { $first: "sold" },
         },
       },
       {
-        $project: {
-          _id: 0,
-          date: "$_id",
-          orders: 1,
-          sales: 1,
-          type: "sold",
-        },
-      },
-      {
-        $sort: { date: 1 },
+        $sort: { _id: 1 },
       },
     ]);
+
+    const purchaseOrders = dailyPurchasedOrders.reduce(
+      (acc, { orders, sales }) => {
+        acc.numOrders += orders;
+        acc.numSales += sales;
+        return acc;
+      },
+      { numOrders: 0, numSales: 0 }
+    );
+
+    const soldOrders = dailySoldOrders.reduce(
+      (acc, { orders, sales }) => {
+        acc.numOrders += orders;
+        acc.numSales += sales;
+        return acc;
+      },
+      { numOrders: 0, numSales: 0 }
+    );
 
     res.status(200).json({
       status: true,

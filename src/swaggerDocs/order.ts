@@ -361,3 +361,100 @@
  *                   type: string
  *                   description: Error message
  */
+
+/**
+ * @swagger
+ * /orders/summary:
+ *   get:
+ *     summary: Get daily orders summary for a user
+ *     description: |
+ *       Retrieves daily order summary for a user based on their activities such as purchases and sales within a specified time frame.
+ *       If `startDate` and `endDate` are not provided, it queries for today's orders from the start of the day to the current time.
+ *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         description: Start date for the time frame (ISO format). Defaults to the start of the current day if not provided.
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: endDate
+ *         description: End date for the time frame (ISO format). Defaults to the current time if not provided.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response with daily orders summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the success status of the request
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     purchaseOrders:
+ *                       type: object
+ *                       properties:
+ *                         numOrders:
+ *                           type: integer
+ *                           description: Total number of purchase orders
+ *                         numSales:
+ *                           type: number
+ *                           description: Total sales amount from purchase orders
+ *                     soldOrders:
+ *                       type: object
+ *                       properties:
+ *                         numOrders:
+ *                           type: integer
+ *                           description: Total number of sold orders
+ *                         numSales:
+ *                           type: number
+ *                           description: Total sales amount from sold orders
+ *                     dailyPurchasedOrders:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             description: Date in "YYYY-MM-DD" format
+ *                           orders:
+ *                             type: integer
+ *                             description: Number of purchase orders for the day
+ *                           sales:
+ *                             type: number
+ *                             description: Total sales amount for the day
+ *                     dailySoldOrders:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             description: Date in "YYYY-MM-DD" format
+ *                           orders:
+ *                             type: integer
+ *                             description: Number of sold orders for the day
+ *                           sales:
+ *                             type: number
+ *                             description: Total sales amount for the day
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the failure status of the request
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the cause of the failure
+ */

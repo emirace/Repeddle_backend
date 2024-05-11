@@ -5,6 +5,7 @@ import {
   createOrder,
   getOrderById,
   getSellerSoldOrders,
+  getUserDailyOrdersSummary,
   getUserOrders,
   updateDeliveryTracking,
 } from "../controller/order";
@@ -25,6 +26,8 @@ router.put(
 router.get("/", authorize(), getUserOrders);
 
 router.get("/sold", authorize(), getSellerSoldOrders);
+
+router.get("/summary", authorize(), getUserDailyOrdersSummary);
 
 // Route to get an order by ID
 router.get("/:orderId", authorize(), getOrderById);
