@@ -30,3 +30,24 @@ export const getUserTransactions = async (
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+
+export const getTransactionById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Find the transaction by ID
+    const transaction: ITransaction | null = await Transaction.findById(id);
+
+    if (!transaction) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Transaction not found" });
+    }
+
+    // If the transaction is found, return it
+    res.status(200).json({ status: true, transaction });
+  } catch (error) {
+    console.log("Error fetching transaction by ID", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
