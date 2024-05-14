@@ -502,7 +502,6 @@ export const getUserDailyOrdersSummary = async (
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           orders: { $sum: 1 },
           sales: { $sum: "$totalAmount" },
-          type: { $first: "purchased" },
         },
       },
       {
@@ -519,11 +518,43 @@ export const getUserDailyOrdersSummary = async (
         },
       },
       {
+        $addFields: {
+          // Filter items to include only those where the seller matches userId
+          filteredItems: {
+            $filter: {
+              input: "$items",
+              as: "item",
+              cond: { $eq: ["$$item.seller", userId] },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          // Compute the total sales for each filtered item
+          filteredItems: {
+            $map: {
+              input: "$filteredItems",
+              as: "item",
+              in: {
+                $mergeObjects: [
+                  "$$item",
+                  {
+                    totalSales: {
+                      $sum: ["$$item.price", "$$item.deliveryOption.fee"],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           orders: { $sum: 1 },
-          sales: { $sum: "$totalAmount" },
-          type: { $first: "sold" },
+          sales: { $sum: { $sum: "$filteredItems.totalSales" } },
         },
       },
       {

@@ -8,7 +8,8 @@ const router = express.Router();
 router.use(extractUserRegion);
 
 router.get("/", ProductController.getAllProducts);
-router.get("/user", ProductController.getAllUserProducts);
+router.get("/user", authorize(), ProductController.getAllUserProducts);
+router.get("/summary", authorize(), ProductController.getUserProductSummary);
 router.get("/:slug", ProductController.getProductBySlug); // Use slug instead of ID
 router.post("/", authorize(), ProductController.createProduct);
 router.put("/:id", authorize(), ProductController.updateProduct);

@@ -117,7 +117,6 @@ const ProductController = {
 
       const page = parseInt(initialPage as string) || 1;
       const limit = parseInt(initialLimit as string) || 20;
-
       // Filter by region
       const query: any = { seller: userId, region: userRegion };
 
@@ -343,6 +342,63 @@ const ProductController = {
       return res
         .status(500)
         .json({ status: false, message: "Error deleting product", error });
+    }
+  },
+
+  async getUserProductSummary(req: CustomRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      const { startDate, endDate } = req.query;
+
+      // Set default values for startDate and endDate if not provided
+      const parsedStartDate = startDate
+        ? new Date(startDate as string)
+        : new Date();
+      const parsedEndDate = endDate ? new Date(endDate as string) : new Date();
+
+      // Validate date parsing
+      if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+        return res
+          .status(400)
+          .json({ status: false, message: "Invalid date format" });
+      }
+
+      // Aggregate products based on the day of creation within the specified time frame
+      const dailyProducts = await Product.aggregate([
+        {
+          $match: {
+            seller: userId,
+            createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            products: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 },
+        },
+      ]);
+
+      const totalProduct = dailyProducts.reduce(
+        (acc, product) => acc + product.products,
+        0
+      );
+
+      res.status(200).json({
+        status: true,
+        data: {
+          dailyProducts,
+          totalProduct,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting product summary:", error);
+      return res
+        .status(500)
+        .json({ status: false, message: "Error getting product summary" });
     }
   },
 };

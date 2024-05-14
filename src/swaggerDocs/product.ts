@@ -451,3 +451,84 @@
  *       500:
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /products/summary:
+ *   get:
+ *     summary: Get summary of products sold by the user within a specified time frame.
+ *     description: |
+ *       Returns the daily summary of products sold by the user, including the total number of products sold.
+ *     tags: [Product]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         description: Start date for the summary (optional, default is start of the current day).
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         description: End date for the summary (optional, default is current date and time).
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *     responses:
+ *       '200':
+ *         description: OK. Returns the summary of products sold by the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful.
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     dailyProducts:
+ *                       type: array
+ *                       description: List of daily product sales summary.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             format: date
+ *                             description: Date of the summary.
+ *                           products:
+ *                             type: integer
+ *                             description: Number of products sold on that date.
+ *                     totalProduct:
+ *                       type: integer
+ *                       description: Total number of products sold within the specified time frame.
+ *       '400':
+ *         description: Bad Request. Indicates that the provided start or end date is invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the reason for the bad request.
+ *       '500':
+ *         description: Internal Server Error. Indicates that an unexpected error occurred while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the reason for the internal server error.
+ */
