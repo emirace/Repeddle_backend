@@ -596,6 +596,47 @@ const UserController = {
         .json({ status: false, message: "Error fetching user", error });
     }
   },
+
+  // Controller method to get all users with pagination and search
+  async getAllUsers(req: Request, res: Response) {
+    try {
+      const { page = 1, limit = 20, search = "" } = req.query;
+      const query: any = {};
+
+      // If search parameter is provided, add search logic
+      if (search) {
+        query.$or = [
+          { username: { $regex: search, $options: "i" } },
+          { firstName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      // Pagination logic
+      const users: IUser[] = await User.find(query)
+        .limit(+limit)
+        .skip((+page - 1) * +limit)
+        .exec();
+
+      // Get total count of users (without pagination)
+      const totalCount: number = await User.countDocuments(query);
+
+      res.json({
+        status: true,
+        users,
+        totalPages: Math.ceil(totalCount / +limit),
+        currentPage: +page,
+        totalCount,
+      });
+    } catch (error) {
+      // Handle errors
+      console.error("Error fetching all users", error);
+      res
+        .status(500)
+        .json({ status: false, message: "Error fetching all users", error });
+    }
+  },
 };
 
 export default UserController;

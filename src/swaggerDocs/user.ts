@@ -939,3 +939,57 @@
  *                   type: string
  *                   description: Details about the error.
  */
+
+/**
+ * @swagger
+ * /users/admin:
+ *   get:
+ *     summary: Get all users with pagination and search feature
+ *     description: Retrieve a list of users with pagination and search functionality.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number for pagination (default is 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items to return per page (default is 20)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter users by username, first name, last name, or email
+ *     responses:
+ *       '200':
+ *         description: A JSON array of users with pagination information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates if the request was successful
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                   description: List of users
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *                 currentPage:
+ *                   type: integer
+ *                   description: Current page number
+ *                 totalCount:
+ *                   type: integer
+ *                   description: Total count of users
+ *       '500':
+ *         description: Internal server error
+ */

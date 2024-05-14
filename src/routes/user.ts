@@ -19,6 +19,8 @@ router.post("/login", UserController.login);
 // Get user profile
 router.get("/profile", authorize(), UserController.getProfile);
 
+router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
+
 // Update user profile
 router.put("/profile", authorize(), UserController.updateProfile);
 
