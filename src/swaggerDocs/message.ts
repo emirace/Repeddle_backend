@@ -45,7 +45,8 @@
  *                   type: boolean
  *                   description: Indicates the status of the operation
  *                 message:
- *                   type: object
+ *                   $ref: '#/components/schemas/Message'
+ *                   type: objectx
  *                   description: The saved message object
  *       '500':
  *         description: Failed to send message
@@ -94,19 +95,11 @@
  *                   items:
  *                     type: object
  *                     properties:
- *                       sender:
- *                         type: string
- *                         description: ID of the message sender
- *                       receiver:
- *                         type: string
- *                         description: ID of the message receiver
- *                       content:
- *                         type: string
- *                         description: Content of the message
- *                       timestamp:
- *                         type: string
- *                         format: date-time
- *                         description: Timestamp of the message
+ *                       status:
+ *                         type: boolean
+ *                         description: Indicates the success of the operation
+ *                       order:
+ *                         $ref: '#/components/schemas/Order'
  *       '500':
  *         description: Failed to retrieve messages
  *         content:

@@ -1,9 +1,9 @@
 // controllers/messageController.ts
 
-import { Request, Response } from 'express';
-import Message from '../model/message';
-import { CustomRequest } from '../middleware/user';
-import User from '../model/user';
+import { Request, Response } from "express";
+import Message from "../model/message";
+import { CustomRequest } from "../middleware/user";
+import User from "../model/user";
 
 // Send a message
 export const sendMessage = async (req: CustomRequest, res: Response) => {
@@ -17,14 +17,14 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
     if (!receiverUser) {
       return res
         .status(400)
-        .json({ status: false, message: 'Invalid receiver' });
+        .json({ status: false, message: "Invalid receiver" });
     }
 
     // Prevent user from messaging themselves
     if (sender === receiver) {
       return res
         .status(400)
-        .json({ status: false, message: 'Cannot message yourself' });
+        .json({ status: false, message: "Cannot message yourself" });
     }
 
     // Create a new message instance
@@ -40,23 +40,23 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
     const savedMessage = await newMessage.save();
 
     // Access the io instance from the app
-    const io = req.app.get('io');
+    const io = req.app.get("io");
 
     // Emit the new message event to the receiver's Socket ID if available
     if (receiverUser && receiverUser.socketId) {
-      io.to(receiverUser.socketId).emit('newMessage', {
+      io.to(receiverUser.socketId).emit("newMessage", {
         status: true,
         message: savedMessage,
       });
     }
 
     // Respond with the saved message
-    res.status(201).json({ status: true, messaage: savedMessage });
+    res.status(201).json({ status: true, message: savedMessage });
   } catch (error) {
     // Handle errors
     res
       .status(500)
-      .json({ status: false, message: 'Failed sending message', error });
+      .json({ status: false, message: "Failed sending message", error });
   }
 };
 
@@ -72,7 +72,7 @@ export const getMessages = async (req: CustomRequest, res: Response) => {
     if (!receiverUser) {
       return res
         .status(400)
-        .json({ status: false, message: 'Invalid receiver' });
+        .json({ status: false, message: "Invalid receiver" });
     }
 
     // Find messages between the sender and receiver
@@ -87,7 +87,7 @@ export const getMessages = async (req: CustomRequest, res: Response) => {
     res.json({ status: true, messages });
   } catch (error) {
     // Handle errors
-    res.status(500).json({ message: 'Error getting messages', error });
+    res.status(500).json({ message: "Error getting messages", error });
   }
 };
 
@@ -103,14 +103,14 @@ export const forwardMessage = async (req: CustomRequest, res: Response) => {
     if (!receiverUser) {
       return res
         .status(400)
-        .json({ status: false, message: 'Invalid receiver' });
+        .json({ status: false, message: "Invalid receiver" });
     }
 
     // Prevent user from messaging themselves
     if (sender === receiver) {
       return res
         .status(400)
-        .json({ status: false, message: 'Cannot message yourself' });
+        .json({ status: false, message: "Cannot message yourself" });
     }
 
     // Find the message to forward by its ID
@@ -118,7 +118,7 @@ export const forwardMessage = async (req: CustomRequest, res: Response) => {
     if (!messageToForward) {
       return res
         .status(404)
-        .json({ status: false, message: 'Message not found' });
+        .json({ status: false, message: "Message not found" });
     }
 
     // Create a new message based on the forwarded message
@@ -135,11 +135,11 @@ export const forwardMessage = async (req: CustomRequest, res: Response) => {
     const savedMessage = await newMessage.save();
 
     // Access the io instance from the app
-    const io = req.app.get('io');
+    const io = req.app.get("io");
 
     // Emit the new message event to the receiver's Socket ID if available
     if (receiverUser && receiverUser.socketId) {
-      io.to(receiverUser.socketId).emit('newMessage', {
+      io.to(receiverUser.socketId).emit("newMessage", {
         status: true,
         message: savedMessage,
       });
@@ -149,7 +149,7 @@ export const forwardMessage = async (req: CustomRequest, res: Response) => {
     res.status(201).json({ status: true, message: savedMessage });
   } catch (error) {
     // Handle errors
-    res.status(500).json({ message: 'Error forwarding message', error });
+    res.status(500).json({ message: "Error forwarding message", error });
   }
 };
 
@@ -166,14 +166,14 @@ export const replyToMessage = async (req: CustomRequest, res: Response) => {
     if (!receiverUser) {
       return res
         .status(400)
-        .json({ status: false, message: 'Invalid receiver' });
+        .json({ status: false, message: "Invalid receiver" });
     }
 
     // Prevent user from messaging themselves
     if (sender === receiver) {
       return res
         .status(400)
-        .json({ status: false, message: 'Cannot message yourself' });
+        .json({ status: false, message: "Cannot message yourself" });
     }
 
     // Find the message to reply to by its ID
@@ -181,7 +181,7 @@ export const replyToMessage = async (req: CustomRequest, res: Response) => {
     if (!repliedMessage) {
       return res
         .status(404)
-        .json({ status: false, message: 'Message not found' });
+        .json({ status: false, message: "Message not found" });
     }
 
     // Create a new message as a reply to the original message
@@ -198,11 +198,11 @@ export const replyToMessage = async (req: CustomRequest, res: Response) => {
     const savedMessage = await newMessage.save();
 
     // Access the io instance from the app
-    const io = req.app.get('io');
+    const io = req.app.get("io");
 
     // Emit the new message event to the receiver's Socket ID if available
     if (receiverUser && receiverUser.socketId) {
-      io.to(receiverUser.socketId).emit('newMessage', {
+      io.to(receiverUser.socketId).emit("newMessage", {
         status: true,
         message: savedMessage,
       });
@@ -212,7 +212,7 @@ export const replyToMessage = async (req: CustomRequest, res: Response) => {
     res.status(201).json({ status: true, message: savedMessage });
   } catch (error) {
     // Handle errors
-    res.status(500).json({ message: 'Error replying to message', error });
+    res.status(500).json({ message: "Error replying to message", error });
   }
 };
 
@@ -235,55 +235,55 @@ export const getConversations = async (
         $group: {
           _id: {
             $cond: {
-              if: { $eq: ['$sender', userId] },
-              then: '$receiver',
-              else: '$sender',
+              if: { $eq: ["$sender", userId] },
+              then: "$receiver",
+              else: "$sender",
             },
           },
-          lastMessage: { $last: '$$ROOT' },
+          lastMessage: { $last: "$$ROOT" },
         },
       },
       {
         $lookup: {
-          from: 'users', // Assuming the user collection name is 'users'
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user',
+          from: "users", // Assuming the user collection name is 'users'
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
         },
       },
       {
         $lookup: {
-          from: 'messages', // Assuming the message collection name is 'messages'
-          let: { otherUserId: '$_id' },
+          from: "messages", // Assuming the message collection name is 'messages'
+          let: { otherUserId: "$_id" },
           pipeline: [
             {
               $match: {
                 sender: userId,
-                receiver: '$$otherUserId',
+                receiver: "$$otherUserId",
                 read: false, // Only count unread messages
               },
             },
             {
-              $count: 'unreadCount',
+              $count: "unreadCount",
             },
           ],
-          as: 'unreadMessages',
+          as: "unreadMessages",
         },
       },
       {
         $project: {
           _id: 0,
-          userId: '$_id',
-          userName: { $arrayElemAt: ['$user.username', 0] }, // Assuming user document has a 'name' field
-          userImage: { $arrayElemAt: ['$user.image', 0] }, // Assuming user document has a 'name' field
+          userId: "$_id",
+          userName: { $arrayElemAt: ["$user.username", 0] }, // Assuming user document has a 'name' field
+          userImage: { $arrayElemAt: ["$user.image", 0] }, // Assuming user document has a 'name' field
           lastMessage: {
-            content: '$lastMessage.content',
-            createdAt: '$lastMessage.createdAt',
-            sender: '$lastMessage.sender',
-            receiver: '$lastMessage.receiver',
+            content: "$lastMessage.content",
+            createdAt: "$lastMessage.createdAt",
+            sender: "$lastMessage.sender",
+            receiver: "$lastMessage.receiver",
           },
           unreadCount: {
-            $ifNull: [{ $arrayElemAt: ['$unreadMessages.unreadCount', 0] }, 0],
+            $ifNull: [{ $arrayElemAt: ["$unreadMessages.unreadCount", 0] }, 0],
           },
         },
       },
@@ -291,6 +291,6 @@ export const getConversations = async (
 
     res.json({ conversations });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching conversations', error });
+    res.status(500).json({ message: "Error fetching conversations", error });
   }
 };
