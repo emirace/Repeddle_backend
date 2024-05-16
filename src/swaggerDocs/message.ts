@@ -10,7 +10,7 @@
  * /messages/send:
  *   post:
  *     summary: Send a message
- *     description: Endpoint to send a message to a user
+ *     description: Creates and sends a message between users.
  *     tags: [Message]
  *     security:
  *       - bearerAuth: []
@@ -21,21 +21,28 @@
  *           schema:
  *             type: object
  *             properties:
- *               receiver:
- *                 type: string
- *                 description: ID of the message receiver
  *               content:
  *                 type: string
- *                 description: Content of the message
+ *                 description: The content of the message.
+ *               conversationId:
+ *                 type: string
+ *                 description: The ID of the conversation. If not provided, a new conversation will be created.
  *               referencedUser:
  *                 type: string
- *                 description: ID of the referenced user (optional)
+ *                 description: The ID of the referenced user, if any.
  *               referencedProduct:
  *                 type: string
- *                 description: ID of the referenced product (optional)
+ *                 description: The ID of the referenced product, if any.
+ *               participantId:
+ *                 type: string
+ *                 description: The ID of the participant in case of creating a new conversation.
+ *               type:
+ *                 type: string
+ *                 enum: [Chat, Support, Report]
+ *                 description: The type of conversation. Required if creating a new conversation.
  *     responses:
  *       '201':
- *         description: Message sent successfully
+ *         description: Message sent successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -43,13 +50,11 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the status of the operation
+ *                   description: Indicates if the message was sent successfully.
  *                 message:
  *                   $ref: '#/components/schemas/Message'
- *                   type: objectx
- *                   description: The saved message object
- *       '500':
- *         description: Failed to send message
+ *       '400':
+ *         description: Bad request. The request body is missing required fields or contains invalid data.
  *         content:
  *           application/json:
  *             schema:
@@ -57,15 +62,28 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the status of the operation
+ *                   description: Indicates if the message sending failed.
  *                 message:
  *                   type: string
- *                   description: Error message
+ *                   description: Error message indicating the reason for the failure.
+ *       '500':
+ *         description: Internal server error. Something went wrong on the server side.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates if the message sending failed.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the reason for the failure.
  */
 
 /**
  * @swagger
- * /messages/{receiver}:
+ * /messages/{conversationId}:
  *   get:
  *     summary: Retrieve messages between two users
  *     description: Retrieve messages exchanged between the authenticated user and another user.
@@ -74,11 +92,11 @@
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: receiver
+ *         name: conversationId
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the other user to retrieve messages with
+ *         description: ID of the conversation
  *     responses:
  *       '200':
  *         description: Successfully retrieved messages
@@ -251,16 +269,23 @@
 
 /**
  * @swagger
- * /messages/conversations:
+ * /messages/conversations/{type}:
  *   get:
- *     summary: Get list of conversations for a user
- *     description: Retrieve a list of conversations for the authenticated user, along with the last message and unread message count for each conversation.
+ *     summary: Retrieve user conversations with additional details.
+ *     description: Fetches conversations where the user is a participant along with the last message, unread message count, and details of the other participant.
  *     tags: [Message]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: type
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The type of conversation (e.g., "Chat", "Support", "Report").
  *     responses:
  *       '200':
- *         description: Successfully retrieved conversations
+ *         description: Successful response. Returns an array of conversations with additional details.
  *         content:
  *           application/json:
  *             schema:
@@ -271,40 +296,43 @@
  *                   items:
  *                     type: object
  *                     properties:
- *                       userId:
+ *                       _id:
  *                         type: string
- *                         description: ID of the conversation partner
- *                       userName:
+ *                         description: Conversation ID.
+ *                       participants:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         description: List of participant IDs.
+ *                       type:
  *                         type: string
- *                         description: Name of the conversation partner
+ *                         description: Conversation type.
  *                       lastMessage:
  *                         type: object
- *                         description: Last message in the conversation
+ *                         description: Last message of the conversation.
  *                         properties:
- *                           content:
+ *                           _id:
  *                             type: string
- *                             description: Content of the last message
- *                           timestamp:
- *                             type: string
- *                             format: date-time
- *                             description: Timestamp of the last message
+ *                             description: Message ID.
  *                           sender:
  *                             type: string
- *                             description: ID of the sender of the last message
- *                           receiver:
+ *                             description: Sender ID of the last message.
+ *                           content:
  *                             type: string
- *                             description: ID of the receiver of the last message
+ *                             description: Content of the last message.
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                             description: Timestamp of the last message creation.
  *                       unreadCount:
  *                         type: number
- *                         description: Number of unread messages in the conversation
+ *                         description: Number of unread messages in the conversation.
+ *                       otherParticipantUsername:
+ *                         type: string
+ *                         description: Username of the other participant in the conversation.
+ *                       otherParticipantImage:
+ *                         type: string
+ *                         description: Image URL of the other participant in the conversation.
  *       '500':
- *         description: Error fetching conversations
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Internal server error. Indicates an error occurred while fetching conversations.
  */

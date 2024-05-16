@@ -1,34 +1,40 @@
 // models/Message.ts
 
-import mongoose, { Schema, Document, ObjectId } from 'mongoose';
+import mongoose, { Schema, Document, ObjectId } from "mongoose";
 
 export interface IMessage extends Document {
+  conversationId: ObjectId;
   sender: ObjectId;
   receiver: ObjectId;
   content: string;
   forwardedFrom?: string; // Optional field for forwarded message
   replyTo?: string; // Optional field for reply message
+  read: boolean;
   referencedUser?: string; // Optional field for referenced user ID
   referencedProduct?: string; // Optional field for referenced product ID
-  read: boolean;
 }
 
 const messageSchema: Schema = new Schema<IMessage>(
   {
-    sender: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    receiver: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    conversationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Conversaton",
+      required: true,
+    },
+    sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    receiver: { type: Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, required: true },
     forwardedFrom: { type: String },
     replyTo: { type: String },
-    referencedUser: { type: Schema.Types.ObjectId, ref: 'User' }, // Reference to User model
-    referencedProduct: { type: Schema.Types.ObjectId, ref: 'Product' }, // Reference to Product model
     read: { type: Boolean, default: false },
+    referencedUser: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
+    referencedProduct: { type: Schema.Types.ObjectId, ref: "Product" }, // Reference to Product model
   },
   {
     timestamps: true,
   }
 );
 
-const Message = mongoose.model<IMessage>('Message', messageSchema);
+const Message = mongoose.model<IMessage>("Message", messageSchema);
 
 export default Message;

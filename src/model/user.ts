@@ -83,6 +83,7 @@ const UserSchema = new Schema<IUser>(
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     wishlist: [{ type: Schema.Types.ObjectId, ref: "User" }],
     sold: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    role: { type: String, enum: ["Admin", "User", "Seller"], default: "User" },
     about: String,
     dob: Date,
     activeLastUpdated: { type: Date, default: Date.now },
