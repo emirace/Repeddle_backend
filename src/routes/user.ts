@@ -5,6 +5,19 @@ import { authorize, extractUserRegion } from "../middleware/user";
 
 const router = express.Router();
 
+// Get user profile
+router.get("/profile", authorize(), UserController.getProfile);
+
+router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
+
+router.get("/top-sellers", UserController.getTopSellers);
+
+router.get("/:username", UserController.getUserByUsername);
+
+router.get("/admin/:userId", authorize(["Admin"]), UserController.getUserById);
+
+router.get("/verify-email/:token", UserController.verifyEmail);
+
 router.post("/send-verification-email", UserController.sendVerificationEmail);
 
 router.post("/send-verification-email", UserController.sendVerificationEmail);
@@ -16,25 +29,20 @@ router.post("/register", extractUserRegion, UserController.register);
 // Login user
 router.post("/login", UserController.login);
 
-// Get user profile
-router.get("/profile", authorize(), UserController.getProfile);
-
-router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
-
 // Update user profile
 router.put("/profile", authorize(), UserController.updateProfile);
 
-router.post("/suggested-username", UserController.getSuggestedUsername);
+router.put(
+  "/admin/:userId",
+  authorize(["Admin"]),
+  UserController.updateUserById
+);
 
-router.get("/top-sellers", UserController.getTopSellers);
+router.post("/suggested-username", UserController.getSuggestedUsername);
 
 router.post("/follow/:userId", authorize(), UserController.followUser);
 
 router.post("/reset-password/:token", UserController.resetPassword);
-
-router.get("/:username", UserController.getUserByUsername);
-
-router.get("/verify-email/:token", UserController.verifyEmail);
 
 router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
 

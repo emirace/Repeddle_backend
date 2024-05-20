@@ -993,3 +993,208 @@
  *       '500':
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /users/admin/{userId}:
+ *   get:
+ *     summary: Get a user by ID
+ *     description: Retrieves a user's information by their ID, excluding sensitive fields like password and token version.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user to retrieve.
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60c72b2f9b1d4b5d88f60c7e"
+ *                     firstName:
+ *                       type: string
+ *                       example: "John"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Doe"
+ *                     username:
+ *                       type: string
+ *                       example: "johndoe"
+ *                     email:
+ *                       type: string
+ *                       example: "john.doe@example.com"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error getting user by id"
+ *                 error:
+ *                   type: string
+ *                   example: "Detailed error message"
+ */
+
+/**
+ * @swagger
+ * /users/admin/{userId}:
+ *   put:
+ *     summary: Update a user by ID
+ *     description: Updates a user's profile information by their ID. Only specified fields are allowed for update.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *               about:
+ *                 type: string
+ *               dob:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               rebundle:
+ *                 type: boolean
+ *               accountName:
+ *                 type: string
+ *               bankName:
+ *                 type: string
+ *               accountNumber:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               badge:
+ *                 type: string
+ *               active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60c72b2f9b1d4b5d88f60c7e"
+ *                     firstName:
+ *                       type: string
+ *                       example: "John"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Doe"
+ *                     username:
+ *                       type: string
+ *                       example: "johndoe"
+ *                     email:
+ *                       type: string
+ *                       example: "john.doeexample.com"
+ *       400:
+ *         description: Bad request, invalid field or username already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Field 'field_name' is not allowed for update"
+ *                 errors:
+ *                   type: string
+ *                   example: "Username already exist"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error updating user profile"
+ *                 error:
+ *                   type: string
+ *                   example: "Detailed error message"
+ */

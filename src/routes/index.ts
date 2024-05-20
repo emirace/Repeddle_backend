@@ -10,6 +10,7 @@ import order from "./order";
 import contactUs from "./contactUs";
 import newsletter from "./newsletter";
 import transaction from "./transaction";
+import image from "./image";
 
 const router = express.Router();
 
@@ -34,5 +35,7 @@ router.use("/contactus", contactUs);
 router.use("/newsletters", newsletter);
 
 router.use("/transactions", transaction);
+
+router.use("/images", image);
 
 export default router;

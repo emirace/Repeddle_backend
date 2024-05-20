@@ -24,6 +24,7 @@ interface UpdateFields {
   image?: string;
   about?: string;
   dob?: Date;
+  role?: string;
   accountNumber?: number;
   phone?: string;
   accountName?: string;
@@ -31,6 +32,8 @@ interface UpdateFields {
   bankName?: string;
   address?: IAddress;
   rebundle?: IRebundle;
+  badge?: boolean;
+  active?: boolean;
 }
 
 const UserController = {
@@ -635,6 +638,103 @@ const UserController = {
       res
         .status(500)
         .json({ status: false, message: "Error fetching all users", error });
+    }
+  },
+
+  async getUserById(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const user = await User.findById(userId).select(
+        "-password -tokenVersion -delected"
+      );
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+      res.status(200).json({ status: true, user });
+    } catch (error) {
+      console.error("Error getting user by id", error);
+      res
+        .status(500)
+        .json({ status: false, message: "Error getting user by id", error });
+    }
+  },
+
+  async updateUserById(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+
+      // Extract the fields to be updated from the request body
+      const updateFields: UpdateFields = req.body;
+
+      // Check if any of the fields is not allowed
+      const allowedFields: (keyof UpdateFields)[] = [
+        "firstName",
+        "username",
+        "lastName",
+        "image",
+        "about",
+        "dob",
+        "phone",
+        "address",
+        "rebundle",
+        "accountName",
+        "bankName",
+        "accountNumber",
+        "role",
+        "badge",
+        "active",
+      ];
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+
+      // Check if username is being updated and enforce the 30-day limit
+      if ("username" in updateFields) {
+        const existUsername = await User.findOne({
+          username: updateFields.username,
+        });
+        if (existUsername) {
+          return res
+            .status(400)
+            .json({ status: false, errors: "Username already exist" });
+        }
+        updateFields.usernameLastUpdated = new Date();
+      }
+
+      // Validate allowed fields
+      for (const field in updateFields) {
+        if (!allowedFields.includes(field as keyof UpdateFields)) {
+          return res.status(400).json({
+            status: false,
+            message: `Field '${field}' is not allowed for update`,
+          });
+        }
+      }
+
+      // Update user profile
+      const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
+        new: true,
+      }).select("-password -tokenVersion -delected");
+
+      if (!updatedUser) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+
+      res.status(200).json({ status: true, user: updatedUser });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Error updating user profile",
+        error,
+      });
     }
   },
 };
