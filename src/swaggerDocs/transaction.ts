@@ -13,6 +13,12 @@
  *     tags: [Transaction]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: transactionId
+ *         schema:
+ *           type: string
+ *         description: Optional. ID of the transaction.
  *     responses:
  *       '200':
  *         description: A list of transactions for the specified user
@@ -39,6 +45,12 @@
  *     tags: [Transaction]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: transactionId
+ *         schema:
+ *           type: string
+ *         description: Optional. ID of the transaction.
  *     responses:
  *       '200':
  *         description: A list of all transactions

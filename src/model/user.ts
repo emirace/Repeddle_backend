@@ -75,7 +75,7 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    image: { type: String, default: "" },
+    image: { type: String, default: "/api/images/image1716190469271.jpg" },
     password: String,
     email: { type: String, required: true, unique: true },
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
