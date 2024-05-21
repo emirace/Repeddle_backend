@@ -11,6 +11,7 @@ import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { CustomRequest } from "../middleware/user";
+import Product from "../model/product";
 
 const generateRandomNumber = () => {
   return Math.floor(Math.random() * 100);
@@ -577,9 +578,9 @@ const UserController = {
           .json({ status: false, message: "Username is required" });
       }
 
-      // Query the User model to find the user by username
+      // Query the User model to find the user by username and populate related fields
       const user = await User.findOne({ username }).select(
-        "username image about followers following numReviews _id rebundle sold createdAt region "
+        "username image about followers following numReviews _id rebundle sold createdAt region likes"
       );
 
       // If user not found, return 404
@@ -589,8 +590,29 @@ const UserController = {
           .json({ status: false, message: "User not found" });
       }
 
-      // Respond with the user data
-      res.status(200).json({ status: true, user });
+      // Fetch all products by the user, sold products, liked products, and selling products
+      const [allProducts, soldProducts, likedProducts, sellingProducts] =
+        await Promise.all([
+          Product.find({ seller: user._id }),
+          Product.find({ _id: { $in: user.sold } }),
+          Product.find({ _id: { $in: user.likes } }),
+          Product.find({ seller: user._id, countInStock: { $gt: 0 } }),
+        ]);
+
+      // Structure the response data
+      const responseData = {
+        status: true,
+        user,
+        products: {
+          all: allProducts,
+          sold: soldProducts,
+          liked: likedProducts,
+          selling: sellingProducts,
+        },
+      };
+
+      // Respond with the user data and products
+      res.status(200).json(responseData);
     } catch (error) {
       // Handle errors
       console.error("Error fetching user by username:", error);

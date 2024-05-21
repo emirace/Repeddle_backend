@@ -621,6 +621,25 @@
  *                       type: string
  *                       enum: [NGN, ZAR]
  *                       description: The user's region
+ *                 products:
+ *                   type: object
+ *                   properties:
+ *                     all:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     sold:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     liked:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     selling:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
  *       400:
  *         description: Bad request. Username parameter is missing.
  *       404:

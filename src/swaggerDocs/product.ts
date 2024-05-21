@@ -318,6 +318,72 @@
 
 /**
  * @swagger
+ * /products/product/{id}:
+ *   get:
+ *     summary: Get product by ID
+ *     description: Retrieve a product by its ID. Only accessible by the seller of the product or an admin.
+ *     tags: [Product]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the product to retrieve.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the product.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       403:
+ *         description: Forbidden. You are not authorized to access this resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "You are not authorized to access this resource."
+ *       404:
+ *         description: Product not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Product not found."
+ *       500:
+ *         description: Error fetching product.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error fetching product."
+ *                 error:
+ *                   type: string
+ */
+
+/**
+ * @swagger
  * /products:
  *   post:
  *     summary: Create a new product.

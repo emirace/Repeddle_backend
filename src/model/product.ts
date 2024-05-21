@@ -43,7 +43,7 @@ export interface IProduct extends Document {
   material?: string;
   description: string;
   sizes: ISize[];
-  buyers: any[];
+  buyers: ObjectId[];
   deliveryOption?: any[];
   condition: string;
   keyFeatures?: string;
@@ -67,7 +67,6 @@ export interface IProduct extends Document {
   isAvailable: boolean;
   sellingPriceHistory?: PriceHistory[];
   costPriceHistory?: PriceHistory[];
-  sold: ObjectId[];
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -123,7 +122,6 @@ const ProductSchema = new Schema<IProduct>(
     sellingPriceHistory: [{ value: Number, updatedAt: Date }],
     countInStock: { type: Number, default: 0 },
     costPriceHistory: [{ value: Number, updatedAt: Date }],
-    sold: [{ type: Schema.Types.ObjectId, ref: "User" }], // Array of user IDs who purchased the product
   },
   { timestamps: true }
 );

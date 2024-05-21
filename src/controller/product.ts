@@ -184,6 +184,38 @@ const ProductController = {
     }
   },
 
+  async getProductById(req: CustomRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const isAdmin = req.isAdmin;
+
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Product not found" });
+      }
+
+      if (product.seller.toString() !== userId.toString() && !isAdmin) {
+        return res
+          .status(403)
+          .json({
+            status: false,
+            message: "You are not authorized to access this resource.",
+          });
+      }
+
+      res.status(200).json({ status: true, product });
+    } catch (error) {
+      console.error("Error fetching product by ID:", error);
+      res
+        .status(500)
+        .json({ status: false, message: "Error fetching product", error });
+    }
+  },
+
   async createProduct(req: CustomRequest, res: Response) {
     try {
       const newProductData: Partial<IProduct> = {};

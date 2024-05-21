@@ -45,8 +45,8 @@ export interface IUser extends Document {
   region: "NGN" | "ZAR";
   rebundle: IRebundle;
   tokenVersion: string;
-  delected: boolean;
-  socketId: string;
+  deleted: boolean;
+  socketId?: string;
 }
 
 // Define the address schema
@@ -72,7 +72,7 @@ const RebundleSchema = new Schema<IRebundle>(
 // Define the user schema
 const UserSchema = new Schema<IUser>(
   {
-    username: { type: String, required: true, unique: true },
+    username: { type: String, required: true, unique: true, index: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     image: { type: String, default: "/api/images/image1716190469271.jpg" },
@@ -100,7 +100,7 @@ const UserSchema = new Schema<IUser>(
     numReviews: { type: Number, default: 0 },
     badge: Boolean,
     active: { type: Boolean, default: true },
-    delected: { type: Boolean, default: false },
+    deleted: { type: Boolean, default: false },
     influencer: Boolean,
     isVerifiedEmail: { type: Boolean, default: false },
     region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },

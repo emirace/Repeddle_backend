@@ -101,7 +101,7 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         // Update countInStock and product sizes in database
         await Product.findByIdAndUpdate(
           item._id,
-          { sizes: updatedSizes, $addToSet: { sold: userId } },
+          { sizes: updatedSizes, $addToSet: { buyers: userId } },
           { session }
         );
 
