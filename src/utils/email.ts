@@ -20,7 +20,7 @@ export async function sendVerificationEmail(
       from: { name: "Repeddle", address: "support@repeddle.com" },
       to: email,
       subject: "Email Verification",
-      text: `Click the following link to verify your email: http://example.com/verify-email/${token}`,
+      text: `Click the following link to verify your email: https://repeddle-frontend.vercel.app/auth/verify/${token}`,
     });
     console.log("Verification email sent successfully");
   } catch (error) {
@@ -39,7 +39,7 @@ export const sendResetPasswordEmail = async (
       from: { name: "Repeddle", address: "support@repeddle.com" },
       to: email,
       subject: "Reset Your Password",
-      html: `<p>Please click the following link to reset your password:</p><p>http://example.com/reset-password/${resetToken}</p>`,
+      html: `<p>Please click the following link to reset your password:</p><p>https://repeddle-frontend.vercel.app/auth/reset-password/${resetToken}</p>`,
     };
 
     // Send the email
