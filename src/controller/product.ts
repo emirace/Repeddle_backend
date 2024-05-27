@@ -158,7 +158,10 @@ const ProductController = {
   async getProductBySlug(req: CustomRequest, res: Response) {
     try {
       const { slug } = req.params;
-      const product = await Product.findOne({ slug });
+      const product = await Product.findOne({ slug }).populate(
+        "seller",
+        "username image address rating numReviews sold"
+      );
 
       if (!product) {
         return res
@@ -199,12 +202,10 @@ const ProductController = {
       }
 
       if (product.seller.toString() !== userId.toString() && !isAdmin) {
-        return res
-          .status(403)
-          .json({
-            status: false,
-            message: "You are not authorized to access this resource.",
-          });
+        return res.status(403).json({
+          status: false,
+          message: "You are not authorized to access this resource.",
+        });
       }
 
       res.status(200).json({ status: true, product });

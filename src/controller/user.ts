@@ -580,7 +580,7 @@ const UserController = {
 
       // Query the User model to find the user by username and populate related fields
       const user = await User.findOne({ username }).select(
-        "username image about followers following numReviews _id rebundle sold createdAt region likes"
+        "username image about rating  followers following numReviews _id rebundle sold buyers createdAt region likes"
       );
 
       // If user not found, return 404
