@@ -193,7 +193,7 @@ const ProductController = {
       const userId = req.userId!;
       const isAdmin = req.isAdmin;
 
-      const product = await Product.findById(id);
+      const product = await Product.findById(id).populate("seller", "username");
 
       if (!product) {
         return res
