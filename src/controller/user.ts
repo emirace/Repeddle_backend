@@ -56,7 +56,7 @@ const UserController = {
           .status(400)
           .json({ status: false, message: "Email address is required" });
       }
-      const token = await generateEmailVerificationToken(email);
+      const token = await generateEmailVerificationToken(email, "password");
       await sendVerificationEmail(email, token);
       res.status(200).json({
         status: true,
@@ -74,7 +74,7 @@ const UserController = {
   async verifyEmail(req: Request, res: Response) {
     try {
       const token = req.params.token;
-      const email = verifyEmailVerificationToken(token);
+      const email = await verifyEmailVerificationToken(token, "email");
       if (!email) {
         return res
           .status(400)
@@ -103,7 +103,10 @@ const UserController = {
       }
 
       // Generate reset password token
-      const resetToken = generateEmailVerificationToken(user.email);
+      const resetToken = await generateEmailVerificationToken(
+        user.email,
+        "password"
+      );
 
       // Send reset password email
       await sendResetPasswordEmail(user.email, resetToken);
@@ -128,7 +131,7 @@ const UserController = {
       const token = req.params.token;
       console.log(token);
       // Verify reset token
-      const email = verifyEmailVerificationToken(token);
+      const email = await verifyEmailVerificationToken(token, "password");
       console.log(email, token);
       if (!email) {
         return res.status(400).json({ message: "Invalid or expired token" });
@@ -185,7 +188,10 @@ const UserController = {
         token: verificationToken,
       } = req.body;
       const region = req.userRegion;
-      const email = verifyEmailVerificationToken(verificationToken);
+      const email = await verifyEmailVerificationToken(
+        verificationToken,
+        "email"
+      );
       if (!email) {
         return res
           .status(400)
@@ -327,6 +333,9 @@ const UserController = {
         "phone",
         "address",
         "rebundle",
+        "accountName",
+        "bankName",
+        "accountNumber",
       ];
 
       const user = await User.findById(userId);
@@ -354,7 +363,7 @@ const UserController = {
 
       // Check if once-update fields are being added or edited for the first time
       for (const field of onceUpdateFields) {
-        if (user[field] && field in updateFields) {
+        if (user[field]) {
           return res.status(400).json({
             status: false,
             message: `${field} has already been added and cannot be edited`,
