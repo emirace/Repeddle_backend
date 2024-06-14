@@ -103,6 +103,54 @@
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         comment:
+ *           type: string
+ *         userId:
+ *           type: string
+ *         replies:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Reply'
+ *         likes:
+ *           type: array
+ *           items:
+ *             type: string
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *     Reply:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         comment:
+ *           type: string
+ *         userId:
+ *           type: string
+ *         likes:
+ *           type: array
+ *           items:
+ *             type: string
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
+
+/**
+ * @swagger
  * /products:
  *   get:
  *     summary: Get products available in the user's region with pagination, search, filter, and sorting options.
@@ -597,4 +645,75 @@
  *                 message:
  *                   type: string
  *                   description: Error message indicating the reason for the internal server error.
+ */
+
+/**
+ * @swagger
+ * /products/{productId}/comments:
+ *   post:
+ *     summary: Add a comment to a product
+ *     tags: [Product]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the product
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - comment
+ *             properties:
+ *               comment:
+ *                 type: string
+ *                 description: The content of the comment
+ *     responses:
+ *       '201':
+ *         description: Comment added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 comment:
+ *                   $ref: '#/components/schemas/Comment'
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Comment is required
+ *       '404':
+ *         description: Product not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Product not found
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
  */

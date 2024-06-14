@@ -4,8 +4,13 @@ import { CustomRequest } from "../middleware/user";
 
 export const getAllTransactions = async (req: Request, res: Response) => {
   try {
-    // Extract transactionId query parameter if exists
+    // Extract query parameters
     const transactionId = req.query.transactionId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * limit;
 
     // Define the aggregation pipeline stages
     const pipeline: any[] = [];
@@ -24,10 +29,32 @@ export const getAllTransactions = async (req: Request, res: Response) => {
         }
       );
     }
-    // Find all transactions
+
+    // Add pagination stages
+    pipeline.push({ $skip: skip }, { $limit: limit });
+
+    // Find all transactions with pagination
     const transactions: ITransaction[] = await Transaction.aggregate(pipeline);
 
-    res.status(200).json({ status: true, transactions });
+    // Count total documents for pagination metadata
+    const totalDocsPipeline = [...pipeline];
+    totalDocsPipeline.pop(); // Remove $limit
+    totalDocsPipeline.pop(); // Remove $skip
+    totalDocsPipeline.push({ $count: "total" });
+    const totalDocsResult = await Transaction.aggregate(totalDocsPipeline);
+    const totalDocs = totalDocsResult.length > 0 ? totalDocsResult[0].total : 0;
+
+    // Send response
+    res.status(200).json({
+      status: true,
+      transactions,
+      pagination: {
+        totalDocs,
+        totalPages: Math.ceil(totalDocs / limit),
+        currentPage: page,
+        pageSize: transactions.length,
+      },
+    });
   } catch (error) {
     console.log("Error fetching all transactions", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -41,8 +68,13 @@ export const getUserTransactions = async (
   try {
     const { userId } = req;
 
-    // Extract transactionId query parameter if exists
+    // Extract query parameters
     const transactionId = req.query.transactionId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * limit;
 
     // Define the aggregation pipeline stages
     const pipeline: any[] = [
@@ -68,10 +100,31 @@ export const getUserTransactions = async (
       );
     }
 
-    // Find transactions for the specified user
+    // Add pagination stages
+    pipeline.push({ $skip: skip }, { $limit: limit });
+
+    // Find transactions for the specified user with pagination
     const transactions: ITransaction[] = await Transaction.aggregate(pipeline);
 
-    res.status(200).json({ status: true, transactions });
+    // Count total documents for pagination metadata
+    const totalDocsPipeline = [...pipeline];
+    totalDocsPipeline.pop(); // Remove $limit
+    totalDocsPipeline.pop(); // Remove $skip
+    totalDocsPipeline.push({ $count: "total" });
+    const totalDocsResult = await Transaction.aggregate(totalDocsPipeline);
+    const totalDocs = totalDocsResult.length > 0 ? totalDocsResult[0].total : 0;
+
+    // Send response
+    res.status(200).json({
+      status: true,
+      transactions,
+      pagination: {
+        totalDocs,
+        totalPages: Math.ceil(totalDocs / limit),
+        currentPage: page,
+        pageSize: transactions.length,
+      },
+    });
   } catch (error) {
     console.log("Error fetching user transactions", error);
     res.status(500).json({ status: false, message: "Internal server error" });

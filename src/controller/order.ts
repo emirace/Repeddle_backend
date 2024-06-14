@@ -272,8 +272,13 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
     // Execute the aggregation pipeline
     const orders = await Order.aggregate(pipeline);
 
+    const populatedOrders = await Order.populate(orders, {
+      path: "items.product",
+      select: "image name",
+    });
+
     // Return the orders
-    return res.status(200).json({ status: true, orders });
+    return res.status(200).json({ status: true, orders: populatedOrders });
   } catch (error) {
     console.error("Error fetching user orders:", error);
     return res

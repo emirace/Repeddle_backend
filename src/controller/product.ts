@@ -434,6 +434,39 @@ const ProductController = {
         .json({ status: false, message: "Error getting product summary" });
     }
   },
+
+  async createComment(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const { comment } = req.body;
+    const userId = req.userId!;
+
+    if (!comment) {
+      return res.status(400).json({ message: "Comment is required" });
+    }
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const newComment = {
+        comment,
+        userId,
+        replies: [],
+        likes: [],
+      };
+
+      product.comments.push(newComment);
+      await product.save();
+
+      res.status(201).json({ message: "Comment added", comment: newComment });
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
 
 export default ProductController;

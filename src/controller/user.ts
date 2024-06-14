@@ -25,7 +25,8 @@ interface UpdateFields {
   image?: string;
   about?: string;
   dob?: Date;
-  role?: string;
+  isSeller: boolean;
+  role: string;
   accountNumber?: number;
   phone?: string;
   accountName?: string;
@@ -316,6 +317,8 @@ const UserController = {
       // Extract the fields to be updated from the request body
       const updateFields: UpdateFields = req.body;
 
+      console.log(updateFields);
+
       // Fields that can only be updated once
       const onceUpdateFields: (keyof UpdateFields)[] = [
         "accountName",
@@ -363,7 +366,7 @@ const UserController = {
 
       // Check if once-update fields are being added or edited for the first time
       for (const field of onceUpdateFields) {
-        if (user[field]) {
+        if (user[field] && field in updateFields) {
           return res.status(400).json({
             status: false,
             message: `${field} has already been added and cannot be edited`,
@@ -379,6 +382,13 @@ const UserController = {
             message: `Field '${field}' is not allowed for update`,
           });
         }
+      }
+
+      if (
+        (updateFields.accountNumber || user.accountNumber) &&
+        (updateFields.address || user.address)
+      ) {
+        updateFields.isSeller = true;
       }
 
       // Update user profile
@@ -420,10 +430,16 @@ const UserController = {
           .status(400)
           .json({ message: "User is already being followed" });
       }
+      const currentUser = await User.findById(followerId);
 
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
       // Add the follower to the user's followers list
       userToUpdate.followers.push(followerId);
+      currentUser.following.push(userId);
       await userToUpdate.save();
+      await currentUser.save();
 
       res.status(200).json({ message: "User followed successfully" });
     } catch (error) {
@@ -450,11 +466,22 @@ const UserController = {
         return res.status(400).json({ message: "User is not being followed" });
       }
 
+      const currentUser = await User.findById(followerId);
+
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       // Remove the follower from the user's followers list
       userToUpdate.followers = userToUpdate.followers.filter(
         (id) => id !== followerId
       );
       await userToUpdate.save();
+
+      currentUser.following = currentUser.following.filter(
+        (id) => id !== userId
+      );
+      await currentUser.save();
 
       res.status(200).json({ message: "User unfollowed successfully" });
     } catch (error) {
@@ -712,6 +739,7 @@ const UserController = {
         "phone",
         "address",
         "rebundle",
+        "isSeller",
         "accountName",
         "bankName",
         "accountNumber",

@@ -7,6 +7,19 @@ export interface Review {
   like?: string;
 }
 
+export interface Reply {
+  userId: string;
+  comment: string;
+  likes: string[];
+}
+
+export interface Comment {
+  comment: string;
+  userId: string;
+  replies: Reply[];
+  likes: string[];
+}
+
 export interface Share {
   user: string | null;
   hashed: string;
@@ -56,6 +69,7 @@ export interface IProduct extends Document {
   shares: Share[];
   viewcount: ViewCount[];
   reviews: Review[];
+  comments: Comment[];
   badge?: boolean;
   meta: object;
   active?: boolean;
@@ -69,7 +83,42 @@ export interface IProduct extends Document {
   costPriceHistory?: PriceHistory[];
 }
 
-const ProductSchema = new Schema<IProduct>(
+const reviewSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+    comment: { type: String, required: true },
+    rating: { type: Number, required: true },
+    like: { type: Boolean },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const replySchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    comment: { type: String, required: true },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const commentSchema = new mongoose.Schema(
+  {
+    comment: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    replies: [replySchema],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const productSchema = new Schema<IProduct>(
   {
     name: { type: String, required: true },
     seller: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -103,14 +152,8 @@ const ProductSchema = new Schema<IProduct>(
       },
     ],
     viewcount: [{ hashed: String, time: Date }],
-    reviews: [
-      {
-        user: { type: Schema.Types.ObjectId, ref: "User" },
-        comment: String,
-        rating: Number,
-        like: String,
-      },
-    ],
+    reviews: [reviewSchema],
+    comments: [commentSchema],
     meta: Schema.Types.Mixed,
     active: { type: Boolean, default: true },
     badge: { type: Boolean, default: false },
@@ -126,6 +169,6 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-const Product = mongoose.model<IProduct>("Product", ProductSchema);
+const Product = mongoose.model<IProduct>("Product", productSchema);
 
 export default Product;

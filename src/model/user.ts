@@ -36,6 +36,7 @@ export interface IUser extends Document {
   accountName?: string;
   allowNewsletter: boolean;
   bankName?: string;
+  isSeller?: boolean;
   address?: IAddress;
   numReviews: number;
   badge: boolean;
@@ -83,7 +84,8 @@ const UserSchema = new Schema<IUser>(
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     wishlist: [{ type: Schema.Types.ObjectId, ref: "User" }],
     sold: [{ type: Schema.Types.ObjectId, ref: "Product" }],
-    role: { type: String, enum: ["Admin", "User", "Seller"], default: "User" },
+    role: { type: String, enum: ["Admin", "User"], default: "User" },
+    isSeller: { type: Boolean, default: false },
     about: { type: String },
     dob: Date,
     activeLastUpdated: { type: Date, default: Date.now },

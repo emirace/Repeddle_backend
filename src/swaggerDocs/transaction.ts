@@ -9,7 +9,7 @@
  * @swagger
  * /transactions/user:
  *   get:
- *     summary: Get transactions for a specific user
+ *     summary: Get user transactions
  *     tags: [Transaction]
  *     security:
  *       - bearerAuth: []
@@ -19,9 +19,21 @@
  *         schema:
  *           type: string
  *         description: Optional. ID of the transaction.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Optional. Page number for pagination. Default is 1.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Optional. Number of transactions per page. Default is 10.
  *     responses:
  *       '200':
- *         description: A list of transactions for the specified user
+ *         description: A list of user transactions
  *         content:
  *           application/json:
  *             schema:
@@ -33,6 +45,21 @@
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Transaction'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalDocs:
+ *                       type: integer
+ *                       description: Total number of transactions
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of transactions on the current page
  *       '500':
  *         description: Internal server error
  */
@@ -51,6 +78,18 @@
  *         schema:
  *           type: string
  *         description: Optional. ID of the transaction.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Optional. Page number for pagination. Default is 1.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Optional. Number of transactions per page. Default is 10.
  *     responses:
  *       '200':
  *         description: A list of all transactions
@@ -65,6 +104,21 @@
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Transaction'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalDocs:
+ *                       type: integer
+ *                       description: Total number of transactions
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of transactions on the current page
  *       '500':
  *         description: Internal server error
  */
