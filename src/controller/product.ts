@@ -467,6 +467,292 @@ const ProductController = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+
+  // Like a comment on a product
+  async likeComment(req: CustomRequest, res: Response) {
+    const { productId, commentId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // @ts-ignore
+      const comment = product.comments.id(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      if (!comment.likes.includes(userId)) {
+        comment.likes.push(userId);
+        await product.save();
+      }
+
+      res.status(200).json({ message: "Comment liked", comment });
+    } catch (error) {
+      console.error("Error liking comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Unlike a comment on a product
+  async unlikeComment(req: CustomRequest, res: Response) {
+    const { productId, commentId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      // @ts-ignore
+      const comment = product.comments.id(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      const likeIndex = comment.likes.indexOf(userId);
+      if (likeIndex !== -1) {
+        comment.likes.splice(likeIndex, 1);
+        await product.save();
+      }
+
+      res.status(200).json({ message: "Comment unliked", comment });
+    } catch (error) {
+      console.error("Error unliking comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Reply to a comment on a product
+  async replyToComment(req: CustomRequest, res: Response) {
+    const { productId, commentId } = req.params;
+    const userId = req.userId;
+    const { comment } = req.body;
+
+    if (!comment) {
+      return res.status(400).json({ message: "Comment is required" });
+    }
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // @ts-ignore
+      const parentComment = product.comments.id(commentId);
+
+      if (!parentComment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      const newReply = {
+        userId,
+        comment,
+        likes: [],
+      };
+
+      parentComment.replies.push(newReply);
+      await product.save();
+
+      res.status(200).json({ message: "Reply added", parentComment });
+    } catch (error) {
+      console.error("Error replying to comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Like a reply to a comment on a product
+  async likeReply(req: CustomRequest, res: Response) {
+    const { productId, commentId, replyId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // @ts-ignore
+      const comment = product.comments.id(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      const reply = comment.replies.id(replyId);
+
+      if (!reply) {
+        return res.status(404).json({ message: "Reply not found" });
+      }
+
+      if (!reply.likes.includes(userId)) {
+        reply.likes.push(userId);
+        await product.save();
+      }
+
+      res.status(200).json({ message: "Reply liked", reply });
+    } catch (error) {
+      console.error("Error liking reply:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Unlike a reply to a comment on a product
+  async unlikeReply(req: CustomRequest, res: Response) {
+    const { productId, commentId, replyId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // @ts-ignore
+      const comment = product.comments.id(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      const reply = comment.replies.id(replyId);
+
+      if (!reply) {
+        return res.status(404).json({ message: "Reply not found" });
+      }
+
+      const likeIndex = reply.likes.indexOf(userId);
+      if (likeIndex !== -1) {
+        reply.likes.splice(likeIndex, 1);
+        await product.save();
+      }
+
+      res.status(200).json({ message: "Reply unliked", reply });
+    } catch (error) {
+      console.error("Error unliking reply:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  async submitReview(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const userId = req.userId!;
+    const { comment, rating, like } = req.body;
+
+    if (!comment || rating == null) {
+      return res
+        .status(400)
+        .json({ message: "Comment and rating are required" });
+    }
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // Check if user bought the product
+      const hasBoughtProduct = product.buyers.some(
+        (buyerId) => buyerId.toString() === userId
+      );
+      if (!hasBoughtProduct) {
+        return res
+          .status(403)
+          .json({ message: "You can only review products you have bought" });
+      }
+
+      // Check if user has already reviewed the product
+      const hasReviewed = product.reviews.some(
+        (review) => review.user.toString() === userId
+      );
+      if (hasReviewed) {
+        return res
+          .status(403)
+          .json({ message: "You have already reviewed this product" });
+      }
+
+      const newReview = {
+        user: userId,
+        comment,
+        rating,
+        like,
+      };
+
+      product.reviews.push(newReview);
+      product.rating =
+        product.reviews.reduce((acc, review) => acc + review.rating, 0) /
+        product.reviews.length;
+      await product.save();
+
+      res.status(200).json({ message: "Review submitted", review: newReview });
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Like a product
+  async likeProduct(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const userId = req.userId!;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      if (!product.likes.includes(userId)) {
+        product.likes.push(userId);
+        await product.save();
+      }
+
+      res.status(200).json({ message: "Product liked", likes: product.likes });
+    } catch (error) {
+      console.error("Error liking product:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Unlike a product
+  async unlikeProduct(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const userId = req.userId!;
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const likeIndex = product.likes.indexOf(userId);
+      if (likeIndex !== -1) {
+        product.likes.splice(likeIndex, 1);
+        await product.save();
+      }
+
+      res
+        .status(200)
+        .json({ message: "Product unliked", likes: product.likes });
+    } catch (error) {
+      console.error("Error unliking product:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
 
 export default ProductController;

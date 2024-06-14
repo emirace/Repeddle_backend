@@ -57,7 +57,8 @@ const UserController = {
           .status(400)
           .json({ status: false, message: "Email address is required" });
       }
-      const token = await generateEmailVerificationToken(email, "password");
+      const token = await generateEmailVerificationToken(email, "email");
+      console.log(token);
       await sendVerificationEmail(email, token);
       res.status(200).json({
         status: true,
@@ -76,6 +77,7 @@ const UserController = {
     try {
       const token = req.params.token;
       const email = await verifyEmailVerificationToken(token, "email");
+
       if (!email) {
         return res
           .status(400)
