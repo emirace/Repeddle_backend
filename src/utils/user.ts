@@ -33,7 +33,9 @@ export async function generateEmailVerificationToken(
   }
 
   const token = jwt.sign({ email }, secretKey, { expiresIn: "1h" });
-  await Token.create({ type, token });
+  if (type === "password") {
+    await Token.create({ type, token });
+  }
 
   return token;
 }
@@ -47,21 +49,24 @@ export async function verifyEmailVerificationToken(
       console.error("Secret key not found");
       return null;
     }
+    if (type === "password") {
+      const tokenDoc = await Token.findOne({ token, type });
 
-    const tokenDoc = await Token.findOne({ token, type });
+      if (!tokenDoc) {
+        console.error("Invalid token");
+        return null;
+      }
 
-    if (!tokenDoc) {
-      console.error("Invalid token");
-      return null;
-    }
-
-    if (tokenDoc.used) {
-      console.error("Token has already been used");
-      return null;
+      if (tokenDoc.used) {
+        console.error("Token has already been used");
+        return null;
+      }
     }
 
     const decoded = jwt.verify(token, secretKey) as { email: string };
-    await Token.updateOne({ token }, { $set: { used: true } });
+    if (type === "password") {
+      await Token.updateOne({ token }, { $set: { used: true } });
+    }
     return decoded.email;
   } catch (error) {
     console.error("Error verifying email verification token:", error);

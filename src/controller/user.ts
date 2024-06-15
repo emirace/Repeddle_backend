@@ -52,14 +52,27 @@ const UserController = {
         return res.status(400).json({ status: false, errors: errors.array() });
       }
       const email = req.body.email;
+
       if (!email) {
         return res
           .status(400)
           .json({ status: false, message: "Email address is required" });
       }
-      const token = await generateEmailVerificationToken(email, "email");
-      console.log(token);
-      await sendVerificationEmail(email, token);
+
+      const user = await User.findOne({ email });
+      if (user) {
+        // Generate reset password token
+        const resetToken = await generateEmailVerificationToken(
+          user.email,
+          "password"
+        );
+
+        // Send reset password email
+        await sendResetPasswordEmail(user.email, resetToken);
+      } else {
+        const token = await generateEmailVerificationToken(email, "email");
+        await sendVerificationEmail(email, token);
+      }
       res.status(200).json({
         status: true,
         message: "Verification email sent successfully",
