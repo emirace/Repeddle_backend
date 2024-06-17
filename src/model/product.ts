@@ -49,7 +49,7 @@ export interface IProduct extends Document {
   tags: string[];
   video?: string;
   brand?: string;
-  color?: string;
+  color?: string[];
   mainCategory: string;
   category?: string;
   subCategory?: string;
@@ -127,7 +127,7 @@ const productSchema = new Schema<IProduct>(
     tags: { type: [String], required: true },
     video: String,
     brand: String,
-    color: String,
+    color: [{ type: String }],
     mainCategory: { type: String, required: true },
     category: String,
     subCategory: String,
