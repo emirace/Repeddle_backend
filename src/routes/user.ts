@@ -12,6 +12,8 @@ router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
 
 router.get("/top-sellers", UserController.getTopSellers);
 
+router.get("/users/:userId/wishlist", UserController.getUserWishlist);
+
 router.get("/:username", UserController.getUserByUsername);
 
 router.get("/admin/:userId", authorize(["Admin"]), UserController.getUserById);
@@ -29,6 +31,14 @@ router.post("/register", extractUserRegion, UserController.register);
 // Login user
 router.post("/login", UserController.login);
 
+router.post("/suggested-username", UserController.getSuggestedUsername);
+
+router.post("/wishlist", UserController.addProductToWishlist);
+
+router.post("/follow/:userId", authorize(), UserController.followUser);
+
+router.post("/reset-password/:token", UserController.resetPassword);
+
 // Update user profile
 router.put("/profile", authorize(), UserController.updateProfile);
 
@@ -38,15 +48,11 @@ router.put(
   UserController.updateUserById
 );
 
-router.post("/suggested-username", UserController.getSuggestedUsername);
-
-router.post("/follow/:userId", authorize(), UserController.followUser);
-
-router.post("/reset-password/:token", UserController.resetPassword);
-
-router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
-
 // Delete user account
 router.delete("/profile", authorize(), UserController.deleteAccount);
+
+router.delete("/wishlist/:productId", UserController.removeProductFromWishList);
+
+router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
 
 export default router;

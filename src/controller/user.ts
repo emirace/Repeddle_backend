@@ -813,6 +813,97 @@ const UserController = {
       });
     }
   },
+
+  async addProductToWishlist(req: CustomRequest, res: Response) {
+    const { userId } = req;
+    const { productId } = req.body;
+    try {
+      if (!productId) {
+        return res
+          .status(400)
+          .json({ status: false, message: "Product ID is required" });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+
+      const productExists = user.wishlist.includes(productId);
+
+      if (productExists) {
+        res
+          .status(400)
+          .json({ status: false, message: "Product already in wishlist" });
+        return;
+      }
+      user.wishlist.push(productId);
+      await user.save();
+
+      res.status(201).json({
+        status: true,
+        message: "Product added to wishlist",
+        wishlist: user.wishlist,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Internal server error",
+        error,
+      });
+    }
+  },
+  async removeProductFromWishList(req: CustomRequest, res: Response) {
+    try {
+      const { productId } = req.params;
+      const userId = req.userId;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ status: false, message: "User not found" });
+        return;
+      }
+
+      user.wishlist = user.wishlist.filter((id) => id !== productId);
+      await user.save();
+
+      res.status(200).json({
+        status: true,
+        message: "Product removed from wishlist",
+        wishlist: user.wishlist,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Internal server error",
+        error,
+      });
+    }
+  },
+  async getUserWishlist(req: CustomRequest, res: Response) {
+    try {
+      const userId = req.userId;
+
+      const user = await User.findById(userId).populate("wishlist");
+      if (!user) {
+        res.status(404).json({ status: false, message: "User not found" });
+        return;
+      }
+
+      res.status(200).json({
+        status: true,
+        wishlist: user.wishlist,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Internal server error",
+        error,
+      });
+    }
+  },
 };
 
 export default UserController;

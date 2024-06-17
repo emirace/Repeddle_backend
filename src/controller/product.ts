@@ -3,6 +3,7 @@ import Product, { IProduct, ISize } from "../model/product";
 import { CustomRequest } from "../middleware/user";
 import { generateUniqueSlug } from "../utils/product";
 import { ObjectId } from "mongoose";
+import User from "../model/user";
 
 const allowedFields: (keyof IProduct)[] = [
   "name",
@@ -715,9 +716,20 @@ const ProductController = {
         return res.status(404).json({ message: "Product not found" });
       }
 
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       if (!product.likes.includes(userId)) {
         product.likes.push(userId);
         await product.save();
+      }
+
+      if (!user.likes.includes(productId)) {
+        user.likes.push(productId);
+        await user.save();
       }
 
       res.status(200).json({ message: "Product liked", likes: product.likes });
@@ -739,10 +751,22 @@ const ProductController = {
         return res.status(404).json({ message: "Product not found" });
       }
 
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       const likeIndex = product.likes.indexOf(userId);
       if (likeIndex !== -1) {
         product.likes.splice(likeIndex, 1);
         await product.save();
+      }
+
+      const userLikeIndex = user.likes.indexOf(productId);
+      if (userLikeIndex !== -1) {
+        user.likes.splice(userLikeIndex, 1);
+        await user.save();
       }
 
       res
