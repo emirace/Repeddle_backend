@@ -159,10 +159,21 @@ const ProductController = {
   async getProductBySlug(req: CustomRequest, res: Response) {
     try {
       const { slug } = req.params;
-      const product = await Product.findOne({ slug }).populate(
-        "seller",
-        "username image address rating numReviews sold"
-      );
+      const product = await Product.findOne({ slug })
+        .populate("seller", "username image address rating numReviews sold")
+        .populate({
+          path: "comments.userId",
+          select: "username image",
+        })
+        .populate({
+          path: "comments.replies.userId",
+          select: "username image",
+        })
+        .populate({
+          path: "reviews.user",
+          select: "username image",
+        })
+        .exec();
 
       if (!product) {
         return res
