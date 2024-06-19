@@ -79,29 +79,45 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           });
         }
 
-        const selectedSizeIndex = product.sizes.findIndex(
-          (size) => size.size === item.selectedSize
-        );
-        if (
-          selectedSizeIndex === -1 ||
-          product.sizes[selectedSizeIndex].quantity < item.quantity
-        ) {
-          await session.abortTransaction();
-          session.endSession();
-          return res.status(400).json({
-            status: false,
-            message: `Not enough stock available for product: ${product.name}, size: ${item.selectedSize}`,
-          });
+        const updatedSizes = [...product.sizes];
+
+        if (item.selectedSize) {
+          const selectedSizeIndex = product.sizes.findIndex(
+            (size) => size.size === item.selectedSize
+          );
+          if (
+            selectedSizeIndex === -1 ||
+            product.sizes[selectedSizeIndex].quantity < item.quantity
+          ) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({
+              status: false,
+              message: `Not enough stock available for product: ${product.name}, size: ${item.selectedSize}`,
+            });
+          }
+          updatedSizes[selectedSizeIndex].quantity -= item.quantity;
+        } else {
+          if (product.countInStock < item.quantity) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({
+              status: false,
+              message: `Not enough stock available for product: ${product.name}`,
+            });
+          }
         }
 
-        // Reduce the quantity of the selected size
-        const updatedSizes = [...product.sizes];
-        updatedSizes[selectedSizeIndex].quantity -= item.quantity;
-
         // Update countInStock and product sizes in database
+        const countInStock = product.countInStock - item.quantity;
+
         await Product.findByIdAndUpdate(
           item._id,
-          { sizes: updatedSizes, $addToSet: { buyers: userId } },
+          {
+            sizes: updatedSizes,
+            countInStock,
+            $addToSet: { buyers: userId },
+          },
           { session }
         );
 
