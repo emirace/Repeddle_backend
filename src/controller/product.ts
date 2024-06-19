@@ -18,6 +18,7 @@ const allowedFields: (keyof IProduct)[] = [
   "material",
   "description",
   "countInStock",
+  "deliveryOption",
   "sizes",
   "condition",
   "keyFeatures",
