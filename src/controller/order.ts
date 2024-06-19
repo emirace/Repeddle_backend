@@ -350,7 +350,9 @@ export const getSellerSoldOrders = async (
 
       const totalAmount = sellerItems.reduce((acc, item) => {
         return (
-          acc + item.price + (item.deliveryOption ? item.deliveryOption.fee : 0)
+          acc +
+          item.price +
+          (item.deliveryOption ? item.deliveryOption.value : 0)
         );
       }, 0);
 
@@ -562,7 +564,7 @@ export const getUserDailyOrdersSummary = async (
                   "$$item",
                   {
                     totalSales: {
-                      $sum: ["$$item.price", "$$item.deliveryOption.fee"],
+                      $sum: ["$$item.price", "$$item.deliveryOption.value"],
                     },
                   },
                 ],
