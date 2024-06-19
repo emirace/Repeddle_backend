@@ -6,6 +6,7 @@ export const verifyPayment = async (
   provider: string,
   transactionId: string
 ): Promise<{ status: boolean; amount?: number; currency?: string }> => {
+  console.log("flutterKey", flutterwaveKey);
   switch (provider) {
     case "flutterwave":
       const flutterwave = new (Flutterwave as any)(
