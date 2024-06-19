@@ -376,7 +376,10 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
     const orderId = req.params.orderId;
 
     // Fetch the order by ID
-    const order: IOrder | null = await Order.findById(orderId);
+    const order: IOrder | null = await Order.findById(orderId)
+      .populate("items.seller", "username imwge firstName lastName")
+      .populate("buyer", "username imwge firstName lastName")
+      .populate("items.product");
 
     // Check if the order exists
     if (!order) {
