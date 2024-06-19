@@ -11,6 +11,7 @@ import contactUs from "./contactUs";
 import newsletter from "./newsletter";
 import transaction from "./transaction";
 import image from "./image";
+import notification from "./notification";
 
 const router = express.Router();
 
@@ -37,5 +38,7 @@ router.use("/newsletters", newsletter);
 router.use("/transactions", transaction);
 
 router.use("/images", image);
+
+router.use("/notifications", notification);
 
 export default router;
