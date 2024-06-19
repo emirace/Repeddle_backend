@@ -33,7 +33,7 @@ router.post("/login", UserController.login);
 
 router.post("/suggested-username", UserController.getSuggestedUsername);
 
-router.post("/wishlist", UserController.addProductToWishlist);
+router.post("/wishlist", authorize(), UserController.addProductToWishlist);
 
 router.post("/follow/:userId", authorize(), UserController.followUser);
 
@@ -51,7 +51,11 @@ router.put(
 // Delete user account
 router.delete("/profile", authorize(), UserController.deleteAccount);
 
-router.delete("/wishlist/:productId", UserController.removeProductFromWishList);
+router.delete(
+  "/wishlist/:productId",
+  authorize(),
+  UserController.removeProductFromWishList
+);
 
 router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
 
