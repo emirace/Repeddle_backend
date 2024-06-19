@@ -144,7 +144,10 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           seller: product.seller,
           price,
           quantity: item.quantity,
-          deliveryOption: item.deliveryOption,
+          deliveryOption: {
+            method: item.deliverySelect["delivery Option"],
+            fee: item.deliverySelect.total.cost,
+          },
           deliveryTracking: defaultDeliveryTracking,
         };
       })
@@ -350,9 +353,7 @@ export const getSellerSoldOrders = async (
 
       const totalAmount = sellerItems.reduce((acc, item) => {
         return (
-          acc +
-          item.price +
-          (item.deliveryOption ? item.deliveryOption.value : 0)
+          acc + item.price + (item.deliveryOption ? item.deliveryOption.fee : 0)
         );
       }, 0);
 
@@ -564,7 +565,7 @@ export const getUserDailyOrdersSummary = async (
                   "$$item",
                   {
                     totalSales: {
-                      $sum: ["$$item.price", "$$item.deliveryOption.value"],
+                      $sum: ["$$item.price", "$$item.deliveryOption.fee"],
                     },
                   },
                 ],

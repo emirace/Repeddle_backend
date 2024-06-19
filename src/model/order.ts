@@ -2,8 +2,8 @@ import mongoose, { Schema, Document, ObjectId } from "mongoose";
 
 // Define interfaces for delivery options
 export interface IDeliveryOption {
-  name: string;
-  value: number;
+  method: string;
+  fee: number;
 }
 
 // Define interfaces for order items
@@ -37,8 +37,8 @@ export interface IOrder extends Document {
 }
 
 const DeliveryOptionSchema = new Schema<IDeliveryOption>({
-  value: { type: Number, required: true },
-  name: { type: String, required: true },
+  fee: { type: Number, required: true },
+  method: { type: String, required: true },
 });
 
 const DeliveryTrackingHistorySchema = new Schema<IDeliveryTrackingHistory>({
