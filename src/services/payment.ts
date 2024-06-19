@@ -8,7 +8,7 @@ export const verifyPayment = async (
 ): Promise<{ status: boolean; amount?: number; currency?: string }> => {
   console.log("flutterKey", flutterwaveKey);
   switch (provider) {
-    case "flutterwave":
+    case "Flutterwave":
       const flutterwave = new (Flutterwave as any)(
         flutterwaveKey,
         flutterwaveSecret
@@ -30,7 +30,7 @@ export const verifyPayment = async (
     case "scribe":
       // return await ScribeService.verifyPayment(transactionId);
       return { status: false };
-    case "paystack":
+    case "Paystack":
 
     default:
       return { status: false };
