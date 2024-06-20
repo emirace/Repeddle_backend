@@ -24,6 +24,7 @@ router.post(
   ProductController.createComment
 );
 
+router.post("/:productId/reviews", authorize(), ProductController.submitReview);
 // Like a comment on a product
 router.post(
   "/:productId/comments/:commentId/like",

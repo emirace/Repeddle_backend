@@ -12,7 +12,7 @@ router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
 
 router.get("/top-sellers", UserController.getTopSellers);
 
-router.get("/users/wishlist", authorize(), UserController.getUserWishlist);
+router.get("/wishlist", authorize(), UserController.getUserWishlist);
 
 router.get("/:username", UserController.getUserByUsername);
 
