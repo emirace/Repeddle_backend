@@ -471,30 +471,29 @@ const UserController = {
       if (!followerId) {
         return res.status(403).json({ message: "Access forbidden" });
       }
-      const userToUpdate = await User.findById(userId);
-      if (!userToUpdate) {
+
+      const [userToUpdate, currentUser] = await Promise.all([
+        User.findById(userId),
+        User.findById(followerId),
+      ]);
+
+      if (!userToUpdate || !currentUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check if the user is being followed
       if (!userToUpdate.followers.includes(followerId)) {
         return res.status(400).json({ message: "User is not being followed" });
       }
 
-      const currentUser = await User.findById(followerId);
-
-      if (!currentUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
       // Remove the follower from the user's followers list
       userToUpdate.followers = userToUpdate.followers.filter(
-        (id) => id !== followerId
+        (id) => id.toString() !== followerId
       );
       await userToUpdate.save();
 
+      // Remove the followed user from the current user's following list
       currentUser.following = currentUser.following.filter(
-        (id) => id !== userId
+        (id) => id.toString() !== userId
       );
       await currentUser.save();
 
@@ -648,7 +647,7 @@ const UserController = {
         await Promise.all([
           Product.find({ seller: user._id }),
           Product.find({ _id: { $in: user.sold } }),
-          Product.find({ _id: { $in: user.likes } }),
+          Product.find({ _id: { $in: user.wishlist } }),
           Product.find({ seller: user._id, countInStock: { $gt: 0 } }),
         ]);
 
