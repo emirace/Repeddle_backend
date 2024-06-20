@@ -278,8 +278,8 @@ const UserController = {
 
       // Find user by email
       const user: IUser | null = await User.findOne({
-        email: email.trim(),
-        delected: false,
+        email,
+        deleted: false,
       });
 
       // If user not found or password does not match, return unauthorized

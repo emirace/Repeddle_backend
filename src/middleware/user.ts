@@ -37,7 +37,7 @@ export const authorize = (requiredRoles?: ("Admin" | "User" | "Seller")[]) => {
         return res.status(401).json({ message: "Invalid user token" });
       }
 
-      if (decoded.version !== user.tokenVersion) {
+      if (decoded.version + 2 <= user.tokenVersion) {
         return res.status(401).json({ message: "Invalid token" });
       }
 

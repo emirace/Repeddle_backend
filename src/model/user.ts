@@ -45,7 +45,7 @@ export interface IUser extends Document {
   isVerifiedEmail: boolean;
   region: "NGN" | "ZAR";
   rebundle: IRebundle;
-  tokenVersion: string;
+  tokenVersion: number;
   deleted: boolean;
   socketId?: string;
 }
@@ -97,7 +97,7 @@ const UserSchema = new Schema<IUser>(
     accountName: String,
     allowNewsletter: { type: Boolean, default: true },
     bankName: String,
-    tokenVersion: String,
+    tokenVersion: { type: Number, default: 0 },
     address: AddressSchema,
     numReviews: { type: Number, default: 0 },
     badge: Boolean,
