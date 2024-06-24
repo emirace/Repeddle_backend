@@ -865,7 +865,7 @@ const UserController = {
         return;
       }
 
-      user.wishlist = user.wishlist.filter((id) => id !== productId);
+      user.wishlist = user.wishlist.filter((id) => id.toString() !== productId);
       await user.save();
 
       res.status(200).json({
