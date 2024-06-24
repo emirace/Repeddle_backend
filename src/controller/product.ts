@@ -568,15 +568,7 @@ const ProductController = {
     }
 
     try {
-      const product = await Product.findById(productId)
-        .populate({
-          path: "comments.userId",
-          select: "username image",
-        })
-        .populate({
-          path: "comments.replies.userId",
-          select: "username image",
-        });
+      const product = await Product.findById(productId);
 
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
@@ -589,6 +581,11 @@ const ProductController = {
         return res.status(404).json({ message: "Comment not found" });
       }
 
+      const user = await User.findById(userId); // Fetch user details
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       const newReply = {
         userId,
         comment,
@@ -598,7 +595,17 @@ const ProductController = {
       parentComment.replies.push(newReply);
       await product.save();
 
-      res.status(200).json({ message: "Reply added", parentComment });
+      res.status(200).json({
+        message: "Reply added",
+        comment: {
+          ...newReply,
+          userId: {
+            _id: userId,
+            name: user.username,
+            image: user.image,
+          },
+        },
+      });
     } catch (error) {
       console.error("Error replying to comment:", error);
       res.status(500).json({ message: "Internal server error" });
