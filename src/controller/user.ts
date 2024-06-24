@@ -432,11 +432,15 @@ const UserController = {
       const { userId } = req.params;
       const followerId = req.userId;
       if (!followerId) {
-        return res.status(403).json({ message: "Access forbidden" });
+        return res
+          .status(403)
+          .json({ status: false, message: "Access forbidden" });
       }
       const userToUpdate = await User.findById(userId);
       if (!userToUpdate) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
       }
 
       // Check if the user is already being followed
@@ -456,10 +460,12 @@ const UserController = {
       await userToUpdate.save();
       await currentUser.save();
 
-      res.status(200).json({ message: "User followed successfully" });
+      res
+        .status(200)
+        .json({ status: true, message: "User followed successfully" });
     } catch (error) {
       console.error("Error following user:", error);
-      res.status(500).json({ message: "Error following user" });
+      res.status(500).json({ status: false, message: "Error following user" });
     }
   },
 
@@ -469,7 +475,9 @@ const UserController = {
       const followerId = req.userId; // Assuming userId is stored in req.userId after authentication
 
       if (!followerId) {
-        return res.status(403).json({ message: "Access forbidden" });
+        return res
+          .status(403)
+          .json({ status: false, message: "Access forbidden" });
       }
 
       const [userToUpdate, currentUser] = await Promise.all([
@@ -478,11 +486,15 @@ const UserController = {
       ]);
 
       if (!userToUpdate || !currentUser) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
       }
 
       if (!userToUpdate.followers.includes(followerId)) {
-        return res.status(400).json({ message: "User is not being followed" });
+        return res
+          .status(400)
+          .json({ status: false, message: "User is not being followed" });
       }
 
       // Remove the follower from the user's followers list
@@ -497,10 +509,14 @@ const UserController = {
       );
       await currentUser.save();
 
-      res.status(200).json({ message: "User unfollowed successfully" });
+      res
+        .status(200)
+        .json({ status: true, message: "User unfollowed successfully" });
     } catch (error) {
       console.error("Error unfollowing user:", error);
-      res.status(500).json({ message: "Error unfollowing user" });
+      res
+        .status(500)
+        .json({ status: false, message: "Error unfollowing user" });
     }
   },
 
