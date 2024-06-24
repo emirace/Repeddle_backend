@@ -459,9 +459,13 @@ const ProductController = {
 
     try {
       const product = await Product.findById(productId);
-
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
+      }
+
+      const user = await User.findById(userId); // Fetch user details
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       const newComment = {
@@ -474,7 +478,17 @@ const ProductController = {
       product.comments.push(newComment);
       await product.save();
 
-      res.status(201).json({ message: "Comment added", comment: newComment });
+      res.status(201).json({
+        message: "Comment added",
+        comment: {
+          ...newComment,
+          userId: {
+            _id: userId,
+            name: user.username,
+            image: user.image,
+          },
+        },
+      });
     } catch (error) {
       console.error("Error adding comment:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -554,7 +568,15 @@ const ProductController = {
     }
 
     try {
-      const product = await Product.findById(productId);
+      const product = await Product.findById(productId)
+        .populate({
+          path: "comments.userId",
+          select: "username image",
+        })
+        .populate({
+          path: "comments.replies.userId",
+          select: "username image",
+        });
 
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
