@@ -437,7 +437,10 @@ export const updateDeliveryTracking = async (
     const { status, trackingNumber } = req.body;
 
     // Fetch the order by ID
-    const order: IOrder | null = await Order.findById(orderId);
+    const order: any = await Order.findById(orderId)
+      .populate("items.seller", "username imwge firstName lastName")
+      .populate("buyer", "username imwge firstName lastName")
+      .populate("items.product");
 
     // Check if the order exists
     if (!order) {
@@ -446,7 +449,7 @@ export const updateDeliveryTracking = async (
 
     // Find the item in the order by ID
     const itemIndex = order.items.findIndex(
-      (item) => item.product.toString() === itemId
+      (item: any) => item.product._id.toString() === itemId
     );
 
     // Check if the item exists in the order
@@ -455,7 +458,9 @@ export const updateDeliveryTracking = async (
     }
 
     // Fetch the product associated with the item
-    const product = await Product.findById(order.items[itemIndex].product);
+    const product: any = await Product.findById(
+      order.items[itemIndex].product._id
+    );
 
     // Check if the product exists
     if (!product) {
@@ -464,10 +469,8 @@ export const updateDeliveryTracking = async (
         .json({ status: false, message: "Product not found" });
     }
 
-    console.log(product.seller.toString() === userId?.toString());
-
     // Check if the user is the seller of the product
-    if (product.seller.toString() !== userId?.toString()) {
+    if (product.seller._id.toString() !== userId?.toString()) {
       return res.status(403).json({
         message: "Unauthorized: Only the seller can update delivery tracking",
       });
@@ -497,13 +500,11 @@ export const updateDeliveryTracking = async (
     await order.save();
 
     // Return success response
-    return res
-      .status(200)
-      .json({
-        status: true,
-        message: "Delivery tracking updated successfully",
-        order,
-      });
+    return res.status(200).json({
+      status: true,
+      message: "Delivery tracking updated successfully",
+      order,
+    });
   } catch (error) {
     console.error("Error updating delivery tracking:", error);
     return res
