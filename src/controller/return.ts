@@ -85,7 +85,7 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
     // Populate the return with product and buyer details
     savedReturn = await savedReturn.populate({
       path: "productId",
-      select: "image name",
+      select: "images name",
       populate: { path: "seller", select: "name" },
     });
 
@@ -109,7 +109,7 @@ export const getUserReturns = async (req: CustomRequest, res: Response) => {
     const userReturns = await Return.find({ "orderId.buyer": userId })
       .populate({
         path: "productId",
-        select: "image name",
+        select: "images name",
         populate: { path: "seller", select: "name" },
       })
       .populate({
@@ -134,7 +134,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
     const foundReturn = await Return.findById(returnId)
       .populate({
         path: "productId",
-        select: "image name",
+        select: "images name",
         populate: { path: "seller", select: "name" },
       })
       .populate({
@@ -164,17 +164,55 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
     );
 
     if (!isBuyer && !isSeller && userRole !== "admin") {
-      return res
-        .status(403)
-        .json({
-          status: false,
-          message: "You do not have permission to access this return",
-        });
+      return res.status(403).json({
+        status: false,
+        message: "You do not have permission to access this return",
+      });
     }
 
     res.status(200).json({ status: true, data: foundReturn });
   } catch (error) {
     console.log("Error fetching return by ID ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
+  try {
+    const returnId = req.params.id;
+    const { status, adminReason } = req.body;
+    const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
+
+    // Check if the user is an admin
+    if (userRole !== "admin") {
+      return res
+        .status(403)
+        .json({
+          status: false,
+          message: "You do not have permission to update the return status",
+        });
+    }
+
+    // Find the return
+    const foundReturn = await Return.findById(returnId);
+    if (!foundReturn) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Return not found" });
+    }
+
+    // Update the status and adminReason if provided
+    foundReturn.status = status;
+    if (status === "Decline" && adminReason) {
+      foundReturn.adminReason = adminReason;
+    }
+
+    // Save the updated return
+    const updatedReturn = await foundReturn.save();
+
+    res.status(200).json({ status: true, data: updatedReturn });
+  } catch (error) {
+    console.log("Error updating return status ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };

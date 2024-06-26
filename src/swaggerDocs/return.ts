@@ -156,3 +156,47 @@
  *       500:
  *         description: Server error
  */
+
+/**
+ * @swagger
+ * /returns/{id}/status:
+ *   put:
+ *     summary: Update return status by admin
+ *     tags: [Return]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The return ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: ["Approved", "Decline", "Pending"]
+ *                 description: The status of the return
+ *               adminReason:
+ *                 type: string
+ *                 description: Reason for declining the return
+ *     responses:
+ *       200:
+ *         description: The return status was successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Return'
+ *       404:
+ *         description: Return not found
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
+ */

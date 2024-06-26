@@ -293,7 +293,7 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
 
     const populatedOrders = await Order.populate(orders, {
       path: "items.product",
-      select: "image name",
+      select: "images name",
     });
 
     // Return the orders
