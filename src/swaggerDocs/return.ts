@@ -192,7 +192,13 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Return'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the operation
+ *                 return:
+ *                   $ref: '#/components/schemas/Return'
  *       404:
  *         description: Return not found
  *       403:
@@ -228,9 +234,15 @@
  *       200:
  *         description: The delivery tracking status was successfully updated
  *         content:
- *           application/json
+ *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Return'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the operation
+ *                 return:
+ *                   $ref: '#/components/schemas/Return'
  *       404:
  *         description: Return not found
  *       403:

@@ -170,7 +170,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       });
     }
 
-    res.status(200).json({ status: true, data: foundReturn });
+    res.status(200).json({ status: true, return: foundReturn });
   } catch (error) {
     console.log("Error fetching return by ID ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -208,7 +208,7 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     // Save the updated return
     const updatedReturn = await foundReturn.save();
 
-    res.status(200).json({ status: true, data: updatedReturn });
+    res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
     console.log("Error updating return status ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -278,7 +278,7 @@ export const updateUserDeliveryTracking = async (
     // Save the updated return
     const updatedReturn = await foundReturn.save();
 
-    res.status(200).json({ status: true, data: updatedReturn });
+    res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
     console.log("Error updating return delivery tracking status ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
