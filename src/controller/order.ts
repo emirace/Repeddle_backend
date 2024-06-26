@@ -381,7 +381,7 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
     const orderId = req.params.orderId;
 
     // Fetch the order by ID
-    const order: IOrder | null = await Order.findById(orderId)
+    const order: any = await Order.findById(orderId)
       .populate("items.seller", "username imwge firstName lastName")
       .populate("buyer", "username imwge firstName lastName")
       .populate("items.product");
@@ -396,7 +396,7 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
     const userId = req.userId!;
     if (
       !isAdmin &&
-      order.buyer.toString() !== userId &&
+      order.buyer._id.toString() !== userId &&
       !isUserSeller(order, userId)
     ) {
       return res.status(401).json({
@@ -408,7 +408,7 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
     // If the user is a seller, filter the items to include only those where the user is the seller
     if (isUserSeller(order, userId)) {
       order.items = order.items.filter(
-        (item) => item.seller.toString() === userId
+        (item: any) => item.seller._id.toString() === userId
       );
     }
 
