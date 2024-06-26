@@ -343,7 +343,12 @@ export const getSellerSoldOrders = async (
     }
 
     // Execute the aggregation pipeline
-    const soldOrders: IOrder[] = await Order.aggregate(pipeline);
+    let soldOrders: IOrder[] = await Order.aggregate(pipeline);
+
+    soldOrders = await Order.populate(soldOrders, {
+      path: "items.product",
+      select: "images name",
+    });
 
     // Filter and return only the products belonging to the seller from each order
     const sellerSoldOrders = soldOrders.map((order) => {
