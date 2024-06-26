@@ -10,6 +10,7 @@ import Newsletter from "../model/newsletter";
 import Transaction from "../model/transaction";
 import Message from "../model/message";
 import Notification from "../model/notification";
+import Return from "../model/return";
 
 const options = {};
 
@@ -25,6 +26,7 @@ const swaggerSchema = {
   Message: m2s(Message, options),
   Transaction: m2s(Transaction, options),
   Notification: m2s(Notification, options),
+  Return: m2s(Return, options),
 };
 
 export default swaggerSchema;

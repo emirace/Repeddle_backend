@@ -604,6 +604,8 @@ const ProductController = {
             name: user.username,
             image: user.image,
           },
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       });
     } catch (error) {
