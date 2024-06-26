@@ -459,7 +459,9 @@ export const updateDeliveryTracking = async (
 
     // Check if the product exists
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not found" });
     }
 
     console.log(product.seller.toString() === userId?.toString());
@@ -497,10 +499,16 @@ export const updateDeliveryTracking = async (
     // Return success response
     return res
       .status(200)
-      .json({ message: "Delivery tracking updated successfully", order });
+      .json({
+        status: true,
+        message: "Delivery tracking updated successfully",
+        order,
+      });
   } catch (error) {
     console.error("Error updating delivery tracking:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
 };
 
