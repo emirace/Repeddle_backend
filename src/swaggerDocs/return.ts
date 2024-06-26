@@ -223,7 +223,7 @@
  *     requestBody:
  *       required: true
  *       content:
- *         application/json
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
