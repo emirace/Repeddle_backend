@@ -462,8 +462,10 @@ export const updateDeliveryTracking = async (
       return res.status(404).json({ message: "Product not found" });
     }
 
+    console.log(product.seller.toString() === userId?.toString());
+
     // Check if the user is the seller of the product
-    if (product.seller.toString() !== userId) {
+    if (product.seller.toString() !== userId?.toString()) {
       return res.status(403).json({
         message: "Unauthorized: Only the seller can update delivery tracking",
       });
