@@ -124,3 +124,57 @@ export const getUserReturns = async (req: CustomRequest, res: Response) => {
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+
+export const getReturnById = async (req: CustomRequest, res: Response) => {
+  try {
+    const returnId = req.params.id;
+    const userId = req.userId!;
+    const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
+
+    const foundReturn = await Return.findById(returnId)
+      .populate({
+        path: "productId",
+        select: "image name",
+        populate: { path: "seller", select: "name" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer",
+        populate: { path: "buyer", select: "name" },
+      });
+
+    if (!foundReturn) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Return not found" });
+    }
+
+    const order = await Order.findById(foundReturn.orderId).select(
+      "buyer items"
+    );
+    if (!order) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Associated order not found" });
+    }
+
+    const isBuyer = order.buyer.toString() === userId.toString();
+    const isSeller = order.items.some(
+      (item) => item.seller.toString() === userId.toString()
+    );
+
+    if (!isBuyer && !isSeller && userRole !== "admin") {
+      return res
+        .status(403)
+        .json({
+          status: false,
+          message: "You do not have permission to access this return",
+        });
+    }
+
+    res.status(200).json({ status: true, data: foundReturn });
+  } catch (error) {
+    console.log("Error fetching return by ID ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};

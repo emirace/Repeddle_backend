@@ -6,6 +6,7 @@ export interface CustomRequest extends Request {
   userId?: string;
   userRegion?: "ZAR" | "NGN";
   isAdmin?: boolean;
+  userRole?: string;
 }
 
 // Middleware for authorization
@@ -53,6 +54,7 @@ export const authorize = (requiredRoles?: ("Admin" | "User" | "Seller")[]) => {
       // Attach user data to the request object for use in the route handler
       req.userId = user._id;
       req.isAdmin = user.role === "Admin";
+      req.userRole = user.role;
 
       // Continue to the next middleware or route handler
       next();

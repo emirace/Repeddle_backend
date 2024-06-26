@@ -57,7 +57,7 @@
 
 /**
  * @swagger
- * /api/returns/user:
+ * /returns/user:
  *   get:
  *     summary: Get user returns
  *     tags: [Return]
@@ -86,7 +86,43 @@
 
 /**
  * @swagger
- * /api/returns:
+ * /returns/{id}:
+ *   get:
+ *     summary: Get a return by ID
+ *     tags: [Return]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The return ID
+ *     responses:
+ *       200:
+ *         description: The return details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the operation
+ *                 return:
+ *                   $ref: '#/components/schemas/Return'
+ *       404:
+ *         description: Return not found
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /returns:
  *   post:
  *     summary: Create a return
  *     tags: [Return]
