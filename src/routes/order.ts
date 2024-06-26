@@ -18,7 +18,7 @@ router.post("/", authorize(), extractUserRegion, createOrder);
 
 // Route to update delivery tracking of an item
 router.put(
-  "/orders/:orderId/items/:itemId/delivery",
+  "/:orderId/items/:itemId/delivery-tracking",
   authorize(),
   updateDeliveryTracking
 );
