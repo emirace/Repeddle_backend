@@ -307,6 +307,9 @@
  *               status:
  *                 type: string
  *                 description: New delivery tracking status
+ *               trackingNumber:
+ *                 type: string
+ *                 description: New delivery tracking number
  *     responses:
  *       '200':
  *         description: Delivery tracking updated successfully

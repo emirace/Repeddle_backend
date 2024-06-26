@@ -429,7 +429,7 @@ export const updateDeliveryTracking = async (
     const userId = req.userId; // Assuming userId is included in the request
 
     // Extract new delivery tracking details from request body
-    const { status } = req.body;
+    const { status, trackingNumber } = req.body;
 
     // Fetch the order by ID
     const order: IOrder | null = await Order.findById(orderId);
@@ -479,6 +479,10 @@ export const updateDeliveryTracking = async (
       status: status,
       timestamp: new Date(),
     };
+
+    if (trackingNumber) {
+      order.items[itemIndex].trackingNumber = trackingNumber;
+    }
 
     // Save the updated order
     await order.save();

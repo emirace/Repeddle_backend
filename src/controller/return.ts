@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/user";
-import Order from "../model/order";
-import Return from "../model/return";
+import Order, { IDeliveryTrackingHistory } from "../model/order";
+import Return, { IReturn } from "../model/return";
 
 export const createReturn = async (req: CustomRequest, res: Response) => {
   try {
@@ -185,12 +185,10 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
 
     // Check if the user is an admin
     if (userRole !== "admin") {
-      return res
-        .status(403)
-        .json({
-          status: false,
-          message: "You do not have permission to update the return status",
-        });
+      return res.status(403).json({
+        status: false,
+        message: "You do not have permission to update the return status",
+      });
     }
 
     // Find the return
@@ -213,6 +211,76 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     res.status(200).json({ status: true, data: updatedReturn });
   } catch (error) {
     console.log("Error updating return status ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const updateUserDeliveryTracking = async (
+  req: CustomRequest,
+  res: Response
+) => {
+  try {
+    const returnId = req.params.id;
+    const { status } = req.body;
+    const userId = req.userId!;
+
+    // Find the return
+    const foundReturn:
+      | (IReturn & {
+          orderId: { buyer: { _id: string } };
+          productId: { seller: string };
+        })
+      | null = await Return.findById(returnId).populate({
+      path: "orderId",
+      select: "buyer",
+      populate: { path: "buyer", select: "name" },
+    });
+
+    if (!foundReturn) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Return not found" });
+    }
+
+    // Check if the user is the buyer or seller
+    const isBuyer =
+      foundReturn.orderId.buyer._id.toString() === userId.toString();
+    const isSeller =
+      foundReturn.productId.seller.toString() === userId.toString();
+
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "You do not have permission to update the delivery tracking status",
+      });
+    }
+
+    // Check if the new status is different from current status and history
+    const allStatuses = [
+      foundReturn.deliveryTracking.currentStatus.status,
+      ...foundReturn.deliveryTracking.history.map((entry) => entry.status),
+    ];
+    if (allStatuses.includes(status)) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Cannot update to a previous status" });
+    }
+
+    // Update the delivery tracking status
+    const newStatus: IDeliveryTrackingHistory = {
+      status: status,
+      timestamp: new Date(),
+    };
+    foundReturn.deliveryTracking.currentStatus = newStatus;
+    foundReturn.deliveryTracking.history.push(newStatus);
+
+    // Save the updated return
+    const updatedReturn = await foundReturn.save();
+
+    res.status(200).json({ status: true, data: updatedReturn });
+  } catch (error) {
+    console.log("Error updating return delivery tracking status ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };

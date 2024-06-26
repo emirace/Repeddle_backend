@@ -1,16 +1,16 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-interface IDeliveryOption extends Document {
+interface IDeliveryOption {
   fee: number;
   method: string;
 }
 
-interface IDeliveryTrackingHistory extends Document {
+interface IDeliveryTrackingHistory {
   status: string;
   timestamp: Date;
 }
 
-interface IReturn extends Document {
+export interface IReturn extends Document {
   orderId: mongoose.Types.ObjectId;
   productId: mongoose.Types.ObjectId;
   reason?: string;
@@ -19,7 +19,7 @@ interface IReturn extends Document {
   others?: string;
   region: "NGN" | "ZAR";
   adminReason?: string;
-  deliveryToken?: string;
+  deliveryNumber?: string;
   status: "Approved" | "Decline" | "Pending";
   deliveryOption: IDeliveryOption;
   deliveryTracking: {
@@ -30,12 +30,12 @@ interface IReturn extends Document {
   updatedAt?: Date;
 }
 
-const DeliveryOptionSchema: Schema = new Schema({
+const DeliveryOptionSchema = new Schema({
   fee: { type: Number, required: true },
   method: { type: String, required: true },
 });
 
-const DeliveryTrackingHistorySchema: Schema = new Schema({
+const DeliveryTrackingHistorySchema = new Schema({
   status: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
 });
@@ -50,7 +50,7 @@ const returnSchema: Schema = new Schema(
     others: { type: String },
     region: { type: String, enum: ["NGN", "ZAR"], required: true },
     adminReason: { type: String },
-    deliveryToken: { type: String },
+    deliveryNumber: { type: String },
     status: {
       type: String,
       enum: ["Approved", "Decline", "Pending"],

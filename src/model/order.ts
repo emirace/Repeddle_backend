@@ -19,6 +19,7 @@ export interface IOrderItem {
     currentStatus: IDeliveryTrackingHistory;
     history: IDeliveryTrackingHistory[];
   };
+  trackingNumber: string;
 }
 
 // Define interfaces for order delivery tracking
@@ -58,6 +59,7 @@ const OrderItemSchema = new Schema<IOrderItem>({
     currentStatus: { type: DeliveryTrackingHistorySchema, required: true },
     history: { type: [DeliveryTrackingHistorySchema], default: [] },
   },
+  trackingNumber: { type: String },
 });
 
 const OrderSchema = new Schema<IOrder>(

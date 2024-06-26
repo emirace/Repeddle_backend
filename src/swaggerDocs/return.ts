@@ -200,3 +200,41 @@
  *       500:
  *         description: Server error
  */
+
+/**
+ * @swagger
+ * /returns/{id}/delivery-tracking:
+ *   put:
+ *     summary: Update delivery tracking of a return
+ *     tags: [Return]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The return ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: The new delivery tracking status
+ *     responses:
+ *       200:
+ *         description: The delivery tracking status was successfully updated
+ *         content:
+ *           application/json
+ *             schema:
+ *               $ref: '#/components/schemas/Return'
+ *       404:
+ *         description: Return not found
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
+ */
