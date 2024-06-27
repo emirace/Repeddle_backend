@@ -125,7 +125,9 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         const sellerId = product.seller; // Assuming 'seller' field holds the ObjectId of the seller
         await User.findByIdAndUpdate(
           sellerId,
-          { $addToSet: { sold: product._id } },
+          {
+            $addToSet: { sold: product._id, buyers: userId },
+          },
           { session }
         );
 

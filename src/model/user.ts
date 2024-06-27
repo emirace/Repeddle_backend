@@ -12,6 +12,13 @@ export interface IRebundle {
   count: number;
 }
 
+export interface Review {
+  user: string;
+  comment: string;
+  rating: number;
+  like?: string;
+}
+
 export interface IUser extends Document {
   username: string;
   firstName: string;
@@ -38,6 +45,7 @@ export interface IUser extends Document {
   bankName?: string;
   isSeller?: boolean;
   address?: IAddress;
+  reviews: Review[];
   numReviews: number;
   badge: boolean;
   active: boolean;
@@ -49,6 +57,18 @@ export interface IUser extends Document {
   deleted: boolean;
   socketId?: string;
 }
+
+const reviewSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+    comment: { type: String, required: true },
+    rating: { type: Number, required: true },
+    like: { type: Boolean },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Define the address schema
 const AddressSchema = new Schema<IAddress>(
@@ -98,6 +118,7 @@ const UserSchema = new Schema<IUser>(
     allowNewsletter: { type: Boolean, default: true },
     bankName: String,
     tokenVersion: { type: Number, default: 0 },
+    reviews: [reviewSchema],
     address: AddressSchema,
     numReviews: { type: Number, default: 0 },
     badge: Boolean,

@@ -8,7 +8,6 @@ import {
 } from "../utils/user";
 import { sendResetPasswordEmail, sendVerificationEmail } from "../utils/email";
 import { body, validationResult } from "express-validator";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { CustomRequest } from "../middleware/user";
 import Product from "../model/product";
@@ -917,6 +916,64 @@ const UserController = {
         message: "Internal server error",
         error,
       });
+    }
+  },
+
+  async submitReview(req: CustomRequest, res: Response) {
+    const { userId: sellerId } = req.params;
+    const userId = req.userId!;
+    const { comment, rating, like } = req.body;
+
+    if (!comment || rating == null) {
+      return res
+        .status(400)
+        .json({ message: "Comment and rating are required" });
+    }
+
+    try {
+      const seller = await User.findById(sellerId);
+
+      if (!seller) {
+        return res.status(404).json({ message: "Seller not found" });
+      }
+
+      // Check if user bought the product
+      const hasBoughtProduct = seller.buyers.some(
+        (buyerId) => buyerId.toString() === userId
+      );
+      if (!hasBoughtProduct) {
+        return res.status(403).json({
+          message: "You can only review sellers you have bought from",
+        });
+      }
+
+      // Check if user has already reviewed the seller
+      const hasReviewed = seller.reviews.some(
+        (review) => review.user.toString() === userId
+      );
+      if (hasReviewed) {
+        return res
+          .status(403)
+          .json({ message: "You have already reviewed this seller" });
+      }
+
+      const newReview = {
+        user: userId,
+        comment,
+        rating,
+        like,
+      };
+
+      seller.reviews.push(newReview);
+      seller.rating =
+        seller.reviews.reduce((acc, review) => acc + review.rating, 0) /
+        seller.reviews.length;
+      await seller.save();
+
+      res.status(200).json({ message: "Review submitted", review: newReview });
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
 };

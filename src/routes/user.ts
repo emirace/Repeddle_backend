@@ -39,6 +39,8 @@ router.post("/follow/:userId", authorize(), UserController.followUser);
 
 router.post("/reset-password/:token", UserController.resetPassword);
 
+router.post("/:userId/reviews", authorize(), UserController.submitReview);
+
 // Update user profile
 router.put("/profile", authorize(), UserController.updateProfile);
 

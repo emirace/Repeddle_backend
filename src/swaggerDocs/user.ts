@@ -1342,3 +1342,82 @@
  *       500:
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /users/{userId}/reviews:
+ *   post:
+ *     summary: Submit a review for a seller
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the seller
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               comment:
+ *                 type: string
+ *                 description: The review comment
+ *                 example: "This is a great seller!"
+ *               rating:
+ *                 type: number
+ *                 description: The rating for the seller
+ *                 example: 4
+ *               like:
+ *                 type: boolean
+ *                 description: If its a positive or negative review
+ *                 example: true
+ *     responses:
+ *       '200':
+ *         description: Review submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Review submitted
+ *                 review:
+ *                   $ref: '#/components/schemas/Review'
+ *       '400':
+ *         description: Comment and rating are required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Comment and rating are required
+ *       '404':
+ *         description: Seller not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Seller not found
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
