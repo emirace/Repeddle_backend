@@ -472,7 +472,7 @@ export const updateDeliveryTracking = async (
     const isSeller = product.seller._id.toString() !== userId?.toString();
     const isBuyer = order.buyer._id.toString() !== userId?.toString();
     // Check if the user is the seller of the product
-    if (!isSeller || !isBuyer) {
+    if (!isSeller && !isBuyer) {
       return res.status(403).json({
         message:
           "Unauthorized: Only the seller or buyer can update delivery tracking",
