@@ -256,7 +256,7 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
 
     // Check if the user is an admin
-    if (userRole !== "admin") {
+    if (userRole !== "Admin") {
       return res.status(403).json({
         status: false,
         message: "You do not have permission to update the return status",
