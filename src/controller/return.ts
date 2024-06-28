@@ -18,7 +18,8 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
     } = req.body;
 
     // Find the order
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("items.product");
+
     if (!order) {
       return res
         .status(404)
@@ -33,28 +34,28 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
       });
     }
 
-    // Check if the product is in the order
-    const orderItem = order.items.find(
-      (item) => item.product.toString() === productId.toString()
+    // Find the item in the order by ID
+    const itemIndex = order.items.findIndex(
+      (item: any) => item.product._id.toString() === productId.toString()
     );
-    if (!orderItem) {
-      return res
-        .status(404)
-        .json({ status: false, message: "Product not found in the order" });
+
+    // Check if the item exists in the order
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in order" });
     }
 
     // Check if the delivery status is 'Received' and within 3 days
-    const receivedStatus = orderItem.deliveryTracking.history.find(
-      (status) => status.status === "Received"
-    );
-    if (!receivedStatus) {
+    const deliveredStatus = order.items[
+      itemIndex
+    ].deliveryTracking.history.find((status) => status.status === "Delivered");
+    if (!deliveredStatus) {
       return res.status(400).json({
         status: false,
-        message: "The product has not been received yet",
+        message: "The product has not been delivered yet",
       });
     }
 
-    const threeDaysAfterReceived = new Date(receivedStatus.timestamp);
+    const threeDaysAfterReceived = new Date(deliveredStatus.timestamp);
     threeDaysAfterReceived.setDate(threeDaysAfterReceived.getDate() + 3);
     if (new Date() > threeDaysAfterReceived) {
       return res
@@ -80,7 +81,17 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
       deliveryTracking: defaultDeliveryTracking,
     });
 
+    // Add the current status to the delivery tracking history
+    order.items[itemIndex].deliveryTracking.history.push(
+      defaultDeliveryTracking.currentStatus
+    );
+
+    // Update the delivery tracking of the item
+    order.items[itemIndex].deliveryTracking.currentStatus =
+      defaultDeliveryTracking.currentStatus;
+
     let savedReturn = await newReturn.save();
+    await order.save();
 
     // Populate the return with product and buyer details
     savedReturn = await savedReturn.populate({
