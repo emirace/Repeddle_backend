@@ -264,7 +264,17 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     }
 
     // Find the return
-    const foundReturn = await Return.findById(returnId);
+    const foundReturn = await Return.findById(returnId)
+      .populate({
+        path: "productId",
+        select: "images name",
+        populate: { path: "seller", select: "username" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer",
+        populate: { path: "buyer", select: "username" },
+      });
     if (!foundReturn) {
       return res
         .status(404)
