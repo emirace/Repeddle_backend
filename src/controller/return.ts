@@ -399,3 +399,57 @@ export const updateUserDeliveryTracking = async (
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+
+export const updateReturnDeliveryAddress = async (
+  req: CustomRequest,
+  res: Response
+) => {
+  try {
+    const returnId = req.params.id;
+    const { delivery } = req.body;
+    const userId = req.userId!;
+
+    // Find the return
+    const foundReturn:
+      | (IReturn & {
+          orderId: { buyer: { _id: string } };
+          productId: { seller: { _id: string } };
+        })
+      | null = await Return.findById(returnId)
+      .populate({
+        path: "productId",
+        select: "images name",
+        populate: { path: "seller", select: "username" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer items",
+        populate: { path: "buyer", select: "username" },
+      });
+
+    if (!foundReturn) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Return not found" });
+    }
+    const isSeller =
+      foundReturn.productId.seller._id.toString() === userId.toString();
+
+    if (!isSeller) {
+      return res.status(403).json({
+        status: false,
+        message: "You do not have permission to update the delivery address",
+      });
+    }
+
+    foundReturn.deliverySelected = delivery;
+
+    // Save the updated return
+    const updatedReturn = await foundReturn.save();
+
+    res.status(200).json({ status: true, return: updatedReturn });
+  } catch (error) {
+    console.log("Error updating return delivery tracking status ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};

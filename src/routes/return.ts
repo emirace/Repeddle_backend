@@ -5,6 +5,7 @@ import {
   getPurchaseReturns,
   getReturnById,
   getSoldReturns,
+  updateReturnDeliveryAddress,
   updateReturnStatus,
   updateUserDeliveryTracking,
 } from "../controller/return";
@@ -19,5 +20,6 @@ router.get("/:id", authorize(), getReturnById);
 router.post("/", authorize(), extractUserRegion, createReturn);
 router.put("/:id/status", authorize(), updateReturnStatus);
 router.put("/:id/delivery-tracking", authorize(), updateUserDeliveryTracking);
+router.put("/:id/address", authorize(), updateReturnDeliveryAddress);
 
 export default router;

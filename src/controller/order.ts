@@ -293,6 +293,8 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
     // Execute the aggregation pipeline
     const orders = await Order.aggregate(pipeline);
 
+    console.log(orders);
+
     const populatedOrders = await Order.populate(orders, {
       path: "items.product",
       select: "images name",

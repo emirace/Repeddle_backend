@@ -22,6 +22,7 @@ export interface IReturn extends Document {
   trackingNumber?: string;
   status: "Approved" | "Decline" | "Pending";
   deliveryOption: IDeliveryOption;
+  deliverySelected: IDeliveryOption;
   deliveryTracking: {
     currentStatus: IDeliveryTrackingHistory;
     history: IDeliveryTrackingHistory[];
@@ -57,6 +58,7 @@ const returnSchema: Schema = new Schema(
       default: "Pending",
     },
     deliveryOption: { type: DeliveryOptionSchema, required: true },
+    deliverySelected: { type: DeliveryOptionSchema },
     deliveryTracking: {
       currentStatus: { type: DeliveryTrackingHistorySchema, required: true },
       history: { type: [DeliveryTrackingHistorySchema], default: [] },
