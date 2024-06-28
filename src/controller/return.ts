@@ -239,12 +239,10 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       items: filteredOrderItems,
     };
 
-    res
-      .status(200)
-      .json({
-        status: true,
-        return: { ...foundReturn._doc, orderId: filteredOrder },
-      });
+    res.status(200).json({
+      status: true,
+      return: { ...foundReturn._doc, orderId: filteredOrder },
+    });
   } catch (error) {
     console.error("Error fetching return by ID:", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -310,13 +308,19 @@ export const updateUserDeliveryTracking = async (
     const foundReturn:
       | (IReturn & {
           orderId: { buyer: { _id: string } };
-          productId: { seller: string };
+          productId: { seller: { _id: string } };
         })
-      | null = await Return.findById(returnId).populate({
-      path: "orderId",
-      select: "buyer",
-      populate: { path: "buyer", select: "username" },
-    });
+      | null = await Return.findById(returnId)
+      .populate({
+        path: "productId",
+        select: "images name",
+        populate: { path: "seller", select: "username" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer",
+        populate: { path: "buyer", select: "username" },
+      });
 
     if (!foundReturn) {
       return res
@@ -328,7 +332,7 @@ export const updateUserDeliveryTracking = async (
     const isBuyer =
       foundReturn.orderId.buyer._id.toString() === userId.toString();
     const isSeller =
-      foundReturn.productId.seller.toString() === userId.toString();
+      foundReturn.productId.seller._id.toString() === userId.toString();
 
     if (!isBuyer && !isSeller) {
       return res.status(403).json({
