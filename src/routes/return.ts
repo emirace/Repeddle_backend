@@ -1,8 +1,10 @@
 import express from "express";
 import {
   createReturn,
+  getAllReturns,
+  getPurchaseReturns,
   getReturnById,
-  getUserReturns,
+  getSoldReturns,
   updateReturnStatus,
   updateUserDeliveryTracking,
 } from "../controller/return";
@@ -10,7 +12,9 @@ import { authorize } from "../middleware/user";
 
 const router = express.Router();
 
-router.get("/user", authorize(), getUserReturns);
+router.get("/sold", authorize(), getSoldReturns);
+router.get("/purchase", authorize(), getPurchaseReturns);
+router.get("/admin", authorize(["Admin"]), getAllReturns);
 router.get("/:id", authorize(), getReturnById);
 router.post("/", authorize(), createReturn);
 router.put("/:id/status:", authorize(), updateReturnStatus);

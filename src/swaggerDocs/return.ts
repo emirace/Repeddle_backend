@@ -57,15 +57,73 @@
 
 /**
  * @swagger
- * /returns/user:
+ * /returns/purchase:
  *   get:
- *     summary: Get user returns
+ *     summary: Get user purchase returns
  *     tags: [Return]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of user returns
+ *         description: List of user purchase returns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the operation
+ *                 return:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Return'
+ *       404:
+ *         description: User has no returns
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /returns/sold:
+ *   get:
+ *     summary: Get user sold returns
+ *     tags: [Return]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user sold returns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the operation
+ *                 return:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Return'
+ *       404:
+ *         description: User has no returns
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /returns/admin:
+ *   get:
+ *     summary: Get user all returns
+ *     tags: [Return]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user all returns
  *         content:
  *           application/json:
  *             schema:

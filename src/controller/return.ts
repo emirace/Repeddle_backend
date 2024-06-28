@@ -102,11 +102,57 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export const getUserReturns = async (req: CustomRequest, res: Response) => {
+export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
 
     const userReturns = await Return.find({ "orderId.buyer": userId })
+      .populate({
+        path: "productId",
+        select: "images name",
+        populate: { path: "seller", select: "name" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer",
+        populate: { path: "buyer", select: "name" },
+      });
+
+    res.status(200).json({ status: true, returns: userReturns });
+  } catch (error) {
+    console.log("Error fetching user returns ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const getAllReturns = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+
+    const userReturns = await Return.find()
+      .populate({
+        path: "productId",
+        select: "images name",
+        populate: { path: "seller", select: "name" },
+      })
+      .populate({
+        path: "orderId",
+        select: "buyer",
+        populate: { path: "buyer", select: "name" },
+      });
+
+    res.status(200).json({ status: true, returns: userReturns });
+  } catch (error) {
+    console.log("Error fetching user returns ", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const getSoldReturns = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+
+    const userReturns = await Return.find({ "productId.seller": userId })
       .populate({
         path: "productId",
         select: "images name",
