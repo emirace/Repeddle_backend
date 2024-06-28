@@ -19,7 +19,7 @@ export interface IReturn extends Document {
   others?: string;
   region: "NGN" | "ZAR";
   adminReason?: string;
-  deliveryNumber?: string;
+  trackingNumber?: string;
   status: "Approved" | "Decline" | "Pending";
   deliveryOption: IDeliveryOption;
   deliveryTracking: {
@@ -50,7 +50,7 @@ const returnSchema: Schema = new Schema(
     others: { type: String },
     region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },
     adminReason: { type: String },
-    deliveryNumber: { type: String },
+    trackingNumber: { type: String },
     status: {
       type: String,
       enum: ["Approved", "Decline", "Pending"],

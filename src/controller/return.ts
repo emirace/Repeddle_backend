@@ -301,7 +301,7 @@ export const updateUserDeliveryTracking = async (
 ) => {
   try {
     const returnId = req.params.id;
-    const { status } = req.body;
+    const { status, trackingNumber } = req.body;
     const userId = req.userId!;
 
     // Find the return
@@ -375,6 +375,10 @@ export const updateUserDeliveryTracking = async (
     };
     foundReturn.deliveryTracking.currentStatus = newStatus;
     foundReturn.deliveryTracking.history.push(newStatus);
+
+    if (trackingNumber) {
+      foundReturn.trackingNumber = trackingNumber;
+    }
 
     // Save the updated return
     const updatedReturn = await foundReturn.save();
