@@ -6,6 +6,7 @@ import Return, { IReturn } from "../model/return";
 export const createReturn = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+    const region = req.userRegion;
     const {
       orderId,
       productId,
@@ -13,7 +14,6 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
       refund,
       image,
       others,
-      region,
       deliveryOption,
     } = req.body;
 

@@ -48,7 +48,7 @@ const returnSchema: Schema = new Schema(
     refund: { type: String, required: true },
     image: { type: String },
     others: { type: String },
-    region: { type: String, enum: ["NGN", "ZAR"], required: true },
+    region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },
     adminReason: { type: String },
     deliveryNumber: { type: String },
     status: {
