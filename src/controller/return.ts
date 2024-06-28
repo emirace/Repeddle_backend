@@ -116,17 +116,21 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
 
-    const userReturns = await Return.find({ "orderId.buyer": userId })
+    const returns = await Return.find()
       .populate({
         path: "productId",
         select: "images name",
-        populate: { path: "seller", select: "name" },
+        populate: { path: "seller", select: "username image" },
       })
       .populate({
         path: "orderId",
         select: "buyer",
-        populate: { path: "buyer", select: "name" },
+        populate: { path: "buyer", select: "username image" },
       });
+
+    const userReturns = returns.filter(
+      (returnItem: any) => returnItem.orderId.buyer._id.toString() === userId
+    );
 
     res.status(200).json({ status: true, returns: userReturns });
   } catch (error) {
@@ -143,12 +147,12 @@ export const getAllReturns = async (req: CustomRequest, res: Response) => {
       .populate({
         path: "productId",
         select: "images name",
-        populate: { path: "seller", select: "name" },
+        populate: { path: "seller", select: "username" },
       })
       .populate({
         path: "orderId",
         select: "buyer",
-        populate: { path: "buyer", select: "name" },
+        populate: { path: "buyer", select: "username" },
       });
 
     res.status(200).json({ status: true, returns: userReturns });
@@ -162,17 +166,21 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
 
-    const userReturns = await Return.find({ "productId.seller": userId })
+    const returns = await Return.find({ "productId.seller": userId })
       .populate({
         path: "productId",
         select: "images name",
-        populate: { path: "seller", select: "name" },
+        populate: { path: "seller", select: "username" },
       })
       .populate({
         path: "orderId",
         select: "buyer",
-        populate: { path: "buyer", select: "name" },
+        populate: { path: "buyer", select: "username" },
       });
+
+    const userReturns = returns.filter(
+      (returnItem: any) => returnItem.productId.seller._id.toString() === userId
+    );
 
     res.status(200).json({ status: true, returns: userReturns });
   } catch (error) {
