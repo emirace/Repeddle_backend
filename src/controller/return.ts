@@ -272,7 +272,7 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
       })
       .populate({
         path: "orderId",
-        select: "buyer",
+        select: "buyer items",
         populate: { path: "buyer", select: "username" },
       });
     if (!foundReturn) {
@@ -328,7 +328,7 @@ export const updateUserDeliveryTracking = async (
       })
       .populate({
         path: "orderId",
-        select: "buyer",
+        select: "buyer items",
         populate: { path: "buyer", select: "username" },
       });
 
