@@ -45,17 +45,16 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
     }
 
     // Check if the delivery status is 'Received' and within 3 days
-    const deliveredStatus = order.items[
-      itemIndex
-    ].deliveryTracking.history.find((status) => status.status === "Delivered");
-    if (!deliveredStatus) {
+    const currentDeliveredStatus =
+      order.items[itemIndex].deliveryTracking.currentStatus;
+    if (currentDeliveredStatus.status !== "Delivered") {
       return res.status(400).json({
         status: false,
         message: "The product has not been delivered yet",
       });
     }
 
-    const threeDaysAfterReceived = new Date(deliveredStatus.timestamp);
+    const threeDaysAfterReceived = new Date(currentDeliveredStatus.timestamp);
     threeDaysAfterReceived.setDate(threeDaysAfterReceived.getDate() + 3);
     if (new Date() > threeDaysAfterReceived) {
       return res
