@@ -17,7 +17,7 @@ router.get("/purchase", authorize(), getPurchaseReturns);
 router.get("/admin", authorize(["Admin"]), getAllReturns);
 router.get("/:id", authorize(), getReturnById);
 router.post("/", authorize(), extractUserRegion, createReturn);
-router.put("/:id/status:", authorize(), updateReturnStatus);
+router.put("/:id/status", authorize(), updateReturnStatus);
 router.put("/:id/delivery-tracking", authorize(), updateUserDeliveryTracking);
 
 export default router;
