@@ -259,17 +259,14 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
 
 export const getUserOrders = async (req: CustomRequest, res: Response) => {
   try {
-    // Extract user ID from request
     const userId = req.userId!;
-
-    // Extract orderId query parameter if exists
-    const orderId = req.query.orderId;
+    const orderId = req.query.orderId as string | undefined;
 
     // Define the aggregation pipeline stages
     const pipeline: any[] = [
       {
         $match: {
-          buyer: userId,
+          buyer: new mongoose.Types.ObjectId(userId),
         },
       },
     ];
@@ -284,17 +281,16 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
         },
         {
           $match: {
-            tempOrderId: { $regex: orderId, $options: "i" }, // Case-insensitive regex match
+            tempOrderId: { $regex: new RegExp(orderId, "i") }, // Case-insensitive regex match
           },
         }
       );
     }
 
     // Execute the aggregation pipeline
-    const orders = await Order.aggregate(pipeline);
+    const orders = await Order.aggregate(pipeline).exec();
 
-    console.log(orders);
-
+    // Populate the product fields in the items
     const populatedOrders = await Order.populate(orders, {
       path: "items.product",
       select: "images name",
@@ -325,7 +321,7 @@ export const getSellerSoldOrders = async (
     const pipeline: any[] = [
       {
         $match: {
-          "items.seller": sellerId,
+          "items.seller": new mongoose.Types.ObjectId(sellerId),
         },
       },
     ];

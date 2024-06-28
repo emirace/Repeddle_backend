@@ -406,7 +406,7 @@ export const updateReturnDeliveryAddress = async (
 ) => {
   try {
     const returnId = req.params.id;
-    const { delivery } = req.body;
+    const { fee, method } = req.body;
     const userId = req.userId!;
 
     // Find the return
@@ -442,7 +442,7 @@ export const updateReturnDeliveryAddress = async (
       });
     }
 
-    foundReturn.deliverySelected = delivery;
+    foundReturn.deliverySelected = { fee, method };
 
     // Save the updated return
     const updatedReturn = await foundReturn.save();
