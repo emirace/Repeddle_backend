@@ -166,7 +166,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
 
-    const returns = await Return.find({ "productId.seller": userId })
+    const returns = await Return.find()
       .populate({
         path: "productId",
         select: "images name",
@@ -199,12 +199,12 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       .populate({
         path: "productId",
         select: "images name",
-        populate: { path: "seller", select: "name" },
+        populate: { path: "seller", select: "username" },
       })
       .populate({
         path: "orderId",
         select: "buyer",
-        populate: { path: "buyer", select: "name" },
+        populate: { path: "buyer", select: "username" },
       });
 
     if (!foundReturn) {
@@ -305,7 +305,7 @@ export const updateUserDeliveryTracking = async (
       | null = await Return.findById(returnId).populate({
       path: "orderId",
       select: "buyer",
-      populate: { path: "buyer", select: "name" },
+      populate: { path: "buyer", select: "username" },
     });
 
     if (!foundReturn) {
