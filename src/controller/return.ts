@@ -190,12 +190,12 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
 };
 
 export const getReturnById = async (req: CustomRequest, res: Response) => {
-  try {
-    const returnId = req.params.id;
-    const userId = req.userId!;
-    const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
+  const { id: returnId } = req.params;
+  const userId = req.userId!;
+  const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
 
-    const foundReturn = await Return.findById(returnId)
+  try {
+    const foundReturn: any = await Return.findById(returnId)
       .populate({
         path: "productId",
         select: "images name",
@@ -203,7 +203,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       })
       .populate({
         path: "orderId",
-        select: "buyer",
+        select: "buyer items",
         populate: { path: "buyer", select: "username" },
       });
 
@@ -213,18 +213,11 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
         .json({ status: false, message: "Return not found" });
     }
 
-    const order = await Order.findById(foundReturn.orderId).select(
-      "buyer items"
-    );
-    if (!order) {
-      return res
-        .status(404)
-        .json({ status: false, message: "Associated order not found" });
-    }
+    const order = foundReturn.orderId as any;
 
-    const isBuyer = order.buyer.toString() === userId.toString();
+    const isBuyer = order.buyer._id.toString() === userId.toString();
     const isSeller = order.items.some(
-      (item) => item.seller.toString() === userId.toString()
+      (item: any) => item.seller.toString() === userId.toString()
     );
 
     if (!isBuyer && !isSeller && userRole !== "admin") {
@@ -234,9 +227,26 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       });
     }
 
-    res.status(200).json({ status: true, return: foundReturn });
+    // Filter the items array to include only the item that matches the productId
+    const filteredOrderItems = order.items.filter(
+      (item: any) =>
+        item.product.toString() === foundReturn.productId._id.toString()
+    );
+
+    // Create a new object to hold the filtered order details
+    const filteredOrder = {
+      ...order._doc,
+      items: filteredOrderItems,
+    };
+
+    res
+      .status(200)
+      .json({
+        status: true,
+        return: { ...foundReturn._doc, orderId: filteredOrder },
+      });
   } catch (error) {
-    console.log("Error fetching return by ID ", error);
+    console.error("Error fetching return by ID:", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
