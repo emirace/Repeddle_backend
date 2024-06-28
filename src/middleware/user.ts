@@ -52,7 +52,7 @@ export const authorize = (requiredRoles?: ("Admin" | "User" | "Seller")[]) => {
       }
 
       // Attach user data to the request object for use in the route handler
-      req.userId = user._id;
+      req.userId = user._id.toString();
       req.isAdmin = user.role === "Admin";
       req.userRole = user.role;
 

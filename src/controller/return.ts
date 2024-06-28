@@ -247,9 +247,17 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
 
     // Update the status and adminReason if provided
     foundReturn.status = status;
-    if (status === "Decline" && adminReason) {
+    if (status === "Declined" && adminReason) {
       foundReturn.adminReason = adminReason;
     }
+
+    // Update the delivery tracking status
+    const newStatus: IDeliveryTrackingHistory = {
+      status: "Return " + status,
+      timestamp: new Date(),
+    };
+    foundReturn.deliveryTracking.currentStatus = newStatus;
+    foundReturn.deliveryTracking.history.push(newStatus);
 
     // Save the updated return
     const updatedReturn = await foundReturn.save();
@@ -299,6 +307,21 @@ export const updateUserDeliveryTracking = async (
         status: false,
         message:
           "You do not have permission to update the delivery tracking status",
+      });
+    }
+
+    // Ensure that only the seller can update the status other than "Return Received"
+    if (status !== "Return Received" && !isBuyer) {
+      return res.status(403).json({
+        message: "Unauthorized: Only the buyer can update the status",
+      });
+    }
+
+    // Ensure that only the buyer can update the status to "Return Received"
+    if (status === "Return Received" && !isSeller) {
+      return res.status(403).json({
+        message:
+          "Unauthorized: Only the seller can update the status to Received",
       });
     }
 

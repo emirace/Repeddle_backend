@@ -478,16 +478,23 @@ const ProductController = {
       product.comments.push(newComment);
       await product.save();
 
+      // Retrieve the newly added comment with populated user data
+      const populatedComment = await Product.findById(productId)
+        .populate({
+          path: "comments.userId",
+          select: "username image",
+        })
+        .select("comments")
+        .then((product) =>
+          product?.comments.find(
+            (com: any) =>
+              com.userId._id.toString() === userId && com.comment === comment
+          )
+        );
+
       res.status(201).json({
         message: "Comment added",
-        comment: {
-          ...newComment,
-          userId: {
-            _id: userId,
-            name: user.username,
-            image: user.image,
-          },
-        },
+        comment: populatedComment,
       });
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -689,6 +696,7 @@ const ProductController = {
     }
   },
 
+  // Controller to submit a review
   async submitReview(req: CustomRequest, res: Response) {
     const { productId } = req.params;
     const userId = req.userId!;
@@ -719,7 +727,7 @@ const ProductController = {
 
       // Check if user has already reviewed the product
       const hasReviewed = product.reviews.some(
-        (review) => review.user.toString() === userId
+        (review: any) => review.user._id.toString() === userId
       );
       if (hasReviewed) {
         return res
@@ -727,6 +735,7 @@ const ProductController = {
           .json({ message: "You have already reviewed this product" });
       }
 
+      // Create a new review
       const newReview = {
         user: userId,
         comment,
@@ -740,7 +749,20 @@ const ProductController = {
         product.reviews.length;
       await product.save();
 
-      res.status(200).json({ message: "Review submitted", review: newReview });
+      // Retrieve the newly added review with populated user data
+      const populatedReview = await Product.findById(productId)
+        .populate({
+          path: "reviews.user",
+          select: "username image",
+        })
+        .select("reviews")
+        .then((product) =>
+          product?.reviews.find((review) => review.user.toString() === userId)
+        );
+
+      res
+        .status(200)
+        .json({ message: "Review submitted", review: populatedReview });
     } catch (error) {
       console.error("Error submitting review:", error);
       res.status(500).json({ message: "Internal server error" });

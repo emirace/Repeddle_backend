@@ -440,8 +440,8 @@ export const updateDeliveryTracking = async (
 
     // Fetch the order by ID
     const order: any = await Order.findById(orderId)
-      .populate("items.seller", "username imwge firstName lastName")
-      .populate("buyer", "username imwge firstName lastName")
+      .populate("items.seller", "username image firstName lastName")
+      .populate("buyer", "username image firstName lastName")
       .populate("items.product");
 
     // Check if the order exists
@@ -471,14 +471,43 @@ export const updateDeliveryTracking = async (
         .json({ status: false, message: "Product not found" });
     }
 
-    const isSeller = product.seller._id.toString() !== userId?.toString();
-    const isBuyer = order.buyer._id.toString() !== userId?.toString();
-    // Check if the user is the seller of the product
+    const isSeller = product.seller._id.toString() === userId?.toString();
+    const isBuyer = order.buyer._id.toString() === userId?.toString();
+
+    // Ensure that only the seller can update the status from "Processing" to "Delivered"
     if (!isSeller && !isBuyer) {
       return res.status(403).json({
         message:
           "Unauthorized: Only the seller or buyer can update delivery tracking",
       });
+    }
+
+    // Ensure that only the seller can update the status other than "Received"
+    if (status !== "Received" && !isSeller) {
+      return res.status(403).json({
+        message: "Unauthorized: Only the seller can update the status",
+      });
+    }
+
+    // Ensure that only the buyer can update the status to "Received"
+    if (status === "Received" && !isBuyer) {
+      return res.status(403).json({
+        message:
+          "Unauthorized: Only the buyer can update the status to Received",
+      });
+    }
+
+    // Check if the new status is different from current status and history
+    const allStatuses = [
+      order.items[itemIndex].deliveryTracking.currentStatus.status,
+      ...order.items[itemIndex].deliveryTracking.history.map(
+        (entry: { status: any }) => entry.status
+      ),
+    ];
+    if (allStatuses.includes(status)) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Cannot update to a previous status" });
     }
 
     // Get the current delivery tracking status of the item
