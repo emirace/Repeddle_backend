@@ -20,7 +20,7 @@ export interface IReturn extends Document {
   region: "NGN" | "ZAR";
   adminReason?: string;
   trackingNumber?: string;
-  status: "Approved" | "Decline" | "Pending";
+  status: "Approved" | "Declined" | "Pending";
   deliveryOption: IDeliveryOption;
   deliverySelected: IDeliveryOption;
   deliveryTracking: {
