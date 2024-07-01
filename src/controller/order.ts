@@ -287,6 +287,11 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
       );
     }
 
+    // Add the $sort stage to sort by createdAt in descending order
+    pipeline.push({
+      $sort: { createdAt: -1 },
+    });
+
     // Execute the aggregation pipeline
     const orders = await Order.aggregate(pipeline).exec();
 
@@ -342,6 +347,11 @@ export const getSellerSoldOrders = async (
       );
     }
 
+    // Add the $sort stage to sort by createdAt in descending order
+    pipeline.push({
+      $sort: { createdAt: -1 },
+    });
+
     // Execute the aggregation pipeline
     let soldOrders: IOrder[] = await Order.aggregate(pipeline);
 
@@ -382,8 +392,8 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
 
     // Fetch the order by ID
     const order: any = await Order.findById(orderId)
-      .populate("items.seller", "username imwge firstName lastName")
-      .populate("buyer", "username imwge firstName lastName")
+      .populate("items.seller", "username image firstName lastName")
+      .populate("buyer", "username image firstName lastName")
       .populate("items.product");
 
     // Check if the order exists
