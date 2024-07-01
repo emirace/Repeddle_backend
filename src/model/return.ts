@@ -54,7 +54,7 @@ const returnSchema: Schema = new Schema(
     trackingNumber: { type: String },
     status: {
       type: String,
-      enum: ["Approved", "Decline", "Pending"],
+      enum: ["Approved", "Declined", "Pending"],
       default: "Pending",
     },
     deliveryOption: { type: DeliveryOptionSchema, required: true },
