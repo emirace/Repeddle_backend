@@ -124,7 +124,7 @@ export const defaultSocket = (io: Server) => {
           { $unset: { socketId: 1 } }
         );
         if (user) {
-          console.log(`User ${user.username} (ID: ${user._id}) logged out.`);
+          console.log(`User ${user.username} (ID: ${user._id}) disconnected.`);
         } else {
           console.log("User not found. disconnect");
         }

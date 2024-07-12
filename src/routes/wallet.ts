@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.use(extractUserRegion);
 
-router.post("/fund", authorize(), fundWallet);
-router.get("/balance", authorize(), getUserBalance);
-router.post("/withdraw", authorize(), requestWithdrawal);
+router.post("/fund", authorize(["User", "Admin"]), fundWallet);
+router.get("/balance", authorize(["User", "Admin"]), getUserBalance);
+router.post("/withdraw", authorize(["User", "Admin"]), requestWithdrawal);
 
 export default router;

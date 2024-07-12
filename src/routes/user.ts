@@ -6,13 +6,17 @@ import { authorize, extractUserRegion } from "../middleware/user";
 const router = express.Router();
 
 // Get user profile
-router.get("/profile", authorize(), UserController.getProfile);
+router.get("/profile", authorize(["User", "Admin"]), UserController.getProfile);
 
 router.get("/admin", authorize(["Admin"]), UserController.getAllUsers);
 
 router.get("/top-sellers", UserController.getTopSellers);
 
-router.get("/wishlist", authorize(), UserController.getUserWishlist);
+router.get(
+  "/wishlist",
+  authorize(["User", "Admin"]),
+  UserController.getUserWishlist
+);
 
 router.get("/:username", UserController.getUserByUsername);
 
@@ -31,18 +35,36 @@ router.post("/register", extractUserRegion, UserController.register);
 // Login user
 router.post("/login", UserController.login);
 
+router.post("/login-guest", extractUserRegion, UserController.loginGuest);
+
 router.post("/suggested-username", UserController.getSuggestedUsername);
 
-router.post("/wishlist", authorize(), UserController.addProductToWishlist);
+router.post(
+  "/wishlist",
+  authorize(["User", "Admin"]),
+  UserController.addProductToWishlist
+);
 
-router.post("/follow/:userId", authorize(), UserController.followUser);
+router.post(
+  "/follow/:userId",
+  authorize(["User", "Admin"]),
+  UserController.followUser
+);
 
 router.post("/reset-password/:token", UserController.resetPassword);
 
-router.post("/:userId/reviews", authorize(), UserController.submitReview);
+router.post(
+  "/:userId/reviews",
+  authorize(["User", "Admin"]),
+  UserController.submitReview
+);
 
 // Update user profile
-router.put("/profile", authorize(), UserController.updateProfile);
+router.put(
+  "/profile",
+  authorize(["User", "Admin"]),
+  UserController.updateProfile
+);
 
 router.put(
   "/admin/:userId",
@@ -51,14 +73,22 @@ router.put(
 );
 
 // Delete user account
-router.delete("/profile", authorize(), UserController.deleteAccount);
+router.delete(
+  "/profile",
+  authorize(["User", "Admin"]),
+  UserController.deleteAccount
+);
 
 router.delete(
   "/wishlist/:productId",
-  authorize(),
+  authorize(["User", "Admin"]),
   UserController.removeProductFromWishList
 );
 
-router.delete("/unfollow/:userId", authorize(), UserController.unfollowUser);
+router.delete(
+  "/unfollow/:userId",
+  authorize(["User", "Admin"]),
+  UserController.unfollowUser
+);
 
 export default router;

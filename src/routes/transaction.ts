@@ -8,7 +8,7 @@ import { authorize } from "../middleware/user";
 
 const router = express.Router();
 
-router.get("/user", authorize(), getUserTransactions);
+router.get("/user", authorize(["User", "Admin"]), getUserTransactions);
 router.get("/", authorize(["Admin"]), getAllTransactions);
 router.get("/:id", getTransactionById);
 

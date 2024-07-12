@@ -5,7 +5,7 @@ import mongoose, { Schema, Document, ObjectId } from "mongoose";
 export interface IMessage extends Document {
   conversationId: ObjectId;
   sender: ObjectId;
-  receiver: ObjectId;
+  receiver?: ObjectId;
   content: string;
   forwardedFrom?: string; // Optional field for forwarded message
   replyTo?: string; // Optional field for reply message
@@ -22,7 +22,7 @@ const messageSchema: Schema = new Schema<IMessage>(
       required: true,
     },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    receiver: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    receiver: { type: Schema.Types.ObjectId, ref: "User" },
     content: { type: String, required: true },
     forwardedFrom: { type: String },
     replyTo: { type: String },

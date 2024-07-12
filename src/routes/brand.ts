@@ -14,7 +14,7 @@ router.get("/", getAllPublishedBrands);
 
 router.get("/admin", authorize(["Admin"]), getAllBrands);
 
-router.post("/", authorize(), addBrand);
+router.post("/", authorize(["User", "Admin"]), addBrand);
 
 router.put("/:id", authorize(["Admin"]), updateBrand);
 

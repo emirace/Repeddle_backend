@@ -25,7 +25,7 @@ export interface IUser extends Document {
   lastName: string;
   image?: string;
   email: string;
-  role: "Admin" | "User" | "Seller";
+  role: "Admin" | "User" | "Guest";
   password: string;
   followers: string[];
   following: string[];
@@ -58,9 +58,9 @@ export interface IUser extends Document {
   socketId?: string;
 }
 
-const reviewSchema = new mongoose.Schema(
+const reviewSchema = new Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+    user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     comment: { type: String, required: true },
     rating: { type: Number, required: true },
     like: { type: Boolean },
@@ -104,7 +104,11 @@ const UserSchema = new Schema<IUser>(
     likes: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     wishlist: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     sold: [{ type: Schema.Types.ObjectId, ref: "Product" }],
-    role: { type: String, enum: ["Admin", "User"], default: "User" },
+    role: {
+      type: String,
+      enum: ["Admin", "User", "Guest"],
+      default: "User",
+    },
     isSeller: { type: Boolean, default: false },
     about: { type: String },
     dob: Date,

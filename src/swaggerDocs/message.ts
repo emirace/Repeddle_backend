@@ -336,3 +336,73 @@
  *       '500':
  *         description: Internal server error. Indicates an error occurred while fetching conversations.
  */
+
+/**
+ * @swagger
+ * /messages/join-conversation/{conversationId}:
+ *   post:
+ *     summary: Admin joins a support or report conversation
+ *     tags: [Message]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: conversationId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the conversation to join
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - adminId
+ *             properties:
+ *               adminId:
+ *                 type: string
+ *                 description: ID of the admin joining the conversation
+ *     responses:
+ *       200:
+ *         description: Admin added to the conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 conversation:
+ *                   $ref: '#/components/schemas/Conversation'
+ *       400:
+ *         description: Invalid input or conversation cannot be joined
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Conversation not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
+ */

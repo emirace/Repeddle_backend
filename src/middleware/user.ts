@@ -10,7 +10,7 @@ export interface CustomRequest extends Request {
 }
 
 // Middleware for authorization
-export const authorize = (requiredRoles?: ("Admin" | "User" | "Seller")[]) => {
+export const authorize = (requiredRoles?: ("Admin" | "User" | "Guest")[]) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       // Extract the access token from the request headers or query params

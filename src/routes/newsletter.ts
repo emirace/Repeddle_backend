@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get("/", authorize(["Admin"]), getAllNewsletters);
 router.post("/", extractUserRegion, createNewsletter);
-router.delete("/:id", authorize(), deleteNewsletter);
+router.delete("/:id", authorize(["User", "Admin"]), deleteNewsletter);
 
 export default router;

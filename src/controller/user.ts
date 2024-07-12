@@ -58,7 +58,7 @@ const UserController = {
           .json({ status: false, message: "Email address is required" });
       }
 
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email, isGuest: false });
       if (user) {
         // Generate reset password token
         const resetToken = await generateEmailVerificationToken(
@@ -214,7 +214,7 @@ const UserController = {
       }
 
       const existEmail = await User.findOne({ email });
-      if (existEmail) {
+      if (existEmail && existEmail.role !== "Guest") {
         return res
           .status(400)
           .json({ status: false, message: "Email already exist" });
@@ -231,16 +231,26 @@ const UserController = {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create the new user
-      const newUser: IUser = await User.create({
-        username,
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        phone,
-        region,
-        // Other fields...
-      });
+      const newUser = await User.findOneAndUpdate(
+        { email, isGuest: true },
+        {
+          $set: {
+            username,
+            password: hashedPassword,
+            firstName,
+            lastName,
+            phone,
+            region,
+            isGuest: false,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+          runValidators: true,
+        }
+      );
 
       //TODO
 
@@ -293,6 +303,79 @@ const UserController = {
 
       // Return token
       res.status(200).json({ status: true, token });
+    } catch (error) {
+      console.error("Error logging in:", error);
+      res
+        .status(500)
+        .json({ status: false, message: "Error logging in", error });
+    }
+  },
+
+  async loginGuest(req: CustomRequest, res: Response) {
+    try {
+      // Validate input
+      await Promise.all([
+        body("email").isEmail().withMessage("Invalid email address").run(req),
+        body("fullName")
+          .notEmpty()
+          .withMessage("Full name is required")
+          .run(req),
+      ]);
+
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ status: false, errors: errors.array() });
+      }
+
+      const { email, fullName } = req.body;
+      const region = req.userRegion;
+
+      // Ensure both fullName and email are provided
+      if (!fullName || !email) {
+        return res.status(400).json({
+          success: false,
+          message: "Full name and email are required",
+        });
+      }
+
+      const existUser = await User.findOne({ email });
+
+      if (existUser && existUser.role !== "Guest") {
+        return res.status(400).json({
+          success: false,
+          message: "Email already exists",
+        });
+      }
+
+      // Update or create guest user
+      const user: any = await User.findOneAndUpdate(
+        { email, deleted: false, role: "Guest" },
+        {
+          $set: {
+            username: fullName.split(" ")[0] + generateRandomNumber(),
+            firstName: fullName.split(" ")[0],
+            lastName: fullName.split(" ").slice(1).join(" "),
+            email,
+            role: "Guest",
+            region,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+          runValidators: true,
+        }
+      );
+
+      // Generate JWT token
+      const token = await generateAccessToken(user._id);
+
+      // Return token and user
+      res
+        .status(200)
+        .json({ status: true, guestUser: { ...user._doc, token } });
     } catch (error) {
       console.error("Error logging in:", error);
       res
@@ -545,7 +628,7 @@ const UserController = {
   async getTopSellers(req: Request, res: Response) {
     try {
       // Query the User model to find top sellers based on certain criteria
-      const topSellers: IUser[] = await User.find({ role: "Seller" })
+      const topSellers: IUser[] = await User.find({ isSeller: true })
         .select("username image badge") // Select only necessary fields
         .sort({ sold: -1 }) // Sort by the number of products sold in descending order
         .limit(10); // Limit the result to the top 10 sellers
@@ -646,7 +729,10 @@ const UserController = {
       }
 
       // Query the User model to find the user by username and populate related fields
-      const user = await User.findOne({ username }).select(
+      const user = await User.findOne({
+        username,
+        role: { $ne: "Guest" },
+      }).select(
         "username image about rating  followers following numReviews _id rebundle sold buyers createdAt region likes"
       );
 

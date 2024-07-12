@@ -14,22 +14,22 @@ import { authorize, extractUserRegion } from "../middleware/user";
 const router = express.Router();
 
 // Route to make an order
-router.post("/", authorize(), extractUserRegion, createOrder);
+router.post("/", authorize(["User", "Admin"]), extractUserRegion, createOrder);
 
 // Route to update delivery tracking of an item
 router.put(
   "/:orderId/items/:itemId/delivery-tracking",
-  authorize(),
+  authorize(["User", "Admin"]),
   updateDeliveryTracking
 );
 
-router.get("/", authorize(), getUserOrders);
+router.get("/", authorize(["User", "Admin"]), getUserOrders);
 
-router.get("/sold", authorize(), getSellerSoldOrders);
+router.get("/sold", authorize(["User", "Admin"]), getSellerSoldOrders);
 
-router.get("/summary", authorize(), getUserDailyOrdersSummary);
+router.get("/summary", authorize(["User", "Admin"]), getUserDailyOrdersSummary);
 
 // Route to get an order by ID
-router.get("/:orderId", authorize(), getOrderById);
+router.get("/:orderId", authorize(["User", "Admin"]), getOrderById);
 
 export default router;

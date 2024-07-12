@@ -7,8 +7,12 @@ import {
 
 const router = Router();
 
-router.get("/", authorize(), getUserNotifications);
+router.get("/", authorize(["User", "Admin"]), getUserNotifications);
 
-router.put("/:id/mark-read", authorize(), markNotificationAsRead);
+router.put(
+  "/:id/mark-read",
+  authorize(["User", "Admin"]),
+  markNotificationAsRead
+);
 
 export default router;

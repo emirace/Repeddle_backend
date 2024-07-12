@@ -4,10 +4,10 @@ import { deleteImage, downloadImage, uploadImage } from "../controller/image";
 
 const router = express.Router();
 
-router.post("/", authorize(), uploadImage);
+router.post("/", authorize(["User", "Admin"]), uploadImage);
 
 router.get("/:key", downloadImage);
 
-router.delete("/:image", authorize(), deleteImage);
+router.delete("/:image", authorize(["User", "Admin"]), deleteImage);
 
 export default router;

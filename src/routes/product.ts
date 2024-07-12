@@ -8,57 +8,89 @@ const router = express.Router();
 router.use(extractUserRegion);
 
 router.get("/", ProductController.getAllProducts);
-router.get("/user", authorize(), ProductController.getAllUserProducts);
-router.get("/summary", authorize(), ProductController.getUserProductSummary);
+router.get(
+  "/user",
+  authorize(["User", "Admin"]),
+  ProductController.getAllUserProducts
+);
+router.get(
+  "/summary",
+  authorize(["User", "Admin"]),
+  ProductController.getUserProductSummary
+);
 router.get("/:slug", ProductController.getProductBySlug);
-router.get("/product/:id", authorize(), ProductController.getProductById);
-router.post("/", authorize(), ProductController.createProduct);
+router.get(
+  "/product/:id",
+  authorize(["User", "Admin"]),
+  ProductController.getProductById
+);
+router.post("/", authorize(["User", "Admin"]), ProductController.createProduct);
 // Like a product
-router.post("/:productId/like", authorize(), ProductController.likeProduct);
+router.post(
+  "/:productId/like",
+  authorize(["User", "Admin"]),
+  ProductController.likeProduct
+);
 
 // Unlike a product
-router.post("/:productId/unlike", authorize(), ProductController.unlikeProduct);
+router.post(
+  "/:productId/unlike",
+  authorize(["User", "Admin"]),
+  ProductController.unlikeProduct
+);
 router.post(
   "/:productId/comments",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.createComment
 );
 
-router.post("/:productId/reviews", authorize(), ProductController.submitReview);
+router.post(
+  "/:productId/reviews",
+  authorize(["User", "Admin"]),
+  ProductController.submitReview
+);
 // Like a comment on a product
 router.post(
   "/:productId/comments/:commentId/like",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.likeComment
 );
 
 // Unlike a comment on a product
 router.post(
   "/:productId/comments/:commentId/unlike",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.unlikeComment
 );
 // Reply to a comment on a product
 router.post(
   "/:productId/comments/:commentId/reply",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.replyToComment
 );
 // Like a reply to a comment on a product
 router.post(
   "/:productId/comments/:commentId/replies/:replyId/like",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.likeReply
 );
 
 // Unlike a reply to a comment on a product
 router.post(
   "/:productId/comments/:commentId/replies/:replyId/unlike",
-  authorize(),
+  authorize(["User", "Admin"]),
   ProductController.unlikeReply
 );
 
-router.put("/:id", authorize(), ProductController.updateProduct);
-router.delete("/:id", authorize(), ProductController.deleteProduct);
+router.put(
+  "/:id",
+  authorize(["User", "Admin"]),
+  ProductController.updateProduct
+);
+router.delete(
+  "/:id",
+  authorize(["User", "Admin"]),
+  ProductController.deleteProduct
+);
 
 export default router;
