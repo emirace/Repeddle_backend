@@ -127,3 +127,69 @@
  *                   type: string
  *                   description: Error message indicating internal server error
  */
+
+/**
+ * @swagger
+ * /wallets/withdrawal:
+ *   post:
+ *     summary: Process a withdrawal request
+ *     description: This endpoint processes a withdrawal request by deducting the requested amount from the user's wallet balance and recording the transaction.
+ *     tags:
+ *       - Wallet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 100
+ *                 description: The amount to withdraw from the user's wallet.
+ *     responses:
+ *       200:
+ *         description: Withdrawal request processed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Withdrawal request processed successfully
+ *       400:
+ *         description: Insufficient balance.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Insufficient balance
+ *       500:
+ *         description: Error processing withdrawal request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Error processing withdrawal request
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ *     security:
+ *       - bearerAuth: []
+ */
