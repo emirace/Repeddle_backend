@@ -57,8 +57,8 @@ export async function fundWallet(req: CustomRequest, res: Response) {
 
       const errorMessage =
         amount !== paymentVerification.amount
-          ? "Invalid transactionId amount"
-          : "Invalid transactionId currency";
+          ? "Invalid transaction amount"
+          : "Invalid transaction currency";
 
       return res.status(400).json({ status: false, message: errorMessage });
     }
