@@ -141,7 +141,15 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
     await wallet.save();
 
     // Create transaction record for withdrawal
-    await Transaction.create({ walletId: wallet._id, amount, type: "debit" });
+    const transaction = new Transaction({
+      type: "debit",
+      userId,
+      walletId: wallet._id,
+      amount,
+      status: "PENDING",
+      description: "Redrawal request",
+    });
+    await transaction.save();
 
     res.status(200).json({
       status: true,
