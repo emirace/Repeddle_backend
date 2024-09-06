@@ -214,7 +214,7 @@ const ProductController = {
           .json({ status: false, message: "Product not found" });
       }
 
-      if (product.seller.toString() !== userId.toString() && !isAdmin) {
+      if (product.seller._id.toString() !== userId.toString() && !isAdmin) {
         return res.status(403).json({
           status: false,
           message: "You are not authorized to access this resource.",
