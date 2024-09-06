@@ -12,6 +12,6 @@ router.use(extractUserRegion);
 
 router.post("/fund", authorize(["User", "Admin"]), fundWallet);
 router.get("/balance", authorize(["User", "Admin"]), getUserBalance);
-router.post("/withdraw", authorize(["User", "Admin"]), requestWithdrawal);
+router.post("/withdrawal", authorize(["User", "Admin"]), requestWithdrawal);
 
 export default router;
