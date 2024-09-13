@@ -58,7 +58,7 @@ const UserController = {
           .json({ status: false, message: "Email address is required" });
       }
 
-      const user = await User.findOne({ email, isGuest: false });
+      const user = await User.findOne({ email, role: "Guest" });
       if (user) {
         // Generate reset password token
         const resetToken = await generateEmailVerificationToken(
@@ -232,7 +232,7 @@ const UserController = {
 
       // Create the new user
       const newUser = await User.findOneAndUpdate(
-        { email, isGuest: true },
+        { email, role: "Guest" },
         {
           $set: {
             username,
@@ -241,7 +241,7 @@ const UserController = {
             lastName,
             phone,
             region,
-            isGuest: false,
+            role: "User",
           },
         },
         {
