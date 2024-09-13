@@ -9,6 +9,7 @@ import User from "../model/user";
 import { body, validationResult } from "express-validator";
 import Transaction from "../model/transaction";
 import { isUserSeller } from "../utils/order";
+import Notification from "../model/notification";
 
 export const createOrder = async (req: CustomRequest, res: Response) => {
   const session = await mongoose.startSession();
@@ -540,6 +541,12 @@ export const updateDeliveryTracking = async (
 
     // Save the updated order
     await order.save();
+
+    await Notification.create({
+      message: `Order ${status}`,
+      link: `/order/${order._id}`,
+      user: order.buyer._id,
+    });
 
     // Return success response
     return res.status(200).json({

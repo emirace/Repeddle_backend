@@ -206,7 +206,7 @@ const ProductController = {
       const userId = req.userId!;
       const isAdmin = req.isAdmin;
 
-      const product = await Product.findById(id).populate("seller", "username");
+      const product:any = await Product.findById(id).populate("seller", "username");
 
       if (!product) {
         return res
@@ -214,7 +214,7 @@ const ProductController = {
           .json({ status: false, message: "Product not found" });
       }
 
-      if (product.seller.toString() !== userId.toString() && !isAdmin) {
+      if (product.seller._id.toString() !== userId.toString() && !isAdmin) {
         return res.status(403).json({
           status: false,
           message: "You are not authorized to access this resource.",
