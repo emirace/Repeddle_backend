@@ -198,7 +198,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
     const foundReturn: any = await Return.findById(returnId)
       .populate({
         path: "productId",
-        select: "images name",
+        select: "images name slug",
         populate: { path: "seller", select: "username" },
       })
       .populate({
