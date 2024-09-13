@@ -2,6 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/user";
 import Order, { IDeliveryTrackingHistory } from "../model/order";
 import Return, { IReturn } from "../model/return";
+import Notification from "../model/notification";
 
 export const createReturn = async (req: CustomRequest, res: Response) => {
   try {
@@ -296,7 +297,13 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     foundReturn.deliveryTracking.history.push(newStatus);
 
     // Save the updated return
-    const updatedReturn = await foundReturn.save();
+    const updatedReturn: any = await foundReturn.save();
+
+    await Notification.create({
+      message: `Return ${status}`,
+      link: `/return/${updatedReturn._id}`,
+      user: updatedReturn.orderId.buyer._id,
+    });
 
     res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
