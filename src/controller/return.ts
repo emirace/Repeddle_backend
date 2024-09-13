@@ -268,7 +268,7 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
     const foundReturn = await Return.findById(returnId)
       .populate({
         path: "productId",
-        select: "images name",
+        select: "images name slug",
         populate: { path: "seller", select: "username" },
       })
       .populate({
@@ -330,7 +330,7 @@ export const updateUserDeliveryTracking = async (
       | null = await Return.findById(returnId)
       .populate({
         path: "productId",
-        select: "images name",
+        select: "images name slug",
         populate: { path: "seller", select: "username" },
       })
       .populate({
@@ -400,6 +400,14 @@ export const updateUserDeliveryTracking = async (
     // Save the updated return
     const updatedReturn = await foundReturn.save();
 
+    await Notification.create({
+      message: `${status}`,
+      link: `/return/${updatedReturn._id}`,
+      user: isBuyer
+        ? updatedReturn.productId.seller._id
+        : updatedReturn.orderId.buyer._id,
+    });
+
     res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
     console.log("Error updating return delivery tracking status ", error);
@@ -453,6 +461,12 @@ export const updateReturnDeliveryAddress = async (
 
     // Save the updated return
     const updatedReturn = await foundReturn.save();
+
+    await Notification.create({
+      message: `Return address updated`,
+      link: `/return/${updatedReturn._id}`,
+      user: updatedReturn.orderId.buyer._id,
+    });
 
     res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
