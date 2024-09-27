@@ -99,3 +99,55 @@
  *       '500':
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /newsletters/unsubscribe:
+ *   delete:
+ *     summary: Delete user newsletter
+ *     description: Deletes all newsletters for the authenticated user, keeping only one marked as deleted.
+ *     tags:
+ *       - Newsletters
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Newsletter deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Newsletter deleted successfully
+ *       404:
+ *         description: User or newsletter not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: User not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
