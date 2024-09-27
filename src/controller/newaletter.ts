@@ -46,6 +46,11 @@ export const createNewsletter = async (req: CustomRequest, res: Response) => {
 
     // Save the newsletter to the database
     const savedNewsletter: INewsletter = await newNewsletter.save();
+    const user = await User.findOne({ email });
+    if (user) {
+      user.allowNewsletter = true;
+      await user.save();
+    }
 
     res.status(201).json({ status: true, newsletter: savedNewsletter });
   } catch (error) {
@@ -96,6 +101,8 @@ export const deleteUserNewsletter = async (
         .status(404)
         .json({ status: false, message: "Newsletter not found" });
     }
+    user.allowNewsletter = false;
+    await user.save();
 
     res
       .status(200)
@@ -122,6 +129,12 @@ export const deleteNewsletter = async (req: Request, res: Response) => {
       return res
         .status(404)
         .json({ status: false, message: "Newsletter not found" });
+    }
+
+    const user = await User.findOne({ email: updatedNewsletter.email });
+    if (user) {
+      user.allowNewsletter = false;
+      await user.save();
     }
 
     res
