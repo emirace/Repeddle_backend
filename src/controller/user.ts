@@ -436,6 +436,7 @@ const UserController = {
         "accountName",
         "bankName",
         "accountNumber",
+        "allowNewsletter",
       ];
 
       const user = await User.findById(userId);
@@ -861,6 +862,7 @@ const UserController = {
         "role",
         "badge",
         "active",
+        "allowNewsletter",
       ];
 
       const user = await User.findById(userId);
