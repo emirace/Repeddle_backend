@@ -428,6 +428,7 @@ const UserController = {
         "firstName",
         "lastName",
         "image",
+        "username",
         "about",
         "dob",
         "phone",
@@ -444,6 +445,16 @@ const UserController = {
         return res
           .status(404)
           .json({ status: false, message: "User not found" });
+      }
+
+      // Validate allowed fields
+      for (const field in updateFields) {
+        if (!allowedFields.includes(field as keyof UpdateFields)) {
+          return res.status(400).json({
+            status: false,
+            message: `Field '${field}' is not allowed for update`,
+          });
+        }
       }
 
       // Check if username is being updated and enforce the 30-day limit
@@ -468,16 +479,6 @@ const UserController = {
           return res.status(400).json({
             status: false,
             message: `${field} has already been added and cannot be edited`,
-          });
-        }
-      }
-
-      // Validate allowed fields
-      for (const field in updateFields) {
-        if (!allowedFields.includes(field as keyof UpdateFields)) {
-          return res.status(400).json({
-            status: false,
-            message: `Field '${field}' is not allowed for update`,
           });
         }
       }
