@@ -83,6 +83,74 @@
 
 /**
  * @swagger
+ * /messages/conversations/start:
+ *   post:
+ *     summary: Start a new conversation or retrieve an existing one
+ *     description: This endpoint allows a user to start a new conversation with a participant. If the conversation already exists, it will return the existing conversation. Otherwise, a new conversation will be created.
+ *     tags: [Message]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - participantId
+ *               - type
+ *             properties:
+ *               participantId:
+ *                 type: string
+ *                 description: The ID of the participant to start the conversation with
+ *               type:
+ *                 type: string
+ *                 description: The type of conversation (e.g., direct message, group chat)
+ *     responses:
+ *       200:
+ *         description: Existing conversation found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Status of the operation
+ *                 conversation:
+ *                   $ref: '#/components/schemas/Conversation'
+ *       201:
+ *         description: New conversation created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Status of the operation
+ *                 conversation:
+ *                   $ref: '#/components/schemas/Conversation'
+ *       500:
+ *         description: Error starting conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Status of the operation
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ *                 error:
+ *                   type: string
+ *                   description: The error details
+ */
+
+/**
+ * @swagger
  * /messages/{conversationId}:
  *   get:
  *     summary: Retrieve messages between two users

@@ -27,6 +27,11 @@ router.post("/send", authorize(["User", "Admin", "Guest"]), sendMessage);
 router.post("/forward", authorize(["User", "Admin", "Guest"]), forwardMessage);
 router.post("/reply", authorize(["User", "Admin", "Guest"]), replyToMessage);
 router.post(
+  "/conversations/start",
+  authorize(["User", "Admin", "Guest"]),
+  replyToMessage
+);
+router.post(
   "/join-conversation/:conversationId",
   authorize(["Admin"]),
   joinConversation
