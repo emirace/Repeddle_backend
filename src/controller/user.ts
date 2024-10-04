@@ -487,6 +487,11 @@ const UserController = {
         updateFields.usernameLastUpdated = new Date();
       }
 
+      if ("password" in updateFields) {
+        const hashedPassword = await bcrypt.hash(updateFields["password"], 10);
+        updateFields.password = hashedPassword;
+      }
+
       // Check if once-update fields are being added or edited for the first time
       for (const field of onceUpdateFields) {
         if (user[field] && field in updateFields) {
