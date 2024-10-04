@@ -387,6 +387,7 @@ const UserController = {
   // Get user profile
   async getProfile(req: CustomRequest, res: Response) {
     try {
+      console.log("i am here");
       const userId = req.userId;
       const user = await User.findById(userId).select(
         "-password -tokenVersion -delected"
@@ -412,9 +413,20 @@ const UserController = {
       const userId = req.userId;
 
       // Extract the fields to be updated from the request body
-      const updateFields: UpdateFields = req.body;
+      let updateFields: UpdateFields = req.body;
 
-      console.log(updateFields);
+      const isEmpty = (value: any) => {
+        if (value == null || value === "") return true; // null, undefined, or empty string
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return Object.keys(value).length === 0; // empty object
+        }
+        return false;
+      };
+
+      // Remove fields without values (null, empty string, or empty object)
+      updateFields = Object.fromEntries(
+        Object.entries(updateFields).filter(([_, value]) => !isEmpty(value))
+      ) as UpdateFields;
 
       // Fields that can only be updated once
       const onceUpdateFields: (keyof UpdateFields)[] = [
