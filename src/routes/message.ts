@@ -8,6 +8,7 @@ import {
   joinConversation,
   replyToMessage,
   sendMessage,
+  startConversation,
 } from "../controller/message";
 import { authorize } from "../middleware/user";
 
@@ -29,7 +30,7 @@ router.post("/reply", authorize(["User", "Admin", "Guest"]), replyToMessage);
 router.post(
   "/conversations/start",
   authorize(["User", "Admin", "Guest"]),
-  replyToMessage
+  startConversation
 );
 router.post(
   "/join-conversation/:conversationId",
