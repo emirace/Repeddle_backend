@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/user";
 import Order, { IDeliveryTrackingHistory } from "../model/order";
 import Return, { IReturn } from "../model/return";
 import Notification from "../model/notification";
+import mongoose from "mongoose";
 
 export const createReturn = async (req: CustomRequest, res: Response) => {
   try {
@@ -250,6 +251,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
   }
 };
 
+// Approve or decline return
 export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
   try {
     const returnId = req.params.id;
@@ -261,6 +263,13 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
       return res.status(403).json({
         status: false,
         message: "You do not have permission to update the return status",
+      });
+    }
+
+    if (status === "Declined" && !adminReason) {
+      return res.status(400).json({
+        status: false,
+        message: "Reason for decline is require",
       });
     }
 
@@ -316,18 +325,16 @@ export const updateUserDeliveryTracking = async (
   req: CustomRequest,
   res: Response
 ) => {
+  const session = await mongoose.startSession(); // Start a session
+  session.startTransaction(); // Start transaction
+
   try {
     const returnId = req.params.id;
     const { status, trackingNumber } = req.body;
     const userId = req.userId!;
 
     // Find the return
-    const foundReturn:
-      | (IReturn & {
-          orderId: { buyer: { _id: string } };
-          productId: { seller: { _id: string } };
-        })
-      | null = await Return.findById(returnId)
+    const foundReturn: any = await Return.findById(returnId)
       .populate({
         path: "productId",
         select: "images name slug",
@@ -337,9 +344,12 @@ export const updateUserDeliveryTracking = async (
         path: "orderId",
         select: "buyer items",
         populate: { path: "buyer", select: "username" },
-      });
+      })
+      .session(session); // Pass the session to the query
 
     if (!foundReturn) {
+      await session.abortTransaction();
+      session.endSession();
       return res
         .status(404)
         .json({ status: false, message: "Return not found" });
@@ -352,6 +362,8 @@ export const updateUserDeliveryTracking = async (
       foundReturn.productId.seller._id.toString() === userId.toString();
 
     if (!isBuyer && !isSeller) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         status: false,
         message:
@@ -361,6 +373,8 @@ export const updateUserDeliveryTracking = async (
 
     // Ensure that only the seller can update the status other than "Return Received"
     if (status !== "Return Received" && !isBuyer) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         message: "Unauthorized: Only the buyer can update the status",
       });
@@ -368,6 +382,8 @@ export const updateUserDeliveryTracking = async (
 
     // Ensure that only the buyer can update the status to "Return Received"
     if (status === "Return Received" && !isSeller) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         message:
           "Unauthorized: Only the seller can update the status to Received",
@@ -377,19 +393,24 @@ export const updateUserDeliveryTracking = async (
     // Check if the new status is different from current status and history
     const allStatuses = [
       foundReturn.deliveryTracking.currentStatus.status,
-      ...foundReturn.deliveryTracking.history.map((entry) => entry.status),
+      ...foundReturn.deliveryTracking.history.map(
+        (entry: { status: any }) => entry.status
+      ),
     ];
     if (allStatuses.includes(status)) {
+      await session.abortTransaction();
+      session.endSession();
       return res
         .status(400)
         .json({ status: false, message: "Cannot update to a previous status" });
     }
 
-    // Update the delivery tracking status
+    // Update the delivery tracking status for the return
     const newStatus: IDeliveryTrackingHistory = {
       status: status,
       timestamp: new Date(),
     };
+
     foundReturn.deliveryTracking.currentStatus = newStatus;
     foundReturn.deliveryTracking.history.push(newStatus);
 
@@ -397,19 +418,77 @@ export const updateUserDeliveryTracking = async (
       foundReturn.trackingNumber = trackingNumber;
     }
 
-    // Save the updated return
-    const updatedReturn = await foundReturn.save();
+    // Save the updated return with session
+    const updatedReturn = await foundReturn.save({ session });
 
-    await Notification.create({
-      message: `${status}`,
-      link: `/return/${updatedReturn._id}`,
-      user: isBuyer
-        ? updatedReturn.productId.seller._id
-        : updatedReturn.orderId.buyer._id,
-    });
+    // Update the product's delivery tracking status in the order
+    const order = await Order.findById(foundReturn.orderId._id).session(
+      session
+    );
+
+    if (!order) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(404)
+        .json({ status: false, message: "Order not found" });
+    }
+
+    // Find the specific product in the order's items
+    const itemIndex = order.items.findIndex(
+      (item) => item.product.toString() === foundReturn.productId._id.toString()
+    );
+
+    if (itemIndex === -1) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not found in the order" });
+    }
+
+    const initialProductTrackingStatus: IDeliveryTrackingHistory = {
+      status: order.items[itemIndex].deliveryTracking.currentStatus.status,
+      timestamp:
+        order.items[itemIndex].deliveryTracking.currentStatus.timestamp,
+    };
+    // Update the delivery tracking status of the product in the order
+    const productTrackingStatus: IDeliveryTrackingHistory = {
+      status: status, // Set the same status as the return
+      timestamp: new Date(),
+    };
+
+    order.items[itemIndex].deliveryTracking.currentStatus =
+      productTrackingStatus;
+    order.items[itemIndex].deliveryTracking.history.push(
+      initialProductTrackingStatus
+    );
+
+    // Save the updated order with session
+    await order.save({ session });
+
+    // Create notification for the status update
+    await Notification.create(
+      {
+        message: `${status}`,
+        link: `/return/${updatedReturn._id}`,
+        user: isBuyer
+          ? updatedReturn.productId.seller._id
+          : updatedReturn.orderId.buyer._id,
+      },
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(200).json({ status: true, return: updatedReturn });
   } catch (error) {
+    // Abort transaction if there's an error
+    await session.abortTransaction();
+    session.endSession();
+
     console.log("Error updating return delivery tracking status ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
