@@ -29,6 +29,7 @@ interface UpdateFields {
   accountNumber?: number;
   phone?: string;
   accountName?: string;
+  password: string;
   allowNewsletter: boolean;
   bankName?: string;
   address?: IAddress;
@@ -447,6 +448,7 @@ const UserController = {
         "address",
         "rebundle",
         "accountName",
+        "password",
         "bankName",
         "accountNumber",
         "allowNewsletter",

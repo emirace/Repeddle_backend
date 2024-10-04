@@ -97,9 +97,7 @@ export const deleteUserNewsletter = async (
         .json({ status: false, message: "Newsletter not found" });
     }
 
-    res
-      .status(200)
-      .json({ status: true, message: "Newsletter deleted successfully" });
+    res.status(200).json({ status: true, message: "Unsubscribe successfully" });
   } catch (error) {
     console.log("Error deleting newsletter", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -130,9 +128,7 @@ export const deleteNewsletter = async (req: Request, res: Response) => {
       await user.save();
     }
 
-    res
-      .status(200)
-      .json({ status: true, message: "Newsletter deleted successfully" });
+    res.status(200).json({ status: true, message: "Unsubscribe successfully" });
   } catch (error) {
     console.log("Error deleting newsletter", error);
     res.status(500).json({ status: false, message: "Internal server error" });

@@ -1,7 +1,7 @@
 import { Response } from "express";
 import Product, { IProduct, ISize } from "../model/product";
 import { CustomRequest } from "../middleware/user";
-import { generateUniqueSlug } from "../utils/product";
+import { generateUniqueSlug, isIntervalPassed } from "../utils/product";
 import { ObjectId } from "mongoose";
 import User from "../model/user";
 
@@ -206,7 +206,10 @@ const ProductController = {
       const userId = req.userId!;
       const isAdmin = req.isAdmin;
 
-      const product:any = await Product.findById(id).populate("seller", "username");
+      const product: any = await Product.findById(id).populate(
+        "seller",
+        "username"
+      );
 
       if (!product) {
         return res
@@ -840,6 +843,89 @@ const ProductController = {
     } catch (error) {
       console.error("Error unliking product:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  // Controller to increase view count
+  async addViewCount(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const { hashed } = req.body;
+
+    if (!hashed) {
+      return res
+        .status(400)
+        .json({ message: "Hashed device identifier is required." });
+    }
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
+
+      // Find the most recent view entry for this hashed device
+      const existingView = product.viewcount
+        .filter((view) => view.hashed === hashed)
+        .sort(
+          (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+        )[0];
+
+      // If no existing view or more than 30 minutes have passed, add a new view entry
+      if (!existingView || isIntervalPassed(existingView.time)) {
+        product.viewcount.push({ hashed, time: new Date() });
+        await product.save();
+        return res.status(200).json({ message: "View count updated." });
+      } else {
+        return res.status(400).json({
+          message: "View count can only be increased every 30 minutes.",
+        });
+      }
+    } catch (error) {
+      console.error("Error increasing view count:", error);
+      return res.status(500).json({ message: "Server error." });
+    }
+  },
+  // Controller to increase share count
+  async addShareCount(req: CustomRequest, res: Response) {
+    const { productId } = req.params;
+    const { hashed, user } = req.body;
+
+    if (!hashed) {
+      return res
+        .status(400)
+        .json({ message: "Hashed device identifier is required." });
+    }
+
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
+
+      // Find the most recent share entry for this hashed device
+      const existingShare = product.shares
+        .filter((share) => share.hashed === hashed)
+        .sort(
+          (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+        )[0];
+
+      // If no existing share or more than 30 minutes have passed, add a new share entry
+      if (!existingShare || isIntervalPassed(existingShare.time)) {
+        product.shares.push({ hashed, user, time: new Date() });
+        await product.save();
+        return res.status(200).json({ message: "Share count updated." });
+      } else {
+        return res
+          .status(400)
+          .json({
+            message: "Share count can only be increased every 30 minutes.",
+          });
+      }
+    } catch (error) {
+      console.error("Error increasing share count:", error);
+      return res.status(500).json({ message: "Server error." });
     }
   },
 };

@@ -1213,3 +1213,147 @@
  *                   type: string
  *                   example: Internal server error
  */
+
+/**
+ * @swagger
+ * /products/{productId}/view:
+ *   post:
+ *     summary: Increase view count for a product
+ *     tags:
+ *       - Product
+ *     description: This route increases the view count of a product based on a unique device hash. The count can only be increased once every 30 minutes for each unique device hash.
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the product to increase the view count.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               hashed:
+ *                 type: string
+ *                 description: Unique hashed device identifier.
+ *             example:
+ *               hashed: "unique-device-hash"
+ *     responses:
+ *       200:
+ *         description: View count updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: View count updated.
+ *       400:
+ *         description: View count can only be increased every 30 minutes.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: View count can only be increased every 30 minutes.
+ *       404:
+ *         description: Product not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Product not found.
+ *       500:
+ *         description: Server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Server error.
+ */
+
+/**
+ * @swagger
+ * /products/{productId}/share:
+ *   post:
+ *     summary: Increase share count for a product
+ *     tags:
+ *       - Product
+ *     description: This route increases the share count of a product based on a unique device hash. The count can only be increased once every 30 minutes for each unique device hash.
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the product to increase the share count.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               hashed:
+ *                 type: string
+ *                 description: Unique hashed device identifier.
+ *               user:
+ *                 type: string
+ *                 description: User ID of the sharer (optional).
+ *             example:
+ *               hashed: "unique-device-hash"
+ *               user: "userId123"
+ *     responses:
+ *       200:
+ *         description: Share count updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Share count updated.
+ *       400:
+ *         description: Share count can only be increased every 30 minutes.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Share count can only be increased every 30 minutes.
+ *       404:
+ *         description: Product not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Product not found.
+ *       500:
+ *         description: Server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Server error.
+ */

@@ -21,9 +21,9 @@ export interface Comment {
 }
 
 export interface Share {
-  user: string | null;
+  user?: string ;
   hashed: string;
-  time: Date | null;
+  time: Date ;
 }
 
 export interface PriceHistory {

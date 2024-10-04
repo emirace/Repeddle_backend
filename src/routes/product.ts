@@ -49,6 +49,13 @@ router.post(
   authorize(["User", "Admin"]),
   ProductController.submitReview
 );
+
+// Route to increase view count
+router.post("/:productId/view", ProductController.addViewCount);
+
+// Route to increase share count
+router.post("/:productId/share", ProductController.addShareCount);
+
 // Like a comment on a product
 router.post(
   "/:productId/comments/:commentId/like",
