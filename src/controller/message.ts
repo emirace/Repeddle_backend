@@ -417,7 +417,7 @@ export const startConversation = async (req: CustomRequest, res: Response) => {
       type,
     });
 
-    res.status(201).json({ status: true, Conversation: newConversation });
+    res.status(201).json({ status: true, conversation: newConversation });
   } catch (error) {
     console.log(error);
     res
