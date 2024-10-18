@@ -15,6 +15,7 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
   try {
     const {
       content,
+      image,
       conversationId,
       referencedUser,
       referencedProduct,
@@ -109,6 +110,7 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
       sender,
       conversationId: conversation._id,
       receiver,
+      image,
       content,
       referencedUser,
       referencedProduct,
@@ -269,7 +271,7 @@ export const forwardMessage = async (req: CustomRequest, res: Response) => {
 export const replyToMessage = async (req: CustomRequest, res: Response) => {
   try {
     // Extract necessary data from request body
-    const { receiver, content, replyTo } = req.body;
+    const { receiver, content, image, replyTo } = req.body;
     const sender = req.userId;
 
     // Check if sender and receiver are valid user IDs
@@ -300,6 +302,7 @@ export const replyToMessage = async (req: CustomRequest, res: Response) => {
       sender,
       receiver,
       content,
+      image,
       replyTo: repliedMessage._id, // Optional: Replied message ID
       referencedUser: repliedMessage.referencedUser,
       referencedProduct: repliedMessage.referencedProduct,
@@ -444,11 +447,9 @@ export const joinConversation = async (req: Request, res: Response) => {
 
     // Check if the conversation is of type "Support" or "Report"
     if (conversation.type !== "Support" && conversation.type !== "Report") {
-      return res
-        .status(400)
-        .json({
-          message: "Only Support or Report conversations can be joined",
-        });
+      return res.status(400).json({
+        message: "Only Support or Report conversations can be joined",
+      });
     }
 
     // Check if there is exactly one participant
@@ -464,13 +465,11 @@ export const joinConversation = async (req: Request, res: Response) => {
       await conversation.save();
     }
 
-    res
-      .status(200)
-      .json({
-        status: true,
-        message: "Admin added to the conversation",
-        conversation,
-      });
+    res.status(200).json({
+      status: true,
+      message: "Admin added to the conversation",
+      conversation,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }

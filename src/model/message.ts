@@ -7,6 +7,7 @@ export interface IMessage extends Document {
   sender: ObjectId;
   receiver?: ObjectId;
   content: string;
+  image?: string;
   forwardedFrom?: string; // Optional field for forwarded message
   replyTo?: string; // Optional field for reply message
   read: boolean;
@@ -23,8 +24,9 @@ const messageSchema: Schema = new Schema<IMessage>(
     },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
     receiver: { type: Schema.Types.ObjectId, ref: "User" },
-    content: { type: String, required: true },
+    content: { type: String },
     forwardedFrom: { type: String },
+    image: { type: String },
     replyTo: { type: String },
     read: { type: Boolean, default: false },
     referencedUser: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
