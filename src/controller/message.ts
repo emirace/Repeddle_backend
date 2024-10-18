@@ -346,7 +346,7 @@ export const getUserConversations = async (
     if (role === "Admin" && type !== "Chat") {
       // Get all conversations of the specified type
       console.log("admin and not chat");
-      conversations = await Conversation.find({ type });
+      conversations = await Conversation.find({ type }).sort({ createdAt: -1 });
     } else {
       // Get conversations where the user is a participant and of the specified type
       console.log("not admin and  chat");
@@ -354,7 +354,7 @@ export const getUserConversations = async (
         participants: userId,
         type,
         closed: false,
-      });
+      }).sort({ createdAt: -1 });
     }
 
     const conversationsWithDetails = await Promise.all(
