@@ -149,7 +149,7 @@ export const getAllReturns = async (req: CustomRequest, res: Response) => {
     // Apply specific status filter only if 'status' is active
     if (status === "active") {
       query["deliveryTracking.currentStatus.status"] = {
-        $in: ["Return Decline", "Refunded"],
+        $nin: ["Return Decline", "Refunded"],
       };
     }
 
