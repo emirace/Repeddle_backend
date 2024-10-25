@@ -143,9 +143,17 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
 
 export const getAllReturns = async (req: CustomRequest, res: Response) => {
   try {
-    const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+    const { status } = req.query;
+    const query: any = {};
 
-    const userReturns = await Return.find()
+    // Apply specific status filter only if 'status' is active
+    if (status === "active") {
+      query["deliveryTracking.currentStatus.status"] = {
+        $in: ["Return Decline", "Refunded"],
+      };
+    }
+
+    const userReturns = await Return.find(query)
       .populate({
         path: "productId",
         select: "images name",
@@ -251,7 +259,6 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
   }
 };
 
-// Approve or decline return
 export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
   try {
     const returnId = req.params.id;
