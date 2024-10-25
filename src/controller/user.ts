@@ -36,6 +36,7 @@ interface UpdateFields {
   rebundle?: IRebundle;
   badge?: boolean;
   active?: boolean;
+  influencer?: boolean;
 }
 
 const UserController = {
