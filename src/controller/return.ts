@@ -194,7 +194,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
 export const getReturnById = async (req: CustomRequest, res: Response) => {
   const { id: returnId } = req.params;
   const userId = req.userId!;
-  const userRole = req.userRole; // Assuming the user role is set by the authentication middleware
+  const userRole = req.userRole;
 
   try {
     const foundReturn: any = await Return.findById(returnId)
@@ -222,7 +222,7 @@ export const getReturnById = async (req: CustomRequest, res: Response) => {
       (item: any) => item.seller.toString() === userId.toString()
     );
 
-    if (!isBuyer && !isSeller && userRole !== "admin") {
+    if (!isBuyer && !isSeller && userRole !== "Admin") {
       return res.status(403).json({
         status: false,
         message: "You do not have permission to access this return",
