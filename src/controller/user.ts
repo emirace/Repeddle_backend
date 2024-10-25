@@ -880,6 +880,7 @@ const UserController = {
         "bankName",
         "accountNumber",
         "role",
+        "influencer",
         "badge",
         "active",
         "allowNewsletter",
