@@ -13,6 +13,7 @@ import transaction from "./transaction";
 import image from "./image";
 import notification from "./notification";
 import returnRoute from "./return";
+import payment from "./payment";
 
 const router = express.Router();
 
@@ -43,5 +44,6 @@ router.use("/images", image);
 router.use("/notifications", notification);
 
 router.use("/returns", returnRoute);
+router.use("/payments", payment);
 
 export default router;
