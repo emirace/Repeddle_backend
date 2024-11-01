@@ -896,6 +896,16 @@ const UserController = {
           .json({ status: false, message: "User not found" });
       }
 
+      // Validate allowed fields
+      for (const field in updateFields) {
+        if (!allowedFields.includes(field as keyof UpdateFields)) {
+          return res.status(400).json({
+            status: false,
+            message: `Field '${field}' is not allowed for update`,
+          });
+        }
+      }
+
       // Check if username is being updated and enforce the 30-day limit
       if ("username" in updateFields) {
         const existUsername = await User.findOne({
@@ -907,16 +917,6 @@ const UserController = {
             .json({ status: false, errors: "Username already exist" });
         }
         updateFields.usernameLastUpdated = new Date();
-      }
-
-      // Validate allowed fields
-      for (const field in updateFields) {
-        if (!allowedFields.includes(field as keyof UpdateFields)) {
-          return res.status(400).json({
-            status: false,
-            message: `Field '${field}' is not allowed for update`,
-          });
-        }
       }
 
       // Update user profile
@@ -1097,8 +1097,9 @@ const UserController = {
         totalEarnings,
         newMembers,
         recentProducts,
-        // topSellers,
+        topSellers,
         mostViewedProducts,
+        outOfStockProducts,
       ] = await Promise.all([
         User.countDocuments(),
         Order.countDocuments(),
@@ -1110,26 +1111,30 @@ const UserController = {
         User.find()
           .sort({ createdAt: -1 })
           .limit(5)
-          .select("username email createdAt"),
+          .select("username email createdAt image"),
         Product.find()
           .sort({ createdAt: -1 })
           .limit(5)
-          .select("name price createdAt"),
-        // User.aggregate([
-        //   {
-        //     $lookup: {
-        //       from: "orders",
-        //       localField: "_id",
-        //       foreignField: "items.seller",
-        //       as: "sales",
-        //     },
-        //   },
-        //   { $addFields: { totalSales: { $size: "$sales" } } },
-        //   { $sort: { totalSales: -1 } },
-        //   { $limit: 5 },
-        //   { $project: { username: 1, totalSales: 1 } },
-        // ]),
-        Product.find().sort({ views: -1 }).limit(5).select("name views"),
+          .select("name createdAt images"),
+        User.aggregate([
+          {
+            $lookup: {
+              from: "orders",
+              localField: "_id",
+              foreignField: "items.seller",
+              as: "sales",
+            },
+          },
+          { $addFields: { totalSales: { $size: "$sales" } } },
+          { $sort: { totalSales: -1 } },
+          { $limit: 5 },
+          { $project: { username: 1, totalSales: 1 } },
+        ]),
+        Product.find()
+          .sort({ viewcount: -1 })
+          .limit(5)
+          .select("name viewcount"),
+        Product.find({ stock: { $lte: 0 } }).select("name price stock"),
       ]);
 
       res.status(200).json({
@@ -1141,8 +1146,9 @@ const UserController = {
           totalEarnings: totalEarnings[0]?.total || 0,
           newMembers,
           recentProducts,
-          // topSellers,
+          topSellers,
           mostViewedProducts,
+          outOfStockProducts,
         },
       });
     } catch (error) {

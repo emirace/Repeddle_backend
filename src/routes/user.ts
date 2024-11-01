@@ -20,12 +20,12 @@ router.get(
 
 router.get("/:username", UserController.getUserByUsername);
 
-router.get("/admin/:userId", authorize(["Admin"]), UserController.getUserById);
 router.get(
   "/admin/analytics",
   authorize(["Admin"]),
   UserController.getAnalytics
 );
+router.get("/admin/:userId", authorize(["Admin"]), UserController.getUserById);
 
 router.get("/verify-email/:token", UserController.verifyEmail);
 
