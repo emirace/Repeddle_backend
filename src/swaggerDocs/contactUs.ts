@@ -76,7 +76,7 @@
 
 /**
  * @swagger
- * /contacts/assign/{contactId}:
+ * /contactus/assign/{contactId}:
  *   put:
  *     summary: Assign a contact to a user
  *     tags: [Contact Us]

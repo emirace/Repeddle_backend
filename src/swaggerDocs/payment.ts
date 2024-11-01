@@ -209,7 +209,7 @@
  *     summary: Refund the buyer for a failed order item
  *     description: Verifies the status of an order item and processes a refund to the buyer if the item has been returned.
  *     tags:
- *       - Payments
+ *       - Payment
  *     security:
  *       - bearerAuth: []
  *     parameters:
