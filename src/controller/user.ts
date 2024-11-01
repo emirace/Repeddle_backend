@@ -11,6 +11,8 @@ import { body, validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
 import { CustomRequest } from "../middleware/user";
 import Product from "../model/product";
+import Order from "../model/order";
+import Payment from "../model/payment";
 
 const generateRandomNumber = () => {
   return Math.floor(Math.random() * 100);
@@ -1084,6 +1086,71 @@ const UserController = {
     } catch (error) {
       console.error("Error submitting review:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  async getAnalytics(req: CustomRequest, res: Response) {
+    try {
+      const [
+        totalUsers,
+        totalOrders,
+        totalProducts,
+        totalEarnings,
+        newMembers,
+        recentProducts,
+        // topSellers,
+        mostViewedProducts,
+      ] = await Promise.all([
+        User.countDocuments(),
+        Order.countDocuments(),
+        Product.countDocuments(),
+        Payment.aggregate([
+          { $match: { status: "Approved" } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]),
+        User.find()
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select("username email createdAt"),
+        Product.find()
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select("name price createdAt"),
+        // User.aggregate([
+        //   {
+        //     $lookup: {
+        //       from: "orders",
+        //       localField: "_id",
+        //       foreignField: "items.seller",
+        //       as: "sales",
+        //     },
+        //   },
+        //   { $addFields: { totalSales: { $size: "$sales" } } },
+        //   { $sort: { totalSales: -1 } },
+        //   { $limit: 5 },
+        //   { $project: { username: 1, totalSales: 1 } },
+        // ]),
+        Product.find().sort({ views: -1 }).limit(5).select("name views"),
+      ]);
+
+      res.status(200).json({
+        status: true,
+        data: {
+          totalUsers,
+          totalOrders,
+          totalProducts,
+          totalEarnings: totalEarnings[0]?.total || 0,
+          newMembers,
+          recentProducts,
+          // topSellers,
+          mostViewedProducts,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Failed to fetch analytics data.",
+        error,
+      });
     }
   },
 };

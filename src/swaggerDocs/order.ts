@@ -171,6 +171,36 @@
 
 /**
  * @swagger
+ * /orders/admin:
+ *   get:
+ *     summary: Retrieve all orders
+ *     description: Fetches a list of all orders in the system.
+ *     tags:
+ *       - Order
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of orders.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation
+ *                 orders:
+ *                   type: array
+ *                   description: List of orders
+ *                   items:
+ *                     $ref: '#/components/schemas/Order'
+ *       500:
+ *         description: Server error.
+ */
+
+/**
+ * @swagger
  * /orders/sold:
  *   get:
  *     summary: Get seller's sold orders

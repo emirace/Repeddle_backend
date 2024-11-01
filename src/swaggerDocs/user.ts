@@ -1421,3 +1421,79 @@
  *                   type: string
  *                   example: Internal server error
  */
+
+/**
+ * @swagger
+ * /users/admin/analytics:
+ *   get:
+ *     summary: Get analytics data
+ *     description: Retrieve overall analytics data for the platform.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved analytics data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: number
+ *                     totalOrders:
+ *                       type: number
+ *                     totalProducts:
+ *                       type: number
+ *                     totalEarnings:
+ *                       type: number
+ *                     newMembers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                     recentProducts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                           price:
+ *                             type: number
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                     topSellers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                           totalSales:
+ *                             type: number
+ *                     mostViewedProducts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                           views:
+ *                             type: number
+ *       500:
+ *         description: Server error while fetching analytics data.
+ */

@@ -258,6 +258,18 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
   }
 };
 
+export const getAllOrders = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const orders = await Order.find().populate("items.product", "images name");
+    res.status(200).json({ status: true, orders });
+  } catch (error) {
+    res.status(500).json({ status: false, message: "Failed to fetch orders." });
+  }
+};
+
 export const getUserOrders = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!;

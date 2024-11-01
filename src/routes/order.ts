@@ -3,6 +3,7 @@
 import express, { Request, Response } from "express";
 import {
   createOrder,
+  getAllOrders,
   getOrderById,
   getSellerSoldOrders,
   getUserDailyOrdersSummary,
@@ -23,6 +24,7 @@ router.put(
   updateDeliveryTracking
 );
 
+router.get("/admin", authorize(["Admin"]), getAllOrders);
 router.get("/", authorize(["User", "Admin"]), getUserOrders);
 
 router.get("/sold", authorize(["User", "Admin"]), getSellerSoldOrders);
