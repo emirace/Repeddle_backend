@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import Product, { IProduct } from "../model/product";
 import Order, { IDeliveryTrackingHistory, IOrder } from "../model/order";
 import { CustomRequest } from "../middleware/user";
@@ -699,5 +699,58 @@ export const getUserDailyOrdersSummary = async (
   } catch (error) {
     console.log("Error fetching user daily orders summary", error);
     res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+export const toggleHoldItem = async (req: Request, res: Response) => {
+  const { orderId, itemId } = req.params;
+  const { action } = req.query; // "hold" or "unhold"
+
+  try {
+    // Find the order and the specific item
+
+    const order: any = await Order.findById(orderId)
+      .populate("items.seller", "username image firstName lastName")
+      .populate("buyer", "username image firstName lastName")
+      .populate("items.product");
+
+    if (!order) {
+      res.status(404).json({ message: "Order not found" });
+      return;
+    }
+
+    const item = order.items.id(itemId);
+    if (!item) {
+      res.status(404).json({ message: "Item not found in the order" });
+      return;
+    }
+
+    // Determine the action
+    if (action === "hold") {
+      item.isHold = true;
+      item.deliveryTracking.history.push({
+        status: "Hold",
+        timestamp: new Date(),
+      });
+    } else if (action === "unhold") {
+      item.isHold = false;
+      item.deliveryTracking.history.push({
+        status: "UnHold",
+        timestamp: new Date(),
+      });
+    } else {
+      res.status(400).json({ message: "Invalid action specified" });
+      return;
+    }
+
+    await order.save();
+    res.status(200).json({
+      message: `Item successfully ${
+        action === "hold" ? "placed on hold" : "unheld"
+      }`,
+      order,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating hold status", error });
   }
 };

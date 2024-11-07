@@ -8,6 +8,7 @@ import {
   getSellerSoldOrders,
   getUserDailyOrdersSummary,
   getUserOrders,
+  toggleHoldItem,
   updateDeliveryTracking,
 } from "../controller/order";
 import { authorize, extractUserRegion } from "../middleware/user";
@@ -16,6 +17,8 @@ const router = express.Router();
 
 // Route to make an order
 router.post("/", authorize(["User", "Admin"]), extractUserRegion, createOrder);
+
+router.put("/hold/:orderId/:itemId", authorize(["Admin"]), toggleHoldItem);
 
 // Route to update delivery tracking of an item
 router.put(

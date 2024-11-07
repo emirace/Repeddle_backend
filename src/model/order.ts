@@ -61,6 +61,7 @@ const OrderItemSchema = new Schema<IOrderItem>({
     history: { type: [DeliveryTrackingHistorySchema], default: [] },
   },
   trackingNumber: { type: String },
+  isHold: { type: Boolean, default: false },
 });
 
 const OrderSchema = new Schema<IOrder>(
