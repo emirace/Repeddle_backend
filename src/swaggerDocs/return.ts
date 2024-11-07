@@ -117,13 +117,38 @@
  * @swagger
  * /returns/admin:
  *   get:
- *     summary: Get user all returns
+ *     summary: Retrieve a paginated list of returns with filtering and search
+ *     description: Returns a list of user returns, supporting filtering by status and searching returns by MongoDB _id.
  *     tags: [Return]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, all]
+ *         description: Filter by status to fetch either all returns or only active returns.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: The number of returns per page.
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword to find specific returns by their _id.
  *     responses:
  *       200:
- *         description: List of user all returns
+ *         description: A list of returns with pagination details
  *         content:
  *           application/json:
  *             schema:
@@ -131,15 +156,51 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the status of the operation
- *                 return:
+ *                   example: true
+ *                 total:
+ *                   type: integer
+ *                   example: 100
+ *                 currentPage:
+ *                   type: integer
+ *                   example: 1
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 5
+ *                 returns:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Return'
- *       404:
- *         description: User has no returns
+ *                     type: object
+ *                     properties:
+ *                       productId:
+ *                         type: object
+ *                         properties:
+ *                           images:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                           name:
+ *                             type: string
+ *                             example: "Product Name"
+ *                           seller:
+ *                             type: object
+ *                             properties:
+ *                               username:
+ *                                 type: string
+ *                                 example: "seller123"
+ *                       orderId:
+ *                         type: object
+ *                         properties:
+ *                           buyer:
+ *                             type: object
+ *                             properties:
+ *                               username:
+ *                                 type: string
+ *                                 example: "buyer123"
+ *                       status:
+ *                         type: string
+ *                         example: "Delivered"
  *       500:
- *         description: Server error
+ *         description: Internal server error
  */
 
 /**

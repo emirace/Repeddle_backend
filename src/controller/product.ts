@@ -453,7 +453,7 @@ const ProductController = {
 
   async createComment(req: CustomRequest, res: Response) {
     const { productId } = req.params;
-    const { comment } = req.body;
+    const { comment, image } = req.body;
     const userId = req.userId!;
 
     if (!comment) {
@@ -474,6 +474,7 @@ const ProductController = {
       const newComment = {
         comment,
         userId,
+        image,
         replies: [],
         likes: [],
       };
@@ -917,11 +918,9 @@ const ProductController = {
         await product.save();
         return res.status(200).json({ message: "Share count updated." });
       } else {
-        return res
-          .status(400)
-          .json({
-            message: "Share count can only be increased every 30 minutes.",
-          });
+        return res.status(400).json({
+          message: "Share count can only be increased every 30 minutes.",
+        });
       }
     } catch (error) {
       console.error("Error increasing share count:", error);

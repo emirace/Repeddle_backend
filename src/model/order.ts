@@ -20,6 +20,7 @@ export interface IOrderItem {
     history: IDeliveryTrackingHistory[];
   };
   trackingNumber: string;
+  isHold: boolean;
 }
 
 // Define interfaces for order delivery tracking

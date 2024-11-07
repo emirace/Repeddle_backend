@@ -15,15 +15,16 @@ export interface Reply {
 
 export interface Comment {
   comment: string;
+  image?: string;
   userId: string;
   replies: Reply[];
   likes: string[];
 }
 
 export interface Share {
-  user?: string ;
+  user?: string;
   hashed: string;
-  time: Date ;
+  time: Date;
 }
 
 export interface PriceHistory {
@@ -109,6 +110,7 @@ const replySchema = new mongoose.Schema(
 const commentSchema = new mongoose.Schema(
   {
     comment: { type: String, required: true },
+    image: { type: String },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     replies: [replySchema],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

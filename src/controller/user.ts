@@ -757,7 +757,7 @@ const UserController = {
         username,
         role: { $ne: "Guest" },
       }).select(
-        "username image about rating  followers following numReviews _id rebundle sold buyers createdAt region likes"
+        "username image about rating  followers following numReviews _id rebundle sold buyers createdAt region likes reviews"
       );
 
       // If user not found, return 404
@@ -1111,11 +1111,11 @@ const UserController = {
         User.find()
           .sort({ createdAt: -1 })
           .limit(5)
-          .select("username email createdAt image"),
+          .select("username email createdAt image firstName lastName"),
         Product.find()
           .sort({ createdAt: -1 })
           .limit(5)
-          .select("name createdAt images"),
+          .select("name createdAt images slug"),
         User.aggregate([
           {
             $lookup: {
@@ -1128,13 +1128,13 @@ const UserController = {
           { $addFields: { totalSales: { $size: "$sales" } } },
           { $sort: { totalSales: -1 } },
           { $limit: 5 },
-          { $project: { username: 1, totalSales: 1 } },
+          { $project: { username: 1, totalSales: 1, image: 1 } },
         ]),
         Product.find()
           .sort({ viewcount: -1 })
           .limit(5)
-          .select("name viewcount"),
-        Product.find({ stock: { $lte: 0 } }).select("name price stock"),
+          .select("name viewcount images slug"),
+        Product.find({ stock: { $lte: 0 } }).select("name price images slug"),
       ]);
 
       res.status(200).json({

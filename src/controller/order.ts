@@ -445,7 +445,6 @@ export const getOrderById = async (req: CustomRequest, res: Response) => {
   }
 };
 
-// Controller to update delivery tracking of an item in an order
 export const updateDeliveryTracking = async (
   req: CustomRequest,
   res: Response
