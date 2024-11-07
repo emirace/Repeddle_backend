@@ -1128,13 +1128,15 @@ const UserController = {
           { $addFields: { totalSales: { $size: "$sales" } } },
           { $sort: { totalSales: -1 } },
           { $limit: 5 },
-          { $project: { username: 1, totalSales: 1, image: 1 } },
+          { $project: { username: 1, totalSales: 1, image: 1, createdAt: 1 } },
         ]),
         Product.find()
           .sort({ viewcount: -1 })
           .limit(5)
           .select("name viewcount images slug"),
-        Product.find({ stock: { $lte: 0 } }).select("name price images slug"),
+        Product.find({ stock: { $lte: 0 } }).select(
+          "name price images slug createdAt"
+        ),
       ]);
 
       res.status(200).json({
