@@ -148,24 +148,24 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",
+          as: "orderId",
         },
       },
-      { $unwind: "$order" },
+      { $unwind: "$orderId" },
       // Join with the Users collection (Buyer)
       {
         $lookup: {
           from: "users",
-          localField: "order.buyer",
+          localField: "orderId.buyer",
           foreignField: "_id",
-          as: "order.buyer",
+          as: "orderId.buyer",
         },
       },
-      { $unwind: "$order.buyer" },
+      { $unwind: "$orderId.buyer" },
       // Match the buyer's userId
       {
         $match: {
-          "order.buyer._id": new mongoose.Types.ObjectId(userId),
+          "orderId.buyer._id": new mongoose.Types.ObjectId(userId),
         },
       },
       // Add regex search for `_id`
@@ -192,7 +192,7 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
           "productId.name": 1,
           "productId.slug": 1,
           "productId.seller.username": 1,
-          "order.buyer.username": 1,
+          "orderId.buyer.username": 1,
           status: 1,
         },
       },
@@ -223,22 +223,22 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",
+          as: "orderId",
         },
       },
-      { $unwind: "$order" },
+      { $unwind: "$orderId" },
       {
         $lookup: {
           from: "users",
-          localField: "order.buyer",
+          localField: "orderId.buyer",
           foreignField: "_id",
-          as: "order.buyer",
+          as: "orderId.buyer",
         },
       },
-      { $unwind: "$order.buyer" },
+      { $unwind: "$orderId.buyer" },
       {
         $match: {
-          "order.buyer._id": new mongoose.Types.ObjectId(userId),
+          "orderId.buyer._id": new mongoose.Types.ObjectId(userId),
         },
       },
       ...(search
@@ -401,20 +401,20 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",
+          as: "orderId",
         },
       },
-      { $unwind: "$order" },
+      { $unwind: "$orderId" },
       // Join with the Users collection (Buyer)
       {
         $lookup: {
           from: "users",
-          localField: "order.buyer",
+          localField: "orderId.buyer",
           foreignField: "_id",
-          as: "order.buyer",
+          as: "orderId.buyer",
         },
       },
-      { $unwind: "$order.buyer" },
+      { $unwind: "$orderId.buyer" },
       // Match the seller's userId
       {
         $match: {
@@ -445,7 +445,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
           "productId.name": 1,
           "productId.seller.username": 1,
           "productId.slug": 1,
-          "order.buyer.username": 1,
+          "orderId.buyer.username": 1,
           status: 1,
         },
       },
@@ -476,19 +476,19 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",
+          as: "orderId",
         },
       },
-      { $unwind: "$order" },
+      { $unwind: "$orderId" },
       {
         $lookup: {
           from: "users",
-          localField: "order.buyer",
+          localField: "orderId.buyer",
           foreignField: "_id",
-          as: "order.buyer",
+          as: "orderId.buyer",
         },
       },
-      { $unwind: "$order.buyer" },
+      { $unwind: "$orderId.buyer" },
       {
         $match: {
           "productId.seller._id": new mongoose.Types.ObjectId(userId),
