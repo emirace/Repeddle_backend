@@ -117,60 +117,92 @@ export const createReturn = async (req: CustomRequest, res: Response) => {
 export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+    const { page = 1, limit = 20, search = "" } = req.query;
 
-    const returns = await Return.find()
-      .populate({
-        path: "productId",
-        select: "images name",
-        populate: { path: "seller", select: "username image" },
-      })
-      .populate({
-        path: "orderId",
-        select: "buyer",
-        populate: { path: "buyer", select: "username image" },
-      });
+    const skip = (Number(page) - 1) * Number(limit);
+    const matchStage: any = {
+      "orderId.buyer": new mongoose.Types.ObjectId(userId),
+    };
 
-    const userReturns = returns.filter(
-      (returnItem: any) => returnItem.orderId.buyer._id.toString() === userId
-    );
+    // Add regex search on `_id` as string
+    if (search) {
+      matchStage["$expr"] = {
+        $regexMatch: {
+          input: { $toString: "$_id" },
+          regex: search,
+          options: "i",
+        },
+      };
+    }
 
-    res.status(200).json({ status: true, returns: userReturns });
+    const userReturns = await Return.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productId",
+        },
+      },
+      { $unwind: "$productId" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "productId.seller",
+          foreignField: "_id",
+          as: "productId.seller",
+        },
+      },
+      { $unwind: "$productId.seller" },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "orderId",
+        },
+      },
+      { $unwind: "$orderId" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "orderId.buyer",
+          foreignField: "_id",
+          as: "orderId.buyer",
+        },
+      },
+      { $unwind: "$orderId.buyer" },
+      { $skip: skip },
+      { $limit: Number(limit) },
+      {
+        $project: {
+          "productId.images": 1,
+          "productId.name": 1,
+          "productId.seller.username": 1,
+          "orderId.buyer.username": 1,
+          status: 1,
+        },
+      },
+    ]);
+
+    const totalReturns = await Return.aggregate([
+      { $match: matchStage },
+      { $count: "total" },
+    ]);
+
+    res.status(200).json({
+      status: true,
+      total: totalReturns[0]?.total || 0,
+      currentPage: page,
+      totalPages: Math.ceil((totalReturns[0]?.total || 0) / Number(limit)),
+      returns: userReturns,
+    });
   } catch (error) {
     console.log("Error fetching user returns ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
-
-// export const getAllReturns = async (req: CustomRequest, res: Response) => {
-//   try {
-//     const { status,page=1,limit=20,search="" } = req.query;
-//     const query: any = {};
-
-//     // Apply specific status filter only if 'status' is active
-//     if (status === "active") {
-//       query["deliveryTracking.currentStatus.status"] = {
-//         $nin: ["Return Decline", "Refunded"],
-//       };
-//     }
-
-//     const userReturns = await Return.find(query)
-//       .populate({
-//         path: "productId",
-//         select: "images name",
-//         populate: { path: "seller", select: "username" },
-//       })
-//       .populate({
-//         path: "orderId",
-//         select: "buyer",
-//         populate: { path: "buyer", select: "username" },
-//       });
-
-//     res.status(200).json({ status: true, returns: userReturns });
-//   } catch (error) {
-//     console.log("Error fetching user returns ", error);
-//     res.status(500).json({ status: false, message: "Internal server error" });
-//   }
-// };
 
 export const getAllReturns = async (req: CustomRequest, res: Response) => {
   try {
@@ -269,24 +301,87 @@ export const getAllReturns = async (req: CustomRequest, res: Response) => {
 export const getSoldReturns = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!; // Assuming `userId` is set by the authentication middleware
+    const { page = 1, limit = 20, search = "" } = req.query;
 
-    const returns = await Return.find()
-      .populate({
-        path: "productId",
-        select: "images name",
-        populate: { path: "seller", select: "username" },
-      })
-      .populate({
-        path: "orderId",
-        select: "buyer",
-        populate: { path: "buyer", select: "username" },
-      });
+    const skip = (Number(page) - 1) * Number(limit);
+    const matchStage: any = {
+      "productId.seller": new mongoose.Types.ObjectId(userId),
+    };
 
-    const userReturns = returns.filter(
-      (returnItem: any) => returnItem.productId.seller._id.toString() === userId
-    );
+    // Add regex search on `_id` as string
+    if (search) {
+      matchStage["$expr"] = {
+        $regexMatch: {
+          input: { $toString: "$_id" },
+          regex: search,
+          options: "i",
+        },
+      };
+    }
 
-    res.status(200).json({ status: true, returns: userReturns });
+    const userReturns = await Return.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productId",
+        },
+      },
+      { $unwind: "$productId" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "productId.seller",
+          foreignField: "_id",
+          as: "productId.seller",
+        },
+      },
+      { $unwind: "$productId.seller" },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "orderId",
+        },
+      },
+      { $unwind: "$orderId" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "orderId.buyer",
+          foreignField: "_id",
+          as: "orderId.buyer",
+        },
+      },
+      { $unwind: "$orderId.buyer" },
+      { $skip: skip },
+      { $limit: Number(limit) },
+      {
+        $project: {
+          "productId.images": 1,
+          "productId.name": 1,
+          "productId.seller.username": 1,
+          "orderId.buyer.username": 1,
+          status: 1,
+        },
+      },
+    ]);
+
+    const totalReturns = await Return.aggregate([
+      { $match: matchStage },
+      { $count: "total" },
+    ]);
+
+    res.status(200).json({
+      status: true,
+      total: totalReturns[0]?.total || 0,
+      currentPage: page,
+      totalPages: Math.ceil((totalReturns[0]?.total || 0) / Number(limit)),
+      returns: userReturns,
+    });
   } catch (error) {
     console.log("Error fetching user returns ", error);
     res.status(500).json({ status: false, message: "Internal server error" });
