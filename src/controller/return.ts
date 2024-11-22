@@ -128,20 +128,20 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "product",
+          as: "productId",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: "$productId" },
       // Join with the Users collection (Seller)
       {
         $lookup: {
           from: "users",
-          localField: "product.seller",
+          localField: "productId.seller",
           foreignField: "_id",
-          as: "product.seller",
+          as: "productId.seller",
         },
       },
-      { $unwind: "$product.seller" },
+      { $unwind: "$productId.seller" },
       // Join with the Orders collection
       {
         $lookup: {
@@ -188,9 +188,10 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
       { $limit: Number(limit) },
       {
         $project: {
-          "product.images": 1,
-          "product.name": 1,
-          "product.seller.username": 1,
+          "productId.images": 1,
+          "productId.name": 1,
+          "productId.slug": 1,
+          "productId.seller.username": 1,
           "order.buyer.username": 1,
           status: 1,
         },
@@ -204,19 +205,19 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "product",
+          as: "productId",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: "$productId" },
       {
         $lookup: {
           from: "users",
-          localField: "product.seller",
+          localField: "productId.seller",
           foreignField: "_id",
-          as: "product.seller",
+          as: "productId.seller",
         },
       },
-      { $unwind: "$product.seller" },
+      { $unwind: "$productId.seller" },
       {
         $lookup: {
           from: "orders",
@@ -340,6 +341,7 @@ export const getAllReturns = async (req: CustomRequest, res: Response) => {
         $project: {
           "productId.images": 1,
           "productId.name": 1,
+          "productId.slug": 1,
           "productId.seller.username": 1,
           "orderId.buyer.username": 1,
           status: 1,
@@ -379,20 +381,20 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "product",
+          as: "productId",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: "$productId" },
       // Join with the Users collection (Seller)
       {
         $lookup: {
           from: "users",
-          localField: "product.seller",
+          localField: "productId.seller",
           foreignField: "_id",
-          as: "product.seller",
+          as: "productId.seller",
         },
       },
-      { $unwind: "$product.seller" },
+      { $unwind: "$productId.seller" },
       // Join with the Orders collection
       {
         $lookup: {
@@ -416,7 +418,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
       // Match the seller's userId
       {
         $match: {
-          "product.seller._id": new mongoose.Types.ObjectId(userId),
+          "productId.seller._id": new mongoose.Types.ObjectId(userId),
         },
       },
       // Add regex search for `_id`
@@ -439,9 +441,10 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
       { $limit: Number(limit) },
       {
         $project: {
-          "product.images": 1,
-          "product.name": 1,
-          "product.seller.username": 1,
+          "productId.images": 1,
+          "productId.name": 1,
+          "productId.seller.username": 1,
+          "productId.slug": 1,
           "order.buyer.username": 1,
           status: 1,
         },
@@ -455,19 +458,19 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "product",
+          as: "productId",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: "$productId" },
       {
         $lookup: {
           from: "users",
-          localField: "product.seller",
+          localField: "productId.seller",
           foreignField: "_id",
-          as: "product.seller",
+          as: "productId.seller",
         },
       },
-      { $unwind: "$product.seller" },
+      { $unwind: "$productId.seller" },
       {
         $lookup: {
           from: "orders",
@@ -488,7 +491,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
       { $unwind: "$order.buyer" },
       {
         $match: {
-          "product.seller._id": new mongoose.Types.ObjectId(userId),
+          "productId.seller._id": new mongoose.Types.ObjectId(userId),
         },
       },
       ...(search
