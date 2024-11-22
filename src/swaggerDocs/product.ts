@@ -1357,3 +1357,68 @@
  *                   type: string
  *                   example: Server error.
  */
+
+/**
+ * @swagger
+ * /products/{productId}/unavailable:
+ *   patch:
+ *     summary: Mark a product as not available
+ *     description: Updates the product's availability status to mark it as not available.
+ *     tags:
+ *       - Product
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the product to be marked as not available.
+ *     responses:
+ *       200:
+ *         description: Successfully updated the product's availability status.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Product marked as not available"
+ *                 product:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "64a2f6c4cfa234d5678b91cd"
+ *                     name:
+ *                       type: string
+ *                       example: "Sample Product"
+ *                     isAvailable:
+ *                       type: boolean
+ *                       example: false
+ *       404:
+ *         description: Product not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Product not found"
+ *       500:
+ *         description: An error occurred while updating the product.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred while updating the product"
+ *                 error:
+ *                   type: string
+ *                   example: "Error details here"
+ */

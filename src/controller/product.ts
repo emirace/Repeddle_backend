@@ -927,6 +927,31 @@ const ProductController = {
       return res.status(500).json({ message: "Server error." });
     }
   },
+
+  async markProductAsNotAvailable(req: CustomRequest, res: Response) {
+    try {
+      const { productId } = req.params;
+
+      // Find and update the product's availability
+      const product = await Product.findByIdAndUpdate(
+        productId,
+        { isAvailable: false },
+        { new: true } // Return the updated document
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      return res.status(200).json({
+        message: "Product marked as not available",
+        product,
+      });
+    } catch (error) {
+      console.error("Error increasing share count:", error);
+      return res.status(500).json({ message: "Server error." });
+    }
+  },
 };
 
 export default ProductController;

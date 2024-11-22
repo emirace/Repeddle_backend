@@ -32,6 +32,11 @@ router.post(
   ProductController.likeProduct
 );
 
+router.patch(
+  "/:productId/unavailable",
+  ProductController.markProductAsNotAvailable
+);
+
 // Unlike a product
 router.post(
   "/:productId/unlike",

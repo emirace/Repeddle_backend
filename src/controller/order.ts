@@ -264,8 +264,39 @@ export const getAllOrders = async (
   res: Response
 ): Promise<void> => {
   try {
-    const orders = await Order.find().populate("items.product", "images name");
-    res.status(200).json({ status: true, orders });
+    const orderId = req.query.orderId as string | undefined;
+
+    const pipeline: any[] = [];
+
+    if (orderId) {
+      pipeline.push(
+        {
+          $addFields: {
+            tempOrderId: { $toString: "$_id" },
+          },
+        },
+        {
+          $match: {
+            tempOrderId: { $regex: new RegExp(orderId, "i") },
+          },
+        }
+      );
+    }
+
+    pipeline.push({
+      $sort: { createdAt: -1 },
+    });
+
+    // Execute the aggregation pipeline
+    const orders = await Order.aggregate(pipeline).exec();
+
+    // Populate the product fields in the items
+    const populatedOrders = await Order.populate(orders, {
+      path: "items.product",
+      select: "images name",
+    });
+
+    res.status(200).json({ status: true, orders: populatedOrders });
   } catch (error) {
     res.status(500).json({ status: false, message: "Failed to fetch orders." });
   }
@@ -276,7 +307,6 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
     const userId = req.userId!;
     const orderId = req.query.orderId as string | undefined;
 
-    // Define the aggregation pipeline stages
     const pipeline: any[] = [
       {
         $match: {
@@ -285,23 +315,21 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
       },
     ];
 
-    // If orderId query parameter exists, add $match stage to filter by orderId
     if (orderId) {
       pipeline.push(
         {
           $addFields: {
-            tempOrderId: { $toString: "$_id" }, // Convert _id to string
+            tempOrderId: { $toString: "$_id" },
           },
         },
         {
           $match: {
-            tempOrderId: { $regex: new RegExp(orderId, "i") }, // Case-insensitive regex match
+            tempOrderId: { $regex: new RegExp(orderId, "i") },
           },
         }
       );
     }
 
-    // Add the $sort stage to sort by createdAt in descending order
     pipeline.push({
       $sort: { createdAt: -1 },
     });
