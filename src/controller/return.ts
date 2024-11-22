@@ -120,74 +120,141 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
     const { page = 1, limit = 20, search = "" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
-    const matchStage: any = {
-      "orderId.buyer": new mongoose.Types.ObjectId(userId),
-    };
-
-    // Add regex search on `_id` as string
-    if (search) {
-      matchStage["$expr"] = {
-        $regexMatch: {
-          input: { $toString: "$_id" },
-          regex: search,
-          options: "i",
-        },
-      };
-    }
 
     const userReturns = await Return.aggregate([
-      { $match: matchStage },
+      // Join with the Products collection
       {
         $lookup: {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "productId",
+          as: "product",
         },
       },
-      { $unwind: "$productId" },
+      { $unwind: "$product" },
+      // Join with the Users collection (Seller)
       {
         $lookup: {
           from: "users",
-          localField: "productId.seller",
+          localField: "product.seller",
           foreignField: "_id",
-          as: "productId.seller",
+          as: "product.seller",
         },
       },
-      { $unwind: "$productId.seller" },
+      { $unwind: "$product.seller" },
+      // Join with the Orders collection
       {
         $lookup: {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "orderId",
+          as: "order",
         },
       },
-      { $unwind: "$orderId" },
+      { $unwind: "$order" },
+      // Join with the Users collection (Buyer)
       {
         $lookup: {
           from: "users",
-          localField: "orderId.buyer",
+          localField: "order.buyer",
           foreignField: "_id",
-          as: "orderId.buyer",
+          as: "order.buyer",
         },
       },
-      { $unwind: "$orderId.buyer" },
+      { $unwind: "$order.buyer" },
+      // Match the buyer's userId
+      {
+        $match: {
+          "order.buyer._id": new mongoose.Types.ObjectId(userId),
+        },
+      },
+      // Add regex search for `_id`
+      ...(search
+        ? [
+            {
+              $match: {
+                $expr: {
+                  $regexMatch: {
+                    input: { $toString: "$_id" },
+                    regex: search,
+                    options: "i",
+                  },
+                },
+              },
+            },
+          ]
+        : []),
       { $skip: skip },
       { $limit: Number(limit) },
       {
         $project: {
-          "productId.images": 1,
-          "productId.name": 1,
-          "productId.seller.username": 1,
-          "orderId.buyer.username": 1,
+          "product.images": 1,
+          "product.name": 1,
+          "product.seller.username": 1,
+          "order.buyer.username": 1,
           status: 1,
         },
       },
     ]);
 
     const totalReturns = await Return.aggregate([
-      { $match: matchStage },
+      // Same lookups and match stages as above but just count
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "product.seller",
+          foreignField: "_id",
+          as: "product.seller",
+        },
+      },
+      { $unwind: "$product.seller" },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+        },
+      },
+      { $unwind: "$order" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "order.buyer",
+          foreignField: "_id",
+          as: "order.buyer",
+        },
+      },
+      { $unwind: "$order.buyer" },
+      {
+        $match: {
+          "order.buyer._id": new mongoose.Types.ObjectId(userId),
+        },
+      },
+      ...(search
+        ? [
+            {
+              $match: {
+                $expr: {
+                  $regexMatch: {
+                    input: { $toString: "$_id" },
+                    regex: search,
+                    options: "i",
+                  },
+                },
+              },
+            },
+          ]
+        : []),
       { $count: "total" },
     ]);
 
@@ -199,7 +266,7 @@ export const getPurchaseReturns = async (req: CustomRequest, res: Response) => {
       returns: userReturns,
     });
   } catch (error) {
-    console.log("Error fetching user returns ", error);
+    console.log("Error fetching purchase returns", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
@@ -304,74 +371,141 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
     const { page = 1, limit = 20, search = "" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
-    const matchStage: any = {
-      "productId.seller": new mongoose.Types.ObjectId(userId),
-    };
-
-    // Add regex search on `_id` as string
-    if (search) {
-      matchStage["$expr"] = {
-        $regexMatch: {
-          input: { $toString: "$_id" },
-          regex: search,
-          options: "i",
-        },
-      };
-    }
 
     const userReturns = await Return.aggregate([
-      { $match: matchStage },
+      // Join with the Products collection
       {
         $lookup: {
           from: "products",
           localField: "productId",
           foreignField: "_id",
-          as: "productId",
+          as: "product",
         },
       },
-      { $unwind: "$productId" },
+      { $unwind: "$product" },
+      // Join with the Users collection (Seller)
       {
         $lookup: {
           from: "users",
-          localField: "productId.seller",
+          localField: "product.seller",
           foreignField: "_id",
-          as: "productId.seller",
+          as: "product.seller",
         },
       },
-      { $unwind: "$productId.seller" },
+      { $unwind: "$product.seller" },
+      // Join with the Orders collection
       {
         $lookup: {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "orderId",
+          as: "order",
         },
       },
-      { $unwind: "$orderId" },
+      { $unwind: "$order" },
+      // Join with the Users collection (Buyer)
       {
         $lookup: {
           from: "users",
-          localField: "orderId.buyer",
+          localField: "order.buyer",
           foreignField: "_id",
-          as: "orderId.buyer",
+          as: "order.buyer",
         },
       },
-      { $unwind: "$orderId.buyer" },
+      { $unwind: "$order.buyer" },
+      // Match the seller's userId
+      {
+        $match: {
+          "product.seller._id": new mongoose.Types.ObjectId(userId),
+        },
+      },
+      // Add regex search for `_id`
+      ...(search
+        ? [
+            {
+              $match: {
+                $expr: {
+                  $regexMatch: {
+                    input: { $toString: "$_id" },
+                    regex: search,
+                    options: "i",
+                  },
+                },
+              },
+            },
+          ]
+        : []),
       { $skip: skip },
       { $limit: Number(limit) },
       {
         $project: {
-          "productId.images": 1,
-          "productId.name": 1,
-          "productId.seller.username": 1,
-          "orderId.buyer.username": 1,
+          "product.images": 1,
+          "product.name": 1,
+          "product.seller.username": 1,
+          "order.buyer.username": 1,
           status: 1,
         },
       },
     ]);
 
     const totalReturns = await Return.aggregate([
-      { $match: matchStage },
+      // Same lookups and match stages as above but just count
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "product.seller",
+          foreignField: "_id",
+          as: "product.seller",
+        },
+      },
+      { $unwind: "$product.seller" },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+        },
+      },
+      { $unwind: "$order" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "order.buyer",
+          foreignField: "_id",
+          as: "order.buyer",
+        },
+      },
+      { $unwind: "$order.buyer" },
+      {
+        $match: {
+          "product.seller._id": new mongoose.Types.ObjectId(userId),
+        },
+      },
+      ...(search
+        ? [
+            {
+              $match: {
+                $expr: {
+                  $regexMatch: {
+                    input: { $toString: "$_id" },
+                    regex: search,
+                    options: "i",
+                  },
+                },
+              },
+            },
+          ]
+        : []),
       { $count: "total" },
     ]);
 
@@ -383,7 +517,7 @@ export const getSoldReturns = async (req: CustomRequest, res: Response) => {
       returns: userReturns,
     });
   } catch (error) {
-    console.log("Error fetching user returns ", error);
+    console.log("Error fetching sold returns", error);
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
