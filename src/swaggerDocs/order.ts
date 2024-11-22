@@ -397,13 +397,12 @@
 
 /**
  * @swagger
- * /orders/hold/{orderId}/{itemId}:
+ * /toggle-hold/{orderId}/{itemId}:
  *   patch:
  *     summary: Toggle hold status for an item in an order
  *     description: Allows an admin to place an item in an order on hold or remove the hold status.
- *     tags: [Order]
- *     security:
- *       - bearerAuth: []
+ *     tags:
+ *       - Orders
  *     parameters:
  *       - in: path
  *         name: orderId
@@ -417,13 +416,19 @@
  *         schema:
  *           type: string
  *         description: The ID of the item within the order to be held or unheld.
- *       - in: query
- *         name: action
- *         required: true
- *         schema:
- *           type: string
- *           enum: [hold, unhold]
- *         description: Action to perform - "hold" to place the item on hold, "unhold" to remove the hold.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [hold, unhold]
+ *                 description: Action to perform - "hold" to place the item on hold, "unhold" to remove the hold.
+ *             required:
+ *               - action
  *     responses:
  *       200:
  *         description: Successfully toggled the hold status of the item.
@@ -434,9 +439,13 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Item successfully placed on hold" or "Item successfully unheld"
- *                 order:
- *                   $ref: '#/components/schemas/Order'
+ *             examples:
+ *               hold:
+ *                 value:
+ *                   message: "Item successfully placed on hold"
+ *               unhold:
+ *                 value:
+ *                   message: "Item successfully unheld"
  *       400:
  *         description: Invalid action specified.
  *         content:
@@ -456,7 +465,7 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Order not found" or "Item not found in the order"
+ *                   example: "Order not found or Item not found in the order"
  *       500:
  *         description: Error updating hold status.
  *         content:
@@ -469,6 +478,7 @@
  *                   example: "Error updating hold status"
  *                 error:
  *                   type: string
+ *                   example: "Internal server error stack trace or description"
  */
 
 /**

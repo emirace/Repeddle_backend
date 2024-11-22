@@ -27,6 +27,7 @@ export interface IOrderItem {
 export interface IDeliveryTrackingHistory {
   status: string;
   timestamp: Date;
+  lastNotification?: Date;
 }
 
 // Define the order schema
@@ -46,6 +47,7 @@ const DeliveryOptionSchema = new Schema<IDeliveryOption>({
 const DeliveryTrackingHistorySchema = new Schema<IDeliveryTrackingHistory>({
   status: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  lastNotification: { type: Date },
 });
 
 const OrderItemSchema = new Schema<IOrderItem>({

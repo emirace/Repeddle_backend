@@ -10,6 +10,7 @@ import { body, validationResult } from "express-validator";
 import Transaction from "../model/transaction";
 import { isUserSeller } from "../utils/order";
 import Notification from "../model/notification";
+import { io } from "../app";
 
 export const createOrder = async (req: CustomRequest, res: Response) => {
   const session = await mongoose.startSession();
@@ -460,8 +461,8 @@ export const updateDeliveryTracking = async (
 
     // Fetch the order by ID
     const order: any = await Order.findById(orderId)
-      .populate("items.seller", "username image firstName lastName")
-      .populate("buyer", "username image firstName lastName")
+      .populate("items.seller", "username image firstName lastName socketId")
+      .populate("buyer", "username image firstName lastName socketId")
       .populate("items.product");
 
     // Check if the order exists
@@ -552,13 +553,29 @@ export const updateDeliveryTracking = async (
 
     // Save the updated order
     await order.save();
+    if (status !== "Received") {
+      const notification = await Notification.create({
+        message: `Order ${status}`,
+        link: `/order/${order._id}`,
+        user: order.buyer._id,
+      });
 
-    await Notification.create({
-      message: `Order ${status}`,
-      link: `/order/${order._id}`,
-      user: order.buyer._id,
-    });
+      if (order.buyer?.socketId) {
+        io.to(order.buyer?.socketId).emit("newNotification", notification);
+      }
+    } else {
+      const seller = order.items[itemIndex].seller;
 
+      const notification = await Notification.create({
+        message: `Order ${status}`,
+        link: `/order/${order._id}`,
+        user: seller._id,
+      });
+
+      if (seller?.socketId) {
+        io.to(seller?.socketId).emit("newNotification", notification);
+      }
+    }
     // Return success response
     return res.status(200).json({
       status: true,

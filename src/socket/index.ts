@@ -21,6 +21,12 @@ export const defaultSocket = (io: Server) => {
             `User ${user.username} (ID: ${user._id}, soket: ${user.socketId}) logged in.`
           );
         }
+        const onlineUsers = await User.find({ socketId: { $ne: null } }).select(
+          "username"
+        );
+
+        // Emit the online users list to all connected sockets
+        io.emit("onlineUsers", onlineUsers);
       } catch (error) {
         console.error("Error updating user socket ID:", error);
       }
@@ -125,9 +131,14 @@ export const defaultSocket = (io: Server) => {
         );
         if (user) {
           console.log(`User ${user.username} (ID: ${user._id}) disconnected.`);
-        } else {
-          console.log("User not found. disconnect");
         }
+
+        const onlineUsers = await User.find({ socketId: { $ne: null } }).select(
+          "username"
+        );
+
+        // Emit the online users list to all connected sockets
+        io.emit("onlineUsers", onlineUsers);
       } catch (error) {
         console.error("Error updating user socket ID:", error);
       }
