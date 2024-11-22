@@ -11,6 +11,7 @@ const allowedFields: (keyof IProduct)[] = [
   "tags",
   "video",
   "brand",
+  "sold",
   "color",
   "mainCategory",
   "category",
@@ -298,6 +299,9 @@ const ProductController = {
             .status(403)
             .json({ status: false, message: "Unauthorized" });
         }
+      }
+      if (req.body.sold !== undefined && !req.isAdmin) {
+        return res.status(403).json({ status: false, message: "Unauthorized" });
       }
 
       const updatedProductData: Partial<IProduct> = {};
@@ -932,23 +936,28 @@ const ProductController = {
     try {
       const { productId } = req.params;
 
-      // Find and update the product's availability
-      const product = await Product.findByIdAndUpdate(
-        productId,
-        { isAvailable: false },
-        { new: true } // Return the updated document
+      // Find the product
+      const product = await Product.findById(productId).populate(
+        "seller",
+        "username"
       );
 
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
 
+      // Toggle the `isAvailable` status
+      product.isAvailable = !product.isAvailable;
+      await product.save();
+
       return res.status(200).json({
-        message: "Product marked as not available",
+        message: `Product marked as ${
+          product.isAvailable ? "available" : "not available"
+        }`,
         product,
       });
     } catch (error) {
-      console.error("Error increasing share count:", error);
+      console.error("Error toggling product availability:", error);
       return res.status(500).json({ message: "Server error." });
     }
   },

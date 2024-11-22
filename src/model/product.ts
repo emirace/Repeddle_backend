@@ -72,6 +72,7 @@ export interface IProduct extends Document {
   reviews: Review[];
   comments: Comment[];
   badge?: boolean;
+  sold?: boolean;
   meta: object;
   active?: boolean;
   vintage?: boolean;
@@ -159,6 +160,7 @@ const productSchema = new Schema<IProduct>(
     meta: Schema.Types.Mixed,
     active: { type: Boolean, default: true },
     badge: { type: Boolean, default: false },
+    sold: { type: Boolean, default: false },
     vintage: Boolean,
     luxury: Boolean,
     luxuryImage: String,
