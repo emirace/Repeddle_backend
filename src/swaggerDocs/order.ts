@@ -125,7 +125,7 @@
  * /orders:
  *   get:
  *     summary: Get user's purchase orders
- *     description: Retrieve the purchase orders associated with the authenticated user
+ *     description: Retrieve the purchase orders associated with the authenticated user, with optional filtering by order ID and support for pagination.
  *     tags:
  *       - Order
  *     security:
@@ -135,10 +135,22 @@
  *         name: orderId
  *         schema:
  *           type: string
- *         description: Optional. ID of the order to retrieve.
+ *         description: Optional. Filter by order ID (case-insensitive).
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination (default is 1).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of orders to return per page (default is 10).
  *     responses:
  *       '200':
- *         description: Successful operation
+ *         description: Successful operation.
  *         content:
  *           application/json:
  *             schema:
@@ -146,16 +158,29 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the success of the operation
+ *                   description: Indicates the success of the operation.
  *                 orders:
  *                   type: array
- *                   description: List of purchase orders
+ *                   description: List of purchase orders.
  *                   items:
  *                     $ref: '#/components/schemas/Order'
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination metadata.
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: The current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of orders available.
  *       '401':
  *         $ref: '#/components/schemas/UnauthorizedError'
  *       '500':
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -163,10 +188,10 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the success of the operation
+ *                   description: Indicates the success of the operation.
  *                 message:
  *                   type: string
- *                   description: Error message indicating internal server error
+ *                   description: Error message indicating internal server error.
  */
 
 /**
@@ -174,14 +199,32 @@
  * /orders/admin:
  *   get:
  *     summary: Retrieve all orders
- *     description: Fetches a list of all orders in the system.
+ *     description: Fetches a paginated list of all orders in the system. You can filter by order ID and use pagination with `page` and `limit`.
  *     tags:
  *       - Order
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: orderId
+ *         schema:
+ *           type: string
+ *         description: Filter orders by order ID (case-insensitive).
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination (default is 1).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of orders to return per page (default is 10).
  *     responses:
  *       200:
- *         description: A list of orders.
+ *         description: A paginated list of orders.
  *         content:
  *           application/json:
  *             schema:
@@ -189,12 +232,25 @@
  *               properties:
  *                 status:
  *                   type: boolean
- *                   description: Indicates the success of the operation
+ *                   description: Indicates the success of the operation.
  *                 orders:
  *                   type: array
- *                   description: List of orders
+ *                   description: List of orders.
  *                   items:
  *                     $ref: '#/components/schemas/Order'
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination metadata.
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: The current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of orders available.
  *       500:
  *         description: Server error.
  */
@@ -204,7 +260,7 @@
  * /orders/sold:
  *   get:
  *     summary: Get seller's sold orders
- *     description: Retrieve a list of orders containing products sold by the seller.
+ *     description: Retrieve a list of orders containing products sold by the authenticated seller, with optional filtering by order ID and pagination support.
  *     tags: [Order]
  *     security:
  *       - bearerAuth: []
@@ -213,10 +269,22 @@
  *         name: orderId
  *         schema:
  *           type: string
- *         description: Optional. ID of the order to retrieve.
+ *         description: Optional. Filter orders by ID (case-insensitive).
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination (default is 1).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of orders to return per page (default is 10).
  *     responses:
  *       200:
- *         description: A list of sold orders belonging to the seller.
+ *         description: A list of sold orders belonging to the seller with pagination metadata.
  *         content:
  *           application/json:
  *             schema:
@@ -227,12 +295,37 @@
  *                   description: Indicates the status of the request.
  *                 orders:
  *                   type: array
+ *                   description: List of sold orders.
  *                   items:
  *                     $ref: '#/components/schemas/Order'
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination metadata.
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: The current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of orders available.
  *       401:
  *         $ref: '#/components/schemas/UnauthorizedError'
  *       500:
  *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating internal server error.
  */
 
 /**

@@ -1008,19 +1008,38 @@ const UserController = {
       });
     }
   },
+
   async getUserWishlist(req: CustomRequest, res: Response) {
     try {
       const userId = req.userId;
 
-      const user = await User.findById(userId).populate("wishlist");
+      // Extract pagination query parameters with defaults
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+
+      // Find user and paginate wishlist items
+      const user = await User.findById(userId).populate({
+        path: "wishlist",
+        options: { skip, limit },
+      });
+
       if (!user) {
         res.status(404).json({ status: false, message: "User not found" });
         return;
       }
 
+      // Count total wishlist items for pagination metadata
+      const totalWishlistItems = user.wishlist?.length || 0;
+
       res.status(200).json({
         status: true,
         wishlist: user.wishlist,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalWishlistItems / limit),
+          totalItems: totalWishlistItems,
+        },
       });
     } catch (error) {
       res.status(500).json({

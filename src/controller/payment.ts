@@ -10,8 +10,30 @@ export const getAllPayments = async (
   res: Response
 ): Promise<void> => {
   try {
-    const payments = await Payment.find().populate("userId", "username");
-    res.status(200).json(payments);
+    // Extract pagination query parameters with defaults
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // Count total payments for pagination metadata
+    const totalPayments = await Payment.countDocuments();
+
+    // Fetch payments with pagination
+    const payments = await Payment.find()
+      .populate("userId", "username")
+      .skip(skip)
+      .limit(limit);
+
+    // Response with pagination metadata
+    res.status(200).json({
+      status: true,
+      payments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalPayments / limit),
+        totalItems: totalPayments,
+      },
+    });
   } catch (error) {
     res
       .status(500)

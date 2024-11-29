@@ -10,57 +10,65 @@
  * /payments:
  *   get:
  *     summary: Retrieve all payments
- *     description: Fetches a list of all payments in the system.
- *     tags:
- *       - Payment
+ *     description: Fetches a paginated list of all payments.
+ *     tags: [Payment]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination (default is 1).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page (default is 10).
  *     responses:
  *       200:
- *         description: A list of payments.
+ *         description: A paginated list of payments.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                     description: The payment ID.
- *                   userId:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                         description: The user ID.
- *                       username:
- *                         type: string
- *                         description: The username of the user.
- *                   amount:
- *                     type: number
- *                     description: Payment amount.
- *                   status:
- *                     type: string
- *                     description: Payment status.
- *                   reason:
- *                     type: string
- *                     description: Reason for the payment.
- *                   to:
- *                     type: string
- *                     enum: [Wallet, Account]
- *                     description: Payment destination.
- *                   orderId:
- *                     type: string
- *                     description: The associated order ID.
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *                   updatedAt:
- *                     type: string
- *                     format: date-time
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the status of the request.
+ *                 payments:
+ *                   type: array
+ *                   description: List of payments.
+ *                   items:
+ *                     $ref: '#/components/schemas/Payment'
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination metadata.
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: The current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of payments available.
  *       500:
- *         description: Server error.
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating internal server error.
  */
 
 /**

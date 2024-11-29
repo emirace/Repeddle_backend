@@ -265,6 +265,9 @@ export const getAllOrders = async (
 ): Promise<void> => {
   try {
     const orderId = req.query.orderId as string | undefined;
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
 
     const pipeline: any[] = [];
 
@@ -283,9 +286,17 @@ export const getAllOrders = async (
       );
     }
 
-    pipeline.push({
-      $sort: { createdAt: -1 },
-    });
+    pipeline.push(
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      }
+    );
 
     // Execute the aggregation pipeline
     const orders = await Order.aggregate(pipeline).exec();
@@ -296,7 +307,23 @@ export const getAllOrders = async (
       select: "images name",
     });
 
-    res.status(200).json({ status: true, orders: populatedOrders });
+    // Get total count of orders for pagination info
+    const totalOrdersPipeline = [...pipeline];
+    totalOrdersPipeline.splice(totalOrdersPipeline.length - 2, 2); // Remove `$skip` and `$limit`
+    const totalOrders = await Order.aggregate(totalOrdersPipeline)
+      .count("total")
+      .exec();
+    const totalCount = totalOrders[0]?.total || 0;
+
+    res.status(200).json({
+      status: true,
+      orders: populatedOrders,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalItems: totalCount,
+      },
+    });
   } catch (error) {
     res.status(500).json({ status: false, message: "Failed to fetch orders." });
   }
@@ -306,6 +333,9 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const orderId = req.query.orderId as string | undefined;
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
 
     const pipeline: any[] = [
       {
@@ -330,9 +360,17 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
       );
     }
 
-    pipeline.push({
-      $sort: { createdAt: -1 },
-    });
+    pipeline.push(
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      }
+    );
 
     // Execute the aggregation pipeline
     const orders = await Order.aggregate(pipeline).exec();
@@ -343,8 +381,23 @@ export const getUserOrders = async (req: CustomRequest, res: Response) => {
       select: "images name",
     });
 
-    // Return the orders
-    return res.status(200).json({ status: true, orders: populatedOrders });
+    // Get total count of user's orders for pagination info
+    const totalOrdersPipeline = [...pipeline];
+    totalOrdersPipeline.splice(totalOrdersPipeline.length - 2, 2); // Remove `$skip` and `$limit`
+    const totalOrders = await Order.aggregate(totalOrdersPipeline)
+      .count("total")
+      .exec();
+    const totalCount = totalOrders[0]?.total || 0;
+
+    return res.status(200).json({
+      status: true,
+      orders: populatedOrders,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalItems: totalCount,
+      },
+    });
   } catch (error) {
     console.error("Error fetching user orders:", error);
     return res
@@ -361,8 +414,11 @@ export const getSellerSoldOrders = async (
     // Extract seller ID from request
     const sellerId = req.userId!;
 
-    // Extract orderId query parameter if exists
-    const orderId = req.query.orderId;
+    // Extract query parameters
+    const orderId = req.query.orderId as string | undefined;
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
 
     // Define the aggregation pipeline stages
     const pipeline: any[] = [
@@ -389,14 +445,17 @@ export const getSellerSoldOrders = async (
       );
     }
 
-    // Add the $sort stage to sort by createdAt in descending order
-    pipeline.push({
-      $sort: { createdAt: -1 },
-    });
+    // Add $sort, $skip, and $limit stages for pagination
+    pipeline.push(
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    );
 
     // Execute the aggregation pipeline
     let soldOrders: IOrder[] = await Order.aggregate(pipeline);
 
+    // Populate product details in the items
     soldOrders = await Order.populate(soldOrders, {
       path: "items.product",
       select: "images name",
@@ -417,8 +476,24 @@ export const getSellerSoldOrders = async (
       return { ...order, items: sellerItems, totalAmount };
     });
 
-    // Return the sold orders with filtered products belonging to the seller
-    return res.status(200).json({ status: true, orders: sellerSoldOrders });
+    // Get total count of seller's sold orders for pagination
+    const totalOrdersPipeline = [...pipeline];
+    totalOrdersPipeline.splice(totalOrdersPipeline.length - 3, 3); // Remove $skip, $limit, and $sort
+    const totalOrders = await Order.aggregate(totalOrdersPipeline)
+      .count("total")
+      .exec();
+    const totalCount = totalOrders[0]?.total || 0;
+
+    // Return the sold orders with pagination metadata
+    return res.status(200).json({
+      status: true,
+      orders: sellerSoldOrders,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalItems: totalCount,
+      },
+    });
   } catch (error) {
     console.error("Error fetching seller sold orders:", error);
     return res

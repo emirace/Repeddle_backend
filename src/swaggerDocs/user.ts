@@ -1222,20 +1222,27 @@
  * @swagger
  * /users/wishlist:
  *   get:
- *     summary: Get the user's wishlist
+ *     summary: Retrieve user's wishlist
+ *     description: Fetches a paginated list of items in the authenticated user's wishlist.
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
+ *       - in: query
+ *         name: page
  *         schema:
- *           type: string
- *         description: The ID of the user
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination (default is 1).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page (default is 10).
  *     responses:
  *       200:
- *         description: The user's wishlist
+ *         description: A paginated list of wishlist items.
  *         content:
  *           application/json:
  *             schema:
@@ -1243,23 +1250,40 @@
  *               properties:
  *                 status:
  *                   type: boolean
+ *                   description: Indicates the status of the request.
  *                 wishlist:
  *                   type: array
+ *                   description: List of wishlist items.
  *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       description:
- *                         type: string
- *                       price:
- *                         type: number
+ *                     $ref: '#/components/schemas/Product'
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination metadata.
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: The current page number.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items in the wishlist.
  *       404:
- *         description: User not found
+ *         description: User not found.
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating internal server error.
  */
 
 /**
