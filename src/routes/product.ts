@@ -95,12 +95,12 @@ router.post(
 );
 
 router.put(
-  "/:id",
+  "/:productId",
   authorize(["User", "Admin"]),
   ProductController.updateProduct
 );
 router.delete(
-  "/:id",
+  "/:productId",
   authorize(["User", "Admin"]),
   ProductController.deleteProduct
 );
