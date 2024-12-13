@@ -495,11 +495,24 @@
  * /users/top-sellers:
  *   get:
  *     summary: Get top sellers.
- *     description: Retrieve the top sellers based on the number of products sold.
+ *     description: Retrieve the top sellers based on the number of products sold with pagination and total earnings.
  *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of sellers to retrieve per page.
  *     responses:
  *       200:
- *         description: A list of top sellers.
+ *         description: A list of top sellers with pagination and total earnings.
  *         content:
  *           application/json:
  *             schema:
@@ -508,27 +521,36 @@
  *                 status:
  *                   type: boolean
  *                   description: Indicates if the request was successful.
- *                 topSellers:
+ *                 currentPage:
+ *                   type: integer
+ *                   description: The current page number.
+ *                 totalPages:
+ *                   type: integer
+ *                   description: The total number of pages.
+ *                 totalSellers:
+ *                   type: integer
+ *                   description: The total number of sellers.
+ *                 sellers:
  *                   type: array
  *                   description: List of top sellers.
  *                   items:
  *                     type: object
  *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         description: The unique ID of the seller.
  *                       username:
  *                         type: string
  *                         description: The username of the seller.
- *                       firstName:
- *                         type: string
- *                         description: The first name of the seller.
- *                       lastName:
- *                         type: string
- *                         description: The last name of the seller.
  *                       image:
  *                         type: string
  *                         description: The image URL of the seller.
- *                       sold:
+ *                       badge:
+ *                         type: string
+ *                         description: The badge of the seller.
+ *                       totalEarnings:
  *                         type: number
- *                         description: The number of products sold by the seller.
+ *                         description: The total earnings of the seller.
  *       500:
  *         description: Internal server error.
  *         content:

@@ -648,17 +648,58 @@ const UserController = {
     }
   },
 
-  // top sellers
   async getTopSellers(req: Request, res: Response) {
     try {
-      // Query the User model to find top sellers based on certain criteria
-      const topSellers: IUser[] = await User.find({ isSeller: true })
+      // Step 1: Extract pagination parameters from the query
+      const page = parseInt(req.query.page as string) || 1; // Default to page 1
+      const limit = parseInt(req.query.limit as string) || 10; // Default to 10 items per page
+      const skip = (page - 1) * limit;
+
+      // Step 2: Fetch top sellers with pagination
+      const topSellers = await User.find({ isSeller: true })
         .select("username image badge") // Select only necessary fields
         .sort({ sold: -1 }) // Sort by the number of products sold in descending order
-        .limit(10); // Limit the result to the top 10 sellers
+        .skip(skip) // Skip sellers for pagination
+        .limit(limit) // Limit the number of sellers per page
+        .lean(); // Use lean for better performance
 
-      // Respond with the list of top sellers
-      res.status(200).json({ status: true, topSellers });
+      // Step 3: Get the IDs of the top sellers
+      const sellerIds = topSellers.map((seller) => seller._id);
+
+      // Step 4: Aggregate payments to calculate total earnings for each seller
+      const earnings = await Payment.aggregate([
+        { $match: { userId: { $in: sellerIds }, status: "Completed" } }, // Only completed payments
+        {
+          $group: {
+            _id: "$userId",
+            totalEarnings: { $sum: "$amount" }, // Sum the amount for each user
+          },
+        },
+      ]);
+
+      // Step 5: Map earnings to sellers
+      const earningsMap = earnings.reduce((map, earning) => {
+        map[earning._id.toString()] = earning.totalEarnings;
+        return map;
+      }, {});
+
+      // Step 6: Attach total earnings to the sellers
+      const sellersWithEarnings = topSellers.map((seller) => ({
+        ...seller,
+        totalEarnings: earningsMap[seller._id.toString()] || 0, // Default to 0 if no earnings
+      }));
+
+      // Step 7: Get total count of sellers for pagination metadata
+      const totalSellers = await User.countDocuments({ isSeller: true });
+
+      // Step 8: Respond with the paginated result and metadata
+      res.status(200).json({
+        status: true,
+        currentPage: page,
+        totalPages: Math.ceil(totalSellers / limit),
+        totalSellers,
+        sellers: sellersWithEarnings,
+      });
     } catch (error) {
       // Handle errors
       console.error("Error fetching top sellers:", error);
@@ -817,6 +858,7 @@ const UserController = {
 
       // Pagination logic
       const users: IUser[] = await User.find(query)
+        .sort({ createdAt: -1 })
         .limit(+limit)
         .skip((+page - 1) * +limit)
         .exec();
