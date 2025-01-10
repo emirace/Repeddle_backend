@@ -54,7 +54,7 @@ const UserController = {
       if (!errors.isEmpty()) {
         return res.status(400).json({ status: false, errors: errors.array() });
       }
-      const email = req.body.email;
+      const { email, mode } = req.body;
 
       if (!email) {
         return res
@@ -62,20 +62,33 @@ const UserController = {
           .json({ status: false, message: "Email address is required" });
       }
 
-      const user = await User.findOne({ email, role: "Guest" });
-      if (user) {
-        // Generate reset password token
-        const resetToken = await generateEmailVerificationToken(
-          user.email,
-          "password"
-        );
+      const user = await User.findOne({ email });
 
-        // Send reset password email
-        await sendResetPasswordEmail(user.email, resetToken);
+      if (user) {
+        const tokenType =
+          user.role === "User" || user.role === "Admin" ? "password" : "email";
+        const token = await generateEmailVerificationToken({
+          email: user.email,
+          type: tokenType,
+          mode,
+        });
+
+        if (tokenType === "password") {
+          await sendResetPasswordEmail(user.email, token);
+        } else {
+          await sendVerificationEmail(user.email, token);
+        }
       } else {
-        const token = await generateEmailVerificationToken(email, "email");
+        // No user found, send verification email
+        const token = await generateEmailVerificationToken({
+          email,
+          type: "email",
+          mode,
+        });
+
         await sendVerificationEmail(email, token);
       }
+
       res.status(200).json({
         status: true,
         message: "Verification email sent successfully",
@@ -92,7 +105,12 @@ const UserController = {
   async verifyEmail(req: Request, res: Response) {
     try {
       const token = req.params.token;
-      const email = await verifyEmailVerificationToken(token, "email");
+      const mode = req.query.mode as "token" | "otp";
+      const email = await verifyEmailVerificationToken({
+        identifier: token,
+        type: "email",
+        mode,
+      });
 
       if (!email) {
         return res
@@ -111,7 +129,7 @@ const UserController = {
 
   async forgotPassword(req: Request, res: Response) {
     try {
-      const { email } = req.body;
+      const { email, mode } = req.body;
 
       // Check if the user exists
       const user = await User.findOne({ email });
@@ -122,10 +140,11 @@ const UserController = {
       }
 
       // Generate reset password token
-      const resetToken = await generateEmailVerificationToken(
-        user.email,
-        "password"
-      );
+      const resetToken = await generateEmailVerificationToken({
+        email: user.email,
+        type: "password",
+        mode,
+      });
 
       // Send reset password email
       await sendResetPasswordEmail(user.email, resetToken);
@@ -150,7 +169,11 @@ const UserController = {
       const token = req.params.token;
       console.log(token);
       // Verify reset token
-      const email = await verifyEmailVerificationToken(token, "password");
+      const email = await verifyEmailVerificationToken({
+        identifier: token,
+        type: "password",
+        mode: "token",
+      });
       console.log(email, token);
       if (!email) {
         return res.status(400).json({ message: "Invalid or expired token" });
@@ -207,10 +230,11 @@ const UserController = {
         token: verificationToken,
       } = req.body;
       const region = req.userRegion;
-      const email = await verifyEmailVerificationToken(
-        verificationToken,
-        "email"
-      );
+      const email = await verifyEmailVerificationToken({
+        identifier: verificationToken,
+        type: "email",
+        mode: "token",
+      });
       if (!email) {
         return res
           .status(400)

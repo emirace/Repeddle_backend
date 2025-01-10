@@ -23,6 +23,9 @@
  *                 type: string
  *                 description: The email address to send the verification email to
  *                 example: user@example.com
+ *               mode:
+ *                 type: string
+ *                 description: the type of verification either token or otp
  *     responses:
  *       '200':
  *         description: Successfully sent verification email
