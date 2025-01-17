@@ -166,14 +166,14 @@ const UserController = {
 
   async resetPassword(req: Request, res: Response) {
     try {
-      const { password } = req.body;
+      const { password, mode } = req.body;
       const token = req.params.token;
       console.log(token);
       // Verify reset token
       const email = await verifyEmailVerificationToken({
         identifier: token,
         type: "password",
-        mode: "token",
+        mode: mode || "token",
       });
       console.log(email, token);
       if (!email) {
