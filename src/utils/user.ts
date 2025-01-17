@@ -111,6 +111,7 @@ export async function verifyEmailVerificationToken({
 
       return decoded.email;
     } else if (mode === "otp") {
+      console.log(identifier, mode, type);
       // Find the OTP in the database
       const tokenDoc = await Token.findOne({ otp: identifier, type });
       if (!tokenDoc) {
@@ -131,8 +132,9 @@ export async function verifyEmailVerificationToken({
       }
 
       // Mark the OTP as used
-      await Token.updateOne({ _id: tokenDoc._id }, { $set: { used: true } });
-
+      if (type === "password") {
+        await Token.updateOne({ _id: tokenDoc._id }, { $set: { used: true } });
+      }
       return tokenDoc.email;
     }
 

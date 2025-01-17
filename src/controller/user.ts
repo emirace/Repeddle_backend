@@ -106,9 +106,10 @@ const UserController = {
     try {
       const token = req.params.token;
       const mode = req.query.mode as "token" | "otp";
+      const type = req.query.type as "email" | "password";
       const email = await verifyEmailVerificationToken({
         identifier: token,
-        type: "email",
+        type: type || "email",
         mode,
       });
 
@@ -228,13 +229,17 @@ const UserController = {
         lastName,
         phone,
         token: verificationToken,
+        mode,
       } = req.body;
       const region = req.userRegion;
+
       const email = await verifyEmailVerificationToken({
         identifier: verificationToken,
         type: "email",
-        mode: "token",
+        mode,
       });
+      console.log(password);
+
       if (!email) {
         return res
           .status(400)
@@ -254,12 +259,11 @@ const UserController = {
           .status(400)
           .json({ status: false, errors: "Username already exist" });
       }
-
       // Hash the password before storing it in the database
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create the new user
-      const newUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         { email, role: "Guest" },
         {
           $set: {
@@ -286,10 +290,9 @@ const UserController = {
       // add to newsletter
       //send welcome email
 
-      // Generate JWT token
-      const token = await generateAccessToken(newUser._id);
-
-      res.status(201).json({ status: true, token });
+      res
+        .status(201)
+        .json({ status: true, message: "user regiter sucessfully" });
     } catch (error) {
       console.error("Error registering user:", error);
       res
