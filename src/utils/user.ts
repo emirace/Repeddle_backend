@@ -104,10 +104,10 @@ export async function verifyEmailVerificationToken({
       // Verify the token
       const decoded = jwt.verify(identifier, secretKey) as { email: string };
 
-      if (type === "password") {
-        // Mark the token as used
-        await Token.updateOne({ token: identifier }, { $set: { used: true } });
-      }
+      // if (type === "password") {
+      //   // Mark the token as used
+      //   await Token.updateOne({ token: identifier }, { $set: { used: true } });
+      // }
 
       return decoded.email;
     } else if (mode === "otp") {
@@ -132,9 +132,9 @@ export async function verifyEmailVerificationToken({
       }
 
       // Mark the OTP as used
-      if (type === "password") {
-        await Token.updateOne({ _id: tokenDoc._id }, { $set: { used: true } });
-      }
+      // if (type === "password") {
+      //   await Token.updateOne({ _id: tokenDoc._id }, { $set: { used: true } });
+      // }
       return tokenDoc.email;
     }
 

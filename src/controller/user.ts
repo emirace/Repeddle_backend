@@ -13,6 +13,7 @@ import Product from "../model/product";
 import Order from "../model/order";
 import Payment from "../model/payment";
 import { model } from "mongoose";
+import Token from "../model/token";
 
 const generateRandomNumber = () => {
   return Math.floor(Math.random() * 100);
@@ -168,7 +169,7 @@ const UserController = {
     try {
       const { password, mode } = req.body;
       const token = req.params.token;
-      console.log(token, model);
+      console.log(token);
       // Verify reset token
       const email = await verifyEmailVerificationToken({
         identifier: token,
@@ -193,6 +194,7 @@ const UserController = {
       // Update user's password
       user.password = hashedPassword;
       await user.save();
+      await Token.updateOne({ email, otp: token }, { $set: { used: true } });
 
       res
         .status(200)
@@ -282,6 +284,10 @@ const UserController = {
           setDefaultsOnInsert: true,
           runValidators: true,
         }
+      );
+      await Token.updateOne(
+        { email, otp: verificationToken },
+        { $set: { used: true } }
       );
 
       //TODO
