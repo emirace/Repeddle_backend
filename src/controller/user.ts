@@ -1,4 +1,3 @@
-// userController.ts
 import { Request, Response } from "express";
 import User, { IAddress, IRebundle, IUser } from "../model/user";
 import {
@@ -13,6 +12,7 @@ import { CustomRequest } from "../middleware/user";
 import Product from "../model/product";
 import Order from "../model/order";
 import Payment from "../model/payment";
+import { model } from "mongoose";
 
 const generateRandomNumber = () => {
   return Math.floor(Math.random() * 100);
@@ -168,7 +168,7 @@ const UserController = {
     try {
       const { password, mode } = req.body;
       const token = req.params.token;
-      console.log(token);
+      console.log(token, model);
       // Verify reset token
       const email = await verifyEmailVerificationToken({
         identifier: token,

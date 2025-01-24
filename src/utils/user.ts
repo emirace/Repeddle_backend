@@ -124,7 +124,7 @@ export async function verifyEmailVerificationToken({
         console.error("OTP has expired");
         return null;
       }
-
+      console.log(tokenDoc);
       // Check if the OTP has already been used
       if (tokenDoc.used) {
         console.error("OTP has already been used");
