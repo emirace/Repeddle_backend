@@ -65,6 +65,32 @@ export const getAllBrands = async (req: Request, res: Response) => {
   }
 };
 
+export const getBrandsByAlpha = async (req: Request, res: Response) => {
+  try {
+    const { alpha } = req.params;
+    const { search } = req.query;
+
+    if (!alpha) {
+      return res.status(400).json({ error: "Alpha parameter is required." });
+    }
+
+    // Create a filter query
+    const query: any = { alpha, published: true };
+
+    // If search query exists, add a case-insensitive name filter
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    const brands = await Brand.find(query);
+
+    res.status(200).json(brands);
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const addBrand = async (req: CustomRequest, res: Response) => {
   try {
     const { name } = req.body;
