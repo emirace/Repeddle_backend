@@ -105,6 +105,7 @@ export const getUserTransactions = async (
 
     // Find transactions for the specified user with pagination
     const transactions: ITransaction[] = await Transaction.aggregate(pipeline);
+    console.log("userTransactions", transactions, userId);
 
     // Count total documents for pagination metadata
     const totalDocsPipeline = [...pipeline];
