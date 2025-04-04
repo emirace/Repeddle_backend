@@ -96,7 +96,7 @@ export const paySeller = async (
     }
 
     const item = order.items[itemIndex];
-
+    console.log(item);
     // Check if the item has a complete status
     const completeStatuses = ["Received", "Return Declined"]; // Modify as needed
     if (
