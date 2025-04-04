@@ -1,6 +1,6 @@
 import { Response } from "express";
 import Payment from "../model/payment";
-import Order from "../model/order";
+import Order, { IDeliveryTrackingHistory } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import Wallet from "../model/wallet";
 
@@ -72,10 +72,10 @@ export const paySeller = async (
   res: Response
 ): Promise<void> => {
   const { orderId, itemId } = req.params;
-  const { userId } = req.body; // Assuming the user's ID is passed in the request body or fetched from the logged-in user context
+  const { userId } = req.body; // Assuming the user's ID is passed in the request body
 
   try {
-    // Fetch the order and populate the items and seller info
+    // Fetch the order and populate item sellers
     const order = await Order.findById(orderId).populate(
       "items.seller",
       "username"
@@ -86,17 +86,19 @@ export const paySeller = async (
       return;
     }
 
-    // Find the specific item in the order
-    const item = order.items.find((item) => item.product.toString() === itemId);
-
-    if (!item) {
+    // Find the item index in the order
+    const itemIndex = order.items.findIndex(
+      (item) => item.product.toString() === itemId
+    );
+    if (itemIndex === -1) {
       res.status(404).json({ status: false, message: "Order item not found." });
       return;
     }
 
-    const completeStatuses = ["Received", "Return Declined"]; // Replace with your actual statuses
+    const item = order.items[itemIndex];
 
-    // Check if item is marked as complete
+    // Check if the item has a complete status
+    const completeStatuses = ["Received", "Return Declined"]; // Modify as needed
     if (
       !completeStatuses.includes(item.deliveryTracking.currentStatus.status)
     ) {
@@ -106,25 +108,38 @@ export const paySeller = async (
       return;
     }
 
-    // Verify that the requesting user is the seller of the item
+    // Ensure the requesting user is the seller of the item
     if ((item.seller as any)._id.toString() !== userId) {
       res.status(403).json({ status: false, message: "Unauthorized seller." });
       return;
     }
 
-    // Calculate the payment amount with commission deducted
+    // Calculate the payment amount after deducting commission
     const commission = item.price * COMMISSION_RATE;
     const paymentAmount = item.price - commission;
 
-    // Create a payment record for the seller
+    // Create a payment record
     const payment = await Payment.create({
       userId: (item.seller as any)._id,
       amount: paymentAmount,
       status: "Pending",
-      reason: `Order Completed`,
+      reason: "Order Completed",
       to: "Wallet",
-      orderId: orderId,
+      orderId,
     });
+
+    // Update delivery tracking history
+    item.deliveryTracking.history.push({
+      ...item.deliveryTracking.currentStatus,
+    });
+
+    // Update the current status
+    item.deliveryTracking.currentStatus = {
+      status: "Payment to Seller Initiated",
+      timestamp: new Date(),
+    };
+
+    await order.save();
 
     res.status(201).json({
       status: true,
@@ -132,9 +147,12 @@ export const paySeller = async (
       payment,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: false, message: "Failed to process payment.", error });
+    console.error("Error processing payment:", error);
+    res.status(500).json({
+      status: false,
+      message: "Failed to process payment.",
+      error: error instanceof Error ? error.message : error,
+    });
   }
 };
 
