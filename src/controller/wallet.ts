@@ -23,6 +23,13 @@ export async function fundWallet(req: CustomRequest, res: Response) {
     const existTransaction = await Transaction.findOne({
       paymentTransactionId: transactionId,
     });
+    console.log(
+      "existTransaction",
+      transactionId,
+      paymentProvider,
+      existTransaction,
+      existOrder
+    );
     if (existOrder.length > 0 || existTransaction) {
       await session.abortTransaction();
       session.endSession();

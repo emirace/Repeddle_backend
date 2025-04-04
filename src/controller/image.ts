@@ -72,6 +72,9 @@ export const uploadImage = async (req: Request, res: Response) => {
 export const downloadImage = async (req: Request, res: Response) => {
   try {
     const { key } = req.params;
+    if (!key) {
+      return res.status(404).json({ message: "Image key is required" });
+    }
     const params = {
       Bucket: bucket,
       Key: key as string,
