@@ -21,6 +21,7 @@ export const getAllPayments = async (
     // Fetch payments with pagination
     const payments = await Payment.find()
       .populate("userId", "username")
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -128,17 +129,20 @@ export const paySeller = async (
       orderId,
     });
 
+    const currentStatus: IDeliveryTrackingHistory = {
+      status: item.deliveryTracking.currentStatus.status,
+      timestamp: item.deliveryTracking.currentStatus.timestamp,
+    };
+
     // Update delivery tracking history
-    item.deliveryTracking.history.push({
-      ...item.deliveryTracking.currentStatus,
-    });
+    item.deliveryTracking.history.push(currentStatus);
 
     // Update the current status
     item.deliveryTracking.currentStatus = {
       status: "Payment to Seller Initiated",
       timestamp: new Date(),
     };
-
+    console.log(item);
     await order.save();
 
     res.status(201).json({
