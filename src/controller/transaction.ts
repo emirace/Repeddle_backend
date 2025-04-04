@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Transaction, { ITransaction } from "../model/transaction";
 import { CustomRequest } from "../middleware/user";
+import mongoose from "mongoose";
 
 export const getAllTransactions = async (req: Request, res: Response) => {
   try {
@@ -80,7 +81,7 @@ export const getUserTransactions = async (
     const pipeline: any[] = [
       {
         $match: {
-          userId,
+          userId: new mongoose.Types.ObjectId(userId),
         },
       },
     ];
