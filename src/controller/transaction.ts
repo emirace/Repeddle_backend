@@ -32,7 +32,13 @@ export const getAllTransactions = async (req: Request, res: Response) => {
     }
 
     // Add pagination stages
-    pipeline.push({ $skip: skip }, { $limit: limit });
+    pipeline.push(
+      {
+        $sort: { createdAt: -1 },
+      },
+      { $skip: skip },
+      { $limit: limit }
+    );
 
     // Find all transactions with pagination
     const transactions: ITransaction[] = await Transaction.aggregate(pipeline);

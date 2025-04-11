@@ -3,7 +3,7 @@ import Product, { IProduct } from "../model/product";
 import Order, { IDeliveryTrackingHistory, IOrder } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import { verifyPayment } from "../services/payment";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import { performWithdrawal } from "../utils/wallet";
 import User from "../model/user";
 import { body, validationResult } from "express-validator";
@@ -722,8 +722,8 @@ export const getUserDailyOrdersSummary = async (
     const dailyPurchasedOrders = await Order.aggregate([
       {
         $match: {
-          buyer: userId,
-          // createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+          buyer: new mongoose.Types.ObjectId(userId),
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
         },
       },
       {
@@ -742,8 +742,8 @@ export const getUserDailyOrdersSummary = async (
     const dailySoldOrders = await Order.aggregate([
       {
         $match: {
-          "items.seller": userId,
-          // createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+          "items.seller": new mongoose.Types.ObjectId(userId),
+          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
         },
       },
       {
