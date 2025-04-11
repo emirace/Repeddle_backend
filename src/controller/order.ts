@@ -716,12 +716,14 @@ export const getUserDailyOrdersSummary = async (
     const parsedStartDate = new Date(startDate as string);
     const parsedEndDate = new Date(endDate as string);
 
+    console.log(parsedStartDate, parsedEndDate);
+
     // Aggregate purchased orders based on the day of creation within the specified time frame
     const dailyPurchasedOrders = await Order.aggregate([
       {
         $match: {
           buyer: userId,
-          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+          // createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
         },
       },
       {
@@ -741,7 +743,7 @@ export const getUserDailyOrdersSummary = async (
       {
         $match: {
           "items.seller": userId,
-          createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
+          // createdAt: { $gte: parsedStartDate, $lte: parsedEndDate },
         },
       },
       {
