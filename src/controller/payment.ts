@@ -3,6 +3,7 @@ import Payment from "../model/payment";
 import Order, { IDeliveryTrackingHistory } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import Wallet from "../model/wallet";
+import Transaction from "../model/transaction";
 
 // Get all payments
 export const getAllPayments = async (
@@ -246,6 +247,17 @@ export const approvePayment = async (
       await wallet.save();
 
       payment.status = "Approved";
+
+      const transaction = new Transaction({
+        type: "credit",
+        userId: wallet.userId,
+        walletId: wallet._id,
+        amount: payment.amount,
+        status: "COMPLETED",
+        description: "Order completed",
+        currency: wallet.currency,
+      });
+      await transaction.save();
     } else {
       payment.status = "Approved";
     }
