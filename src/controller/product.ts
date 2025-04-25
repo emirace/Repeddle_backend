@@ -71,19 +71,7 @@ const ProductController = {
         const filters = (filter as string).split(",");
         filters.forEach((f: string) => {
           const [key, value] = f.split(":");
-          if (key === "maxPrice") {
-            query.sellingPrice = {
-              ...query.sellingPrice,
-              $lte: parseFloat(value),
-            };
-          } else if (key === "minPrice") {
-            query.sellingPrice = {
-              ...query.sellingPrice,
-              $gte: parseFloat(value),
-            };
-          } else {
-            query[key] = value;
-          }
+          query[key] = value;
         });
       }
 
