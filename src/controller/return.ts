@@ -645,6 +645,7 @@ export const updateReturnStatus = async (req: CustomRequest, res: Response) => {
       message: `Return ${status}`,
       link: `/return/${updatedReturn._id}`,
       user: updatedReturn.orderId.buyer._id,
+      image: (foundReturn.productId as any).images[0],
     });
 
     res.status(200).json({ status: true, return: updatedReturn });
@@ -808,6 +809,7 @@ export const updateUserDeliveryTracking = async (
         user: isBuyer
           ? updatedReturn.productId.seller._id
           : updatedReturn.orderId.buyer._id,
+        image: (foundReturn.productId as any).images[0],
       },
       { session }
     );
@@ -878,6 +880,7 @@ export const updateReturnDeliveryAddress = async (
       message: `Return address updated`,
       link: `/return/${updatedReturn._id}`,
       user: updatedReturn.orderId.buyer._id,
+      image: (foundReturn.productId as any).images[0],
     });
 
     res.status(200).json({ status: true, return: updatedReturn });

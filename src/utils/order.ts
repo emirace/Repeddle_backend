@@ -39,7 +39,9 @@ export const sendOrderNotifications = async () => {
     // Fetch only orders with items in active statuses
     const orders = await Order.find({
       "items.deliveryTracking.currentStatus.status": { $in: activeStatuses },
-    }).select("items buyer"); // Fetch only necessary fields
+    })
+      .select("items buyer")
+      .populate({ path: "items.product", select: "images" });
     console.log(orders);
 
     const bulkUpdates = [];
@@ -70,6 +72,7 @@ export const sendOrderNotifications = async () => {
             message,
             link: `/order/${order._id}`,
             user: recipient,
+            image: (item as any).images[0],
           });
 
           const recipientUser = await User.findById(recipient).select(

@@ -661,6 +661,7 @@ export const updateDeliveryTracking = async (
         message: `Order ${status}`,
         link: `/order/${order._id}`,
         user: order.buyer._id,
+        image: product.images[0],
       });
 
       if (order.buyer?.socketId) {
@@ -673,6 +674,7 @@ export const updateDeliveryTracking = async (
         message: `Order ${status}`,
         link: `/order/${order._id}`,
         user: seller._id,
+        image: product.images[0],
       });
 
       if (seller?.socketId) {
