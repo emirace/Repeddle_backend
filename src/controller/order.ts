@@ -246,10 +246,13 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
       transactionId,
     });
 
+    console.log("order created successfull");
+
     // add rebundle feature later
 
     await session.commitTransaction();
     session.endSession();
+    console.log("transaction closed successfull");
 
     return res
       .status(201)
