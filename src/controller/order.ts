@@ -240,7 +240,7 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
 
     console.log("all payment verification successfull");
 
-    const order: IOrder = await Order.create({
+    const order: IOrder = new Order({
       buyer: userId,
       items: fetchedItems,
       totalAmount,
@@ -249,6 +249,8 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
     });
 
     console.log("order created successfull");
+    await order.save();
+    console.log("order created successfull 2");
 
     // add rebundle feature later
 
