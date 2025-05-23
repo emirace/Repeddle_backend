@@ -173,6 +173,8 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         });
       }
 
+      console.log("verification successfull");
+
       if (
         totalAmount !== paymentVerified.amount &&
         totalPrice > paymentVerified.amount
@@ -184,6 +186,8 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           message: "Invalid payment amount",
         });
       }
+
+      console.log("amount verification successfull");
 
       const existOrder = await Order.find({ transactionId }).session(session);
 
@@ -231,6 +235,8 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         message: "Invalid payment method",
       });
     }
+
+    console.log("all payment verification successfull");
 
     const order: IOrder = await Order.create({
       buyer: userId,
