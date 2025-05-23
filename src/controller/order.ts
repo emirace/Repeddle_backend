@@ -189,19 +189,19 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
 
       console.log("amount verification successfull");
 
-      const existOrder = await Order.find({ transactionId }).session(session);
+      // const existOrder = await Order.find({ transactionId }).session(session);
 
-      const existTransaction = await Transaction.findOne({
-        paymentTransactionId: transactionId,
-      });
-      if (existOrder.length > 0 || existTransaction) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(400).json({
-          status: false,
-          message: "Possible duplicate transaction",
-        });
-      }
+      // const existTransaction = await Transaction.findOne({
+      //   paymentTransactionId: transactionId,
+      // });
+      // if (existOrder.length > 0 || existTransaction) {
+      //   await session.abortTransaction();
+      //   session.endSession();
+      //   return res.status(400).json({
+      //     status: false,
+      //     message: "Possible duplicate transaction",
+      //   });
+      // }
 
       console.log("finisihed payment and order check");
     } else if (paymentMethod === "Wallet") {
