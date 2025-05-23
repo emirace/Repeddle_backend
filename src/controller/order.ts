@@ -202,6 +202,8 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           message: "Possible duplicate transaction",
         });
       }
+
+      console.log("finisihed payment and order check");
     } else if (paymentMethod === "Wallet") {
       if (totalPrice > totalAmount) {
         await session.abortTransaction();
