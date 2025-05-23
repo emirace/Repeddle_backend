@@ -558,6 +558,7 @@ const UserController = {
 
       res.status(200).json({ status: true, user: updatedUser });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         status: false,
         message: "Error updating user profile",

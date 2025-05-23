@@ -14,6 +14,7 @@ import image from "./image";
 import notification from "./notification";
 import returnRoute from "./return";
 import payment from "./payment";
+import gig from "./gig";
 
 const router = express.Router();
 
@@ -44,6 +45,9 @@ router.use("/images", image);
 router.use("/notifications", notification);
 
 router.use("/returns", returnRoute);
+
 router.use("/payments", payment);
+
+router.use("/gigs", gig);
 
 export default router;
