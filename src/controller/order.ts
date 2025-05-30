@@ -13,9 +13,6 @@ import Notification from "../model/notification";
 import { io } from "../app";
 
 export const createOrder = async (req: CustomRequest, res: Response) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     await Promise.all([
       body("items").isArray().withMessage("Items must be an array"),
@@ -66,8 +63,6 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         const product: IProduct | null = await Product.findById(item._id);
 
         if (!product) {
-          await session.abortTransaction();
-          session.endSession();
           return res.status(400).json({
             status: false,
             message: `Product not found for ID: ${item._d}`,
@@ -91,8 +86,6 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
             selectedSizeIndex === -1 ||
             product.sizes[selectedSizeIndex].quantity < item.quantity
           ) {
-            await session.abortTransaction();
-            session.endSession();
             return res.status(400).json({
               status: false,
               message: `Not enough stock available for product: ${product.name}, size: ${item.selectedSize}`,
@@ -101,8 +94,6 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           updatedSizes[selectedSizeIndex].quantity -= item.quantity;
         } else {
           if (product.countInStock < item.quantity) {
-            await session.abortTransaction();
-            session.endSession();
             return res.status(400).json({
               status: false,
               message: `Not enough stock available for product: ${product.name}`,
@@ -113,25 +104,17 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
         // Update countInStock and product sizes in database
         const countInStock = product.countInStock - item.quantity;
 
-        await Product.findByIdAndUpdate(
-          item._id,
-          {
-            sizes: updatedSizes,
-            countInStock,
-            $addToSet: { buyers: userId },
-          },
-          { session }
-        );
+        await Product.findByIdAndUpdate(item._id, {
+          sizes: updatedSizes,
+          countInStock,
+          $addToSet: { buyers: userId },
+        });
 
         // Update seller user model
         const sellerId = product.seller; // Assuming 'seller' field holds the ObjectId of the seller
-        await User.findByIdAndUpdate(
-          sellerId,
-          {
-            $addToSet: { sold: product._id, buyers: userId },
-          },
-          { session }
-        );
+        await User.findByIdAndUpdate(sellerId, {
+          $addToSet: { sold: product._id, buyers: userId },
+        });
 
         // Calculate item price based on product selling price and quantity
         const price = product.sellingPrice * item.quantity;
@@ -158,80 +141,68 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
     );
 
     if (paymentMethod === "PayFast" || paymentMethod === "Flutterwave") {
-      const paymentVerified = await verifyPayment(paymentMethod, transactionId);
+      const existOrder = await Order.find({ transactionId });
 
-      if (
-        !paymentVerified.status ||
-        !paymentVerified.amount ||
-        !paymentVerified.currency
-      ) {
-        await session.abortTransaction();
-        session.endSession();
+      const existTransaction = await Transaction.findOne({
+        paymentTransactionId: transactionId,
+      });
+      if (existOrder.length > 0 || existTransaction) {
         return res.status(400).json({
           status: false,
-          message: "Payment verification failed",
+          message: "Possible duplicate transaction",
         });
       }
+
+      // const paymentVerified = await verifyPayment(paymentMethod, transactionId);
+
+      // if (
+      //   !paymentVerified.status ||
+      //   !paymentVerified.amount ||
+      //   !paymentVerified.currency
+      // ) {
+      //   return res.status(400).json({
+      //     status: false,
+      //     message: "Payment verification failed",
+      //   });
+      // }
 
       console.log("verification successfull");
 
-      if (
-        totalAmount !== paymentVerified.amount &&
-        totalPrice > paymentVerified.amount
-      ) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(400).json({
-          status: false,
-          message: "Invalid payment amount",
-        });
-      }
-
-      console.log("amount verification successfull");
-
-      // const existOrder = await Order.find({ transactionId }).session(session);
-
-      // const existTransaction = await Transaction.findOne({
-      //   paymentTransactionId: transactionId,
-      // });
-      // if (existOrder.length > 0 || existTransaction) {
-      //   await session.abortTransaction();
-      //   session.endSession();
+      // if (
+      //   totalAmount !== paymentVerified.amount &&
+      //   totalPrice > paymentVerified.amount
+      // ) {
       //   return res.status(400).json({
       //     status: false,
-      //     message: "Possible duplicate transaction",
+      //     message: "Invalid payment amount",
       //   });
       // }
+
+      console.log("amount verification successfull");
 
       console.log("finisihed payment and order check");
     } else if (paymentMethod === "Wallet") {
       if (totalPrice > totalAmount) {
-        await session.abortTransaction();
-        session.endSession();
         return res.status(400).json({
           status: false,
           message: "Invalid payment amount",
         });
       }
 
-      const withdraw = await performWithdrawal({
-        userId,
-        currency,
-        amount: totalAmount,
-        session,
-        status: "COMPLETED",
-      });
-      if (!withdraw.status) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(500).json({
-          status: false,
-          message: withdraw.message,
-        });
-      }
+      // const withdraw = await performWithdrawal({
+      //   userId,
+      //   currency,
+      //   amount: totalAmount,
+      //   session,
+      //   status: "COMPLETED",
+      // });
+      // if (!withdraw.status) {
+      //   return res.status(500).json({
+      //     status: false,
+      //     message: withdraw.message,
+      //   });
+      // }
     } else {
-      await session.abortTransaction();
-      session.endSession();
       return res.status(500).json({
         status: false,
         message: "Invalid payment method",
@@ -254,8 +225,6 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
 
     // add rebundle feature later
 
-    await session.commitTransaction();
-    session.endSession();
     console.log("transaction closed successfull");
 
     return res
@@ -263,8 +232,6 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
       .json({ status: true, message: "Order created successfully", order });
   } catch (error: any) {
     console.error("Error creating order:", error);
-    await session.abortTransaction();
-    session.endSession();
     return res.status(500).json({
       status: false,
       message: "Internal server error",

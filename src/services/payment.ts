@@ -9,19 +9,24 @@ export const verifyPayment = async (
   console.log("flutterKey", flutterwaveKey);
   switch (provider) {
     case "Flutterwave":
-      const flutterwave = new (Flutterwave as any)(
-        flutterwaveKey,
-        flutterwaveSecret
-      );
-      const response = await flutterwave.Transaction.verify({
-        id: transactionId,
-      });
-      console.log("flu response", response);
-      if (response.data.status === "successful") {
-        const amount = response.data.amount;
-        const currency = response.data.currency;
-        return { status: true, amount, currency };
-      } else {
+      try {
+        const flutterwave = new (Flutterwave as any)(
+          flutterwaveKey,
+          flutterwaveSecret
+        );
+        const response = await flutterwave.Transaction.verify({
+          id: transactionId,
+        });
+        console.log("flu response", response);
+        if (response.data.status === "successful") {
+          const amount = response.data.amount;
+          const currency = response.data.currency;
+          return { status: true, amount, currency };
+        } else {
+          return { status: false };
+        }
+      } catch (error) {
+        console.log(error);
         return { status: false };
       }
     case "paypal":
