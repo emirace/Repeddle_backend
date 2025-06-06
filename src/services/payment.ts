@@ -2,42 +2,42 @@
 import Flutterwave from "flutterwave-node-v3";
 import { flutterwaveKey, flutterwaveSecret } from "../config/env";
 
+const flutterwave = new (Flutterwave as any)(flutterwaveKey, flutterwaveSecret);
+
 export const verifyPayment = async (
   provider: string,
   transactionId: string
 ): Promise<{ status: boolean; amount?: number; currency?: string }> => {
   console.log("flutterKey", flutterwaveKey);
+
   switch (provider) {
     case "Flutterwave":
       try {
-        const flutterwave = new (Flutterwave as any)(
-          flutterwaveKey,
-          flutterwaveSecret
-        );
         const response = await flutterwave.Transaction.verify({
           id: transactionId,
         });
-        console.log("flu response", response);
+
+        console.log("Flutterwave response", response);
+
         if (response.data.status === "successful") {
-          const amount = response.data.amount;
-          const currency = response.data.currency;
-          return { status: true, amount, currency };
+          return {
+            status: true,
+            amount: response.data.amount,
+            currency: response.data.currency,
+          };
         } else {
           return { status: false };
         }
-      } catch (error) {
-        console.log(error);
+      } catch (err) {
+        console.error("Error verifying Flutterwave payment:", err);
         return { status: false };
       }
-    case "paypal":
-      // return await PayPalService.verifyPayment(transactionId);
-      return { status: false };
-    case "scribe":
-      // return await ScribeService.verifyPayment(transactionId);
-      return { status: false };
-    case "Paystack":
 
+    case "paypal":
+    case "scribe":
+    case "Paystack":
     default:
+      console.warn(`Payment provider '${provider}' is not implemented.`);
       return { status: false };
   }
 };
