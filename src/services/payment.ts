@@ -2,7 +2,7 @@
 import Flutterwave from "flutterwave-node-v3";
 import { flutterwaveKey, flutterwaveSecret } from "../config/env";
 
-const flutterwave = new (Flutterwave as any)(flutterwaveKey, flutterwaveSecret);
+const flutterwave = new Flutterwave(flutterwaveKey, flutterwaveSecret);
 
 export const verifyPayment = async (
   provider: string,
@@ -13,9 +13,8 @@ export const verifyPayment = async (
   switch (provider) {
     case "Flutterwave":
       try {
-        const response = await flutterwave.Transaction.verify({
-          id: transactionId,
-        });
+        const payload = { id: transactionId };
+        const response = await flutterwave.Transaction.verify(payload);
 
         console.log("Flutterwave response", response);
 
