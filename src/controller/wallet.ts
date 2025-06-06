@@ -30,13 +30,14 @@ export async function fundWallet(req: CustomRequest, res: Response) {
       existTransaction,
       existOrder
     );
-    // if (existOrder.length > 0 || existTransaction) {
-    //   await session.abortTransaction();
-    //   session.endSession();
-    //   return res
-    //     .status(400)
-    //     .json({ status: false, message: "Possible dublicate transaction" });
-    // }
+
+    if (existOrder.length > 0 || existTransaction) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ status: false, message: "Possible dublicate transaction" });
+    }
 
     const paymentVerification = await verifyPayment(
       paymentProvider,
