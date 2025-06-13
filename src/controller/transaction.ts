@@ -108,7 +108,13 @@ export const getUserTransactions = async (
     }
 
     // Add pagination stages
-    pipeline.push({ $skip: skip }, { $limit: limit });
+    pipeline.push(
+      {
+        $sort: { createdAt: -1 },
+      },
+      { $skip: skip },
+      { $limit: limit }
+    );
 
     // Find transactions for the specified user with pagination
     const transactions: ITransaction[] = await Transaction.aggregate(pipeline);

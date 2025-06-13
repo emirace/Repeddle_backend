@@ -4,6 +4,7 @@ import Order, { IDeliveryTrackingHistory } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import Wallet from "../model/wallet";
 import Transaction from "../model/transaction";
+import Notification from "../model/notification";
 
 // Get all payments
 export const getAllPayments = async (
@@ -258,8 +259,23 @@ export const approvePayment = async (
         currency: wallet.currency,
       });
       await transaction.save();
+      await Notification.create({
+        message: `Payment Approved`,
+        link: `/transaction/${transaction._id}`,
+        user: wallet.userId,
+        image: "",
+        mobileLink: {
+          name: `TransactionDetail`,
+          params: transaction,
+        },
+      });
     } else {
       payment.status = "Approved";
+      await Notification.create({
+        message: `Payment Approved`,
+        user: payment.userId,
+        image: "",
+      });
     }
     await payment.save();
 
