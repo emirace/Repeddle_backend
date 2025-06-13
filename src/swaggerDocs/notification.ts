@@ -54,7 +54,7 @@
 /**
  * @swagger
  * /notifications/{id}/mark-read:
- *   patch:
+ *   put:
  *     summary: Mark a notification as read
  *     tags: [Notification]
  *     security:
