@@ -272,9 +272,14 @@ export const approvePayment = async (
     } else {
       payment.status = "Approved";
       await Notification.create({
-        message: `Payment Approved`,
+        message: `Withdrawal Approved`,
+        link: `/transaction/${payment.orderId}`,
         user: payment.userId,
         image: "",
+        mobileLink: {
+          name: `TransactionDetail`,
+          params: payment.orderId,
+        },
       });
     }
     await payment.save();

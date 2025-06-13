@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import Order from "../model/order";
 import { verifyPayment } from "../services/payment";
 import { performDeposit } from "../utils/wallet";
+import Payment from "../model/payment";
 
 // Controller to fund wallet with Flutterwave
 export async function fundWallet(req: CustomRequest, res: Response) {
@@ -158,6 +159,15 @@ export async function requestWithdrawal(req: CustomRequest, res: Response) {
       description: "Redrawal request",
     });
     await transaction.save();
+
+    await Payment.create({
+      userId,
+      amount: amount,
+      status: "Pending",
+      reason: "Withdrawal Request",
+      to: "Account",
+      orderId: transaction._id,
+    });
 
     res.status(200).json({
       status: true,
