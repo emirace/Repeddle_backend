@@ -809,14 +809,14 @@ export const updateUserDeliveryTracking = async (
     await Notification.create(
       {
         message: `${status}`,
-        link: `/return/${updatedReturn._id}`,
+        link: `/return/${foundReturn._id}`,
         user: isBuyer
-          ? updatedReturn.productId.seller._id
-          : updatedReturn.orderId.buyer._id,
+          ? foundReturn.productId.seller._id
+          : foundReturn.orderId.buyer._id,
         image: (foundReturn.productId as any).images[0],
         mobileLink: {
           name: `ReturnDetail`,
-          params: { id: updatedReturn._id.toString() },
+          params: { id: foundReturn._id.toString() },
         },
       },
       { session }

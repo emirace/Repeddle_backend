@@ -6,7 +6,7 @@ export interface IMessage extends Document {
   conversationId: ObjectId;
   sender: ObjectId;
   receiver?: ObjectId;
-  content: string;
+  content?: string;
   image?: string;
   forwardedFrom?: string; // Optional field for forwarded message
   replyTo?: string; // Optional field for reply message
