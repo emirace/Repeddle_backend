@@ -805,6 +805,7 @@ export const updateUserDeliveryTracking = async (
     // Save the updated order with session
     await order.save({ session });
 
+    console.log(status, foundReturn);
     // Create notification for the status update
     await Notification.create(
       {
