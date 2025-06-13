@@ -6,6 +6,7 @@ export interface INotification extends Document {
   link?: string;
   user: Types.ObjectId;
   image: string;
+  mobileLink?: { name: string; params: object };
 }
 
 const notificationSchema = new Schema<INotification>(
@@ -15,6 +16,7 @@ const notificationSchema = new Schema<INotification>(
     link: { type: String },
     image: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    mobileLink: { name: { type: String, params: { type: Object } } },
   },
   {
     timestamps: true,

@@ -6,6 +6,7 @@ import { CustomRequest } from "../middleware/user";
 import User, { IUser } from "../model/user";
 import Conversation, { IConversation } from "../model/conversation";
 import mongoose from "mongoose";
+import { createNotification } from "../utils/notification";
 
 // Send a message
 export const sendMessage = async (req: CustomRequest, res: Response) => {
@@ -128,6 +129,7 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
     if (receiverUser && receiverUser.socketId) {
       if (receiverUser.socketId) {
         io.to(receiverUser.socketId).emit("message", savedMessage, type);
+        createNotification(receiverUser._id, "message", io);
       } else if (conversation.isGuest) {
         //send email
       }
@@ -136,6 +138,7 @@ export const sendMessage = async (req: CustomRequest, res: Response) => {
         console.log(user.username);
         if (user.socketId) {
           io.to(user.socketId).emit("message", savedMessage, type);
+          createNotification(user._id, "message", io);
         }
       });
     }

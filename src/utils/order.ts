@@ -73,6 +73,10 @@ export const sendOrderNotifications = async () => {
             link: `/order/${order._id}`,
             user: recipient,
             image: (item as any).images[0],
+            mobileLink: {
+              name: `OrderDetails`,
+              params: { id: order._id.toString() },
+            },
           });
 
           const recipientUser = await User.findById(recipient).select(

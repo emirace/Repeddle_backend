@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import User from "../model/user";
 import Message from "../model/message";
 import Conversation from "../model/conversation";
+import DotNotification from "../model/dotNotification";
 
 export const defaultSocket = (io: Server) => {
   io.on("connection", (socket) => {
@@ -24,6 +25,11 @@ export const defaultSocket = (io: Server) => {
         const onlineUsers = await User.find({ socketId: { $ne: null } }).select(
           "username"
         );
+
+        const notifications = await DotNotification.find({
+          user: userId,
+        }).sort({ createdAt: -1 });
+        socket.emit("notificationsUpdated", notifications);
 
         // Emit the online users list to all connected sockets
         io.emit("onlineUsers", onlineUsers);
@@ -102,6 +108,25 @@ export const defaultSocket = (io: Server) => {
         console.log("Error handling stop typing event:", error);
       }
     });
+
+    socket.on(
+      "readDot",
+      async (data: { type: string; userId: string }, callback: Function) => {
+        const { type, userId } = data;
+        try {
+          await DotNotification.deleteMany({ type, user: userId });
+
+          const userNotifications = await DotNotification.find({
+            user: userId,
+          }).sort({ createdAt: -1 });
+
+          socket.emit("notificationsUpdated", userNotifications);
+          callback({ success: true });
+        } catch (error) {
+          callback({ success: false, error });
+        }
+      }
+    );
 
     socket.on("logout", async () => {
       try {

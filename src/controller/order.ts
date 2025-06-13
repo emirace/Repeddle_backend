@@ -11,6 +11,7 @@ import Transaction from "../model/transaction";
 import { isUserSeller } from "../utils/order";
 import Notification from "../model/notification";
 import { io } from "../app";
+import { createNotification } from "../utils/notification";
 
 export const createOrder = async (req: CustomRequest, res: Response) => {
   const session = await mongoose.startSession();
@@ -141,6 +142,9 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
           currentStatus: { status: "Processing", timestamp: new Date() },
           history: [{ status: "Processing", timestamp: new Date() }],
         };
+
+        // const io = req.app.get("io");
+        createNotification(sellerId.toString(), "order", io);
 
         return {
           product: product._id,
@@ -675,10 +679,15 @@ export const updateDeliveryTracking = async (
         link: `/order/${order._id}`,
         user: order.buyer._id,
         image: product.images[0],
+        mobileLink: {
+          name: `OrderDetails`,
+          params: { id: order._id.toString() },
+        },
       });
 
       if (order.buyer?.socketId) {
         io.to(order.buyer?.socketId).emit("newNotification", notification);
+        createNotification(order.buyer._id, "order", io);
       }
     } else {
       const seller = order.items[itemIndex].seller;
@@ -688,10 +697,15 @@ export const updateDeliveryTracking = async (
         link: `/order/${order._id}`,
         user: seller._id,
         image: product.images[0],
+        mobileLink: {
+          name: `OrderDetails`,
+          params: { id: order._id.toString() },
+        },
       });
 
       if (seller?.socketId) {
         io.to(seller?.socketId).emit("newNotification", notification);
+        createNotification(seller._id, "order", io);
       }
     }
     // Return success response
