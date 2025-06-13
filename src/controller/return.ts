@@ -807,21 +807,20 @@ export const updateUserDeliveryTracking = async (
 
     console.log(status, foundReturn);
     // Create notification for the status update
-    await Notification.create(
-      {
-        message: `${status}`,
-        link: `/return/${foundReturn._id}`,
-        user: isBuyer
-          ? foundReturn.productId.seller._id
-          : foundReturn.orderId.buyer._id,
-        image: (foundReturn.productId as any).images[0],
-        mobileLink: {
-          name: `ReturnDetail`,
-          params: { id: foundReturn._id.toString() },
-        },
+    const notification = new Notification({
+      message: `${status}`,
+      link: `/return/${foundReturn._id}`,
+      user: isBuyer
+        ? foundReturn.productId.seller._id
+        : foundReturn.orderId.buyer._id,
+      image: (foundReturn.productId as any).images[0],
+      mobileLink: {
+        name: `ReturnDetail`,
+        params: { id: foundReturn._id.toString() },
       },
-      { session }
-    );
+    });
+
+    await notification.save({ session });
 
     // Commit the transaction
     await session.commitTransaction();
