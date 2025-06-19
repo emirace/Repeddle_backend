@@ -48,7 +48,7 @@ const ProductController = {
 
       const page = parseInt(initialPage as string) || 1;
       const limit = parseInt(initialLimit as string) || 20;
-
+      console.log("product region", userRegion);
       // Filter by region
       const query: any = { region: userRegion };
 
