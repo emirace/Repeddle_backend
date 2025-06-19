@@ -76,8 +76,8 @@ export const extractUserRegion = (
   next: NextFunction
 ) => {
   // Get the user's region from the 'cloudfront-viewer-country' header
-  const region = req.headers["cloudfront-viewer-country"];
-  console.log("hello");
+  const region = req.headers["cf-ipcountry"] || "UNKNOWN";
+  console.log("region", region);
 
   // If the region is not found in the header or is empty, send an error response
   // if (!region) {
