@@ -847,12 +847,7 @@ export const updateReturnDeliveryAddress = async (
     const userId = req.userId!;
 
     // Find the return
-    const foundReturn:
-      | (IReturn & {
-          orderId: { buyer: { _id: string } };
-          productId: { seller: { _id: string } };
-        })
-      | null = await Return.findById(returnId)
+    const foundReturn: any = await Return.findById(returnId)
       .populate({
         path: "productId",
         select: "images name",

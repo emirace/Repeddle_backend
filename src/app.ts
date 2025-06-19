@@ -28,6 +28,8 @@ app.use(
 
 app.use(morgan("combined"));
 
+app.set("trust proxy", true);
+
 // Serve Swagger UI
 app.use(
   "/api-docs",

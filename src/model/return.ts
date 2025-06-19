@@ -11,6 +11,7 @@ interface IDeliveryTrackingHistory {
 }
 
 export interface IReturn extends Document {
+  _id: string;
   orderId: mongoose.Types.ObjectId;
   productId: mongoose.Types.ObjectId;
   reason?: string;

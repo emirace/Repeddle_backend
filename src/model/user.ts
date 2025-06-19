@@ -20,6 +20,7 @@ export interface Review {
 }
 
 export interface IUser extends Document {
+  _id: string;
   username: string;
   firstName: string;
   lastName: string;

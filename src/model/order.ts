@@ -32,6 +32,7 @@ export interface IDeliveryTrackingHistory {
 
 // Define the order schema
 export interface IOrder extends Document {
+  _id: string;
   buyer: ObjectId;
   items: IOrderItem[];
   totalAmount: number;
