@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import User, { IUser } from "../model/user";
-import geoip from "geoip-lite";
 
 export interface CustomRequest extends Request {
   userId?: string;
@@ -53,7 +52,7 @@ export const authorize = (requiredRoles?: ("Admin" | "User" | "Guest")[]) => {
       }
 
       // Attach user data to the request object for use in the route handler
-      req.userId = (user._id as string).toString();
+      req.userId = user._id.toString();
       req.isAdmin = user.role === "Admin";
       req.userRole = user.role;
 
@@ -76,19 +75,18 @@ export const extractUserRegion = (
   res: Response,
   next: NextFunction
 ) => {
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const testIp = ip === "::1" || ip === "127.0.0.1" ? "8.8.8.8" : ip;
-  console.log(testIp);
-  const geo = geoip.lookup(testIp as string);
+  // Get the user's region from the 'cloudfront-viewer-country' header
+  const region = req.headers["cloudfront-viewer-country"];
+  console.log("hello");
 
-  if (!geo) {
-    return res.status(404).json({ error: "Country not found for this IP" });
-  }
+  // If the region is not found in the header or is empty, send an error response
+  // if (!region) {
+  //   return res
+  //     .status(400)
+  //     .json({ success: false, message: 'User location not provided' });
+  // }
 
-  const region = geo.country;
-  console.log("region", region);
-
-  req.userRegion = region === "ZAR" ? "ZAR" : "NGN";
+  req.userRegion = (region as "ZAR" | "NGN") || "NGN";
 
   next();
 };
