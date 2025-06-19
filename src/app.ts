@@ -22,7 +22,7 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 
 app.use(
   cors({
-    origin: ["https://repeddle.com", "https://test.repeddle.com"],
+    origin: "*",
   })
 );
 
