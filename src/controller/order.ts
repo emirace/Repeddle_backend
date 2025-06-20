@@ -161,7 +161,7 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
       })
     );
 
-    if (paymentMethod === "PayFast" || paymentMethod === "Flutterwave") {
+    if (["PayFast", "Flutterwave", "Paystack"].includes(paymentMethod)) {
       const existOrder = await Order.find({ transactionId }).session(session);
 
       const existTransaction = await Transaction.findOne({

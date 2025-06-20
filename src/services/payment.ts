@@ -1,10 +1,14 @@
 // @ts-ignore
 import Flutterwave from "flutterwave-node-v3";
-import { flutterwaveKey, flutterwaveSecret } from "../config/env";
+import {
+  flutterwaveKey,
+  flutterwaveSecret,
+  paystackSecret,
+} from "../config/env";
 import { Paystack } from "paystack-sdk";
 
 const flutterwave = new Flutterwave(flutterwaveKey, flutterwaveSecret);
-const paystack = new Paystack("sk_test_xxxxxx");
+const paystack = new Paystack(paystackSecret || "");
 
 export const verifyPayment = async (
   provider: string,
