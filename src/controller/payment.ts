@@ -5,6 +5,8 @@ import { CustomRequest } from "../middleware/user";
 import Wallet from "../model/wallet";
 import Transaction from "../model/transaction";
 import Notification from "../model/notification";
+import User from "../model/user";
+import { initializePaystack } from "../services/payment";
 
 // Get all payments
 export const getAllPayments = async (
@@ -324,5 +326,34 @@ export const declinePayment = async (
     res
       .status(500)
       .json({ status: false, message: "Failed to decline payment.", error });
+  }
+};
+
+export const initializePaystackPayment = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId;
+  const { amount } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      res.status(404).json({ status: false, message: "User not found." });
+      return;
+    }
+
+    const data = await initializePaystack(user.email, amount);
+
+    res.status(200).json({
+      status: true,
+      message: "Payment initialize successfully.",
+      data,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: false, message: "Failed to initialize payment.", error });
   }
 };

@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { IRegion } from "../middleware/user";
 
 export interface IAddress {
   apartment?: string;
@@ -52,7 +53,7 @@ export interface IUser extends Document {
   active: boolean;
   influencer: boolean;
   isVerifiedEmail: boolean;
-  region: "NGN" | "ZAR";
+  region: IRegion;
   rebundle: IRebundle;
   tokenVersion: number;
   deleted: boolean;
@@ -131,7 +132,7 @@ const UserSchema = new Schema<IUser>(
     deleted: { type: Boolean, default: false },
     influencer: Boolean,
     isVerifiedEmail: { type: Boolean, default: false },
-    region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },
+    region: { type: String, enum: ["NG", "ZA"], required: true },
     socketId: { type: String, default: null },
     rebundle: RebundleSchema,
   },

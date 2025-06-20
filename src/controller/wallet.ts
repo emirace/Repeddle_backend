@@ -6,7 +6,7 @@ import { CustomRequest } from "../middleware/user";
 import mongoose from "mongoose";
 import Order from "../model/order";
 import { verifyPayment } from "../services/payment";
-import { performDeposit } from "../utils/wallet";
+import { getCurrencyByCountryCode, performDeposit } from "../utils/wallet";
 import Payment from "../model/payment";
 
 // Controller to fund wallet with Flutterwave
@@ -15,7 +15,7 @@ export async function fundWallet(req: CustomRequest, res: Response) {
   session.startTransaction();
   try {
     const userId = req.userId!;
-    const currency = req.userRegion!;
+    const currency = getCurrencyByCountryCode(req.userRegion!);
 
     const { amount, transactionId, paymentProvider } = req.body;
 
@@ -24,13 +24,6 @@ export async function fundWallet(req: CustomRequest, res: Response) {
     const existTransaction = await Transaction.findOne({
       paymentTransactionId: transactionId,
     });
-    console.log(
-      "existTransaction",
-      transactionId,
-      paymentProvider,
-      existTransaction,
-      existOrder
-    );
 
     if (existOrder.length > 0 || existTransaction) {
       await session.abortTransaction();
@@ -106,7 +99,7 @@ export async function fundWallet(req: CustomRequest, res: Response) {
 export async function getUserBalance(req: CustomRequest, res: Response) {
   try {
     const { userId } = req;
-    const currency = req.userRegion;
+    const currency = getCurrencyByCountryCode(req.userRegion!);
     var wallet;
     wallet = await Wallet.findOne({ userId });
 

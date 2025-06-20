@@ -1,8 +1,10 @@
 // @ts-ignore
 import Flutterwave from "flutterwave-node-v3";
 import { flutterwaveKey, flutterwaveSecret } from "../config/env";
+import { Paystack } from "paystack-sdk";
 
 const flutterwave = new Flutterwave(flutterwaveKey, flutterwaveSecret);
+const paystack = new Paystack("sk_test_xxxxxx");
 
 export const verifyPayment = async (
   provider: string,
@@ -32,11 +34,33 @@ export const verifyPayment = async (
         return { status: false };
       }
 
-    case "paypal":
-    case "scribe":
     case "Paystack":
+      try {
+        const response = await paystack.transaction.verify(transactionId);
+        console.log(response);
+        if (response.data && response.data.status === "success") {
+          return {
+            status: true,
+            amount: response.data.amount,
+            currency: response.data.currency,
+          };
+        } else {
+          return { status: false };
+        }
+      } catch (err) {
+        console.error("Error verifying Paystack payment:", err);
+        return { status: false };
+      }
     default:
       console.warn(`Payment provider '${provider}' is not implemented.`);
       return { status: false };
   }
+};
+
+export const initializePaystack = async (email: string, amount: string) => {
+  const response = await paystack.transaction.initialize({
+    email,
+    amount,
+  });
+  return response;
 };

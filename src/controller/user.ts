@@ -240,7 +240,6 @@ const UserController = {
         type: "email",
         mode,
       });
-      console.log(password);
 
       if (!email) {
         return res

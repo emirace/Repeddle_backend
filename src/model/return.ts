@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { IRegion } from "../middleware/user";
 
 interface IDeliveryOption {
   fee: number;
@@ -18,7 +19,7 @@ export interface IReturn extends Document {
   refund: string;
   image?: string;
   others?: string;
-  region: "NGN" | "ZAR";
+  region: IRegion;
   adminReason?: string;
   trackingNumber?: string;
   status: "Approved" | "Declined" | "Pending";
@@ -50,7 +51,7 @@ const returnSchema: Schema = new Schema(
     refund: { type: String, required: true },
     image: { type: String },
     others: { type: String },
-    region: { type: String, enum: ["NGN", "ZAR"], default: "NGN" },
+    region: { type: String, enum: ["NG", "ZA"], required: true },
     adminReason: { type: String },
     trackingNumber: { type: String },
     status: {

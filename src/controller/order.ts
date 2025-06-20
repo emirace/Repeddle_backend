@@ -4,7 +4,7 @@ import Order, { IDeliveryTrackingHistory, IOrder } from "../model/order";
 import { CustomRequest } from "../middleware/user";
 import { verifyPayment } from "../services/payment";
 import mongoose from "mongoose";
-import { performWithdrawal } from "../utils/wallet";
+import { getCurrencyByCountryCode, performWithdrawal } from "../utils/wallet";
 import User from "../model/user";
 import { body, validationResult } from "express-validator";
 import Transaction from "../model/transaction";
@@ -57,7 +57,7 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
     }
 
     const userId = req.userId!;
-    const currency = req.userRegion!;
+    const currency = getCurrencyByCountryCode(req.userRegion!);
     const { items, totalAmount, paymentMethod, transactionId } = req.body;
 
     let totalPrice = 0;

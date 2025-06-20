@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, ObjectId } from "mongoose";
+import { IRegion } from "../middleware/user";
 
 export interface Review {
   user: string;
@@ -78,7 +79,7 @@ export interface IProduct extends Document {
   vintage?: boolean;
   luxury?: boolean;
   luxuryImage?: string;
-  region: "NGN" | "ZAR";
+  region: IRegion;
   countInStock: number;
   isAvailable: boolean;
   sellingPriceHistory?: PriceHistory[];
@@ -164,7 +165,7 @@ const productSchema = new Schema<IProduct>(
     vintage: Boolean,
     luxury: Boolean,
     luxuryImage: String,
-    region: { type: String, enum: ["NGN", "ZAR"], required: true },
+    region: { type: String, enum: ["NG", "ZA"], required: true },
     isAvailable: { type: Boolean, default: true },
     sellingPriceHistory: [{ value: Number, updatedAt: Date }],
     countInStock: { type: Number, default: 0 },

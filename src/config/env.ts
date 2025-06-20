@@ -9,3 +9,4 @@ export const secretKey = process.env.JWT_SECRET || "";
 
 export const flutterwaveKey = process.env.FLUTTERWAVE_PUBLIC_KEY;
 export const flutterwaveSecret = process.env.FLUTTERWAVE_SECRET_KEY;
+export const paystackSecret = process.env.PAYSTACK_SECRET_KEY;

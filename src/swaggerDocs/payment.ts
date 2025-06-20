@@ -334,7 +334,7 @@
 
 /**
  * @swagger
- * /products/decline/{paymentId}:
+ * /payments/decline/{paymentId}:
  *   post:
  *     summary: Decline a payment
  *     description: Declines a payment and updates its status to "Declined".
@@ -382,4 +382,124 @@
  *         description: Payment not found.
  *       500:
  *         description: Server error while processing the decline of the payment.
+ */
+
+/**
+ * @swagger
+ * /payments/initialize-paystack:
+ *   post:
+ *     summary: Initialize Paystack payment
+ *     description: Initializes a payment transaction using Paystack for the authenticated user. Requires authentication and either Admin or User role.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 description: The amount to be paid
+ *                 example: 1000.00
+ *     responses:
+ *       200:
+ *         description: Payment initialized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Payment initialize successfully.
+ *                 data:
+ *                   type: object
+ *                   description: Paystack payment initialization response data
+ *                   properties:
+ *                     authorization_url:
+ *                       type: string
+ *                       description: URL to redirect the user for payment
+ *                     access_code:
+ *                       type: string
+ *                       description: Access code for the payment
+ *                     reference:
+ *                       type: string
+ *                       description: Unique reference for the transaction
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid input
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized
+ *       403:
+ *         description: Forbidden - User does not have Admin or User role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Forbidden
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: User not found.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to initialize payment.
+ *                 error:
+ *                   type: object
+ *                   description: Error details
+ *
  */

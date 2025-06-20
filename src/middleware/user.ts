@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import User, { IUser } from "../model/user";
 
+export type IRegion = "ZA" | "NG";
+
 export interface CustomRequest extends Request {
   userId?: string;
-  userRegion?: "ZAR" | "NGN";
+  userRegion?: IRegion;
   isAdmin?: boolean;
   userRole?: string;
 }
@@ -75,18 +77,16 @@ export const extractUserRegion = (
   res: Response,
   next: NextFunction
 ) => {
-  // Get the user's region from the 'cloudfront-viewer-country' header
-  const region = req.headers["cf-ipcountry"] || "UNKNOWN";
+  const region = (req.headers["cf-ipcountry"] || "UNKNOWN") as IRegion;
   console.log("region", region);
 
-  // If the region is not found in the header or is empty, send an error response
-  // if (!region) {
-  //   return res
-  //     .status(400)
-  //     .json({ success: false, message: 'User location not provided' });
-  // }
+  if (!["ZA", "NG"].includes(region)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "User location not provided" });
+  }
 
-  req.userRegion = (region as "ZAR" | "NGN") || "NGN";
+  req.userRegion = region;
 
   next();
 };

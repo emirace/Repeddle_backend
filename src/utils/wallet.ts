@@ -12,7 +12,7 @@ export const performWithdrawal = async (data: {
   const { userId, amount, currency, session, status = "PENDING" } = data;
   try {
     // Find the wallet for the specified currency
-    const wallet = await Wallet.findOne({ userId }).session(session);
+    const wallet = await Wallet.findOne({ userId, currency }).session(session);
 
     if (!wallet || wallet.balance < amount) {
       return { status: false, message: "Insufficient funds" };
@@ -87,4 +87,21 @@ export const performDeposit = async (data: {
     console.error("Error in performDeposit:", error);
     return { status: false, message: "Error in performDeposit" };
   }
+};
+
+export const getCurrencyByCountryCode = (countryCode: string): string => {
+  const countryToCurrency: Record<string, string> = {
+    US: "USD",
+    NG: "NGN",
+    GB: "GBP",
+    CA: "CAD",
+    EU: "EUR",
+    IN: "INR",
+    JP: "JPY",
+    CN: "CNY",
+    AU: "AUD",
+    ZA: "ZAR",
+  };
+
+  return countryToCurrency[countryCode.toUpperCase()];
 };

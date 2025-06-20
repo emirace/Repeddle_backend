@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Newsletter, { INewsletter } from "../model/newsletter";
 import { CustomRequest } from "../middleware/user";
 import User from "../model/user";
+import { getUrlByCountryCode } from "../utils/notification";
 
 export const getAllNewsletters = async (req: Request, res: Response) => {
   try {
@@ -25,9 +26,8 @@ export const getAllNewsletters = async (req: Request, res: Response) => {
 
 export const createNewsletter = async (req: CustomRequest, res: Response) => {
   try {
-    const userRegion = req.userRegion;
     const { email } = req.body;
-    const url = userRegion === "ZAR" ? "co.za" : "com";
+    const url = getUrlByCountryCode(req.userRegion!);
 
     // Check if a newsletter with the same email already exists
     const existingNewsletter = await Newsletter.findOne({ email });

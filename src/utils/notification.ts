@@ -26,3 +26,13 @@ export const createNotification = async (
     console.log("Error creating notification:", error);
   }
 };
+
+export const getUrlByCountryCode = (
+  countryCode: string
+): string | undefined => {
+  const countryToCurrency: Record<string, string> = {
+    NG: ".com",
+    ZA: ".co.za",
+  };
+  return countryToCurrency[countryCode.toUpperCase()];
+};
