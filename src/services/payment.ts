@@ -45,7 +45,7 @@ export const verifyPayment = async (
         if (response.data && response.data.status === "success") {
           return {
             status: true,
-            amount: response.data.amount,
+            amount: response.data.amount / 100,
             currency: response.data.currency,
           };
         } else {
