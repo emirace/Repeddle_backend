@@ -244,7 +244,7 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
 
     console.log("all payment verification successfull");
 
-    const order: IOrder = new Order({
+    const order: any = new Order({
       buyer: userId,
       items: fetchedItems,
       totalAmount,
@@ -252,9 +252,35 @@ export const createOrder = async (req: CustomRequest, res: Response) => {
       transactionId,
     });
 
-    console.log("order created successfull");
     await order.save();
-    console.log("order created successfull 2");
+
+    await order.populate([
+      { path: "items.product", select: "images name" },
+      {
+        path: "items.seller",
+        select: "username image firstName lastName socketId",
+      },
+    ]);
+
+    console.log("populated order", order);
+
+    for (const item of order.items) {
+      const notification = await Notification.create({
+        message: `Order created`,
+        link: `/order/${order._id}`,
+        user: item.seller._id,
+        image: item.product.images[0],
+        mobileLink: {
+          name: `OrderDetails`,
+          params: { id: order._id.toString() },
+        },
+      });
+
+      if (item.seller.socketId) {
+        io.to(item.seller.socketId).emit("newNotification", notification);
+        createNotification(item.seller._id, "order", io);
+      }
+    }
 
     // add rebundle feature later
 
