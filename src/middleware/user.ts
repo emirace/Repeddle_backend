@@ -86,7 +86,7 @@ export const extractUserRegion = (
       .json({ success: false, message: "User location not provided" });
   }
 
-  req.userRegion = region;
+  req.userRegion = "NG";
 
   next();
 };
